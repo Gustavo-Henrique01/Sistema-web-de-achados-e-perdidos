@@ -21,7 +21,11 @@ class Usuario extends Model
         'senha', 
     ];
 
-    // Método para verificar se o usuário é administrador
+    public function itens()
+    {
+        return $this->hasMany(Item::class, 'id_usuario'); 
+    }
+
     public function isAdmin()
     {
         return $this->role === 'administrador';
