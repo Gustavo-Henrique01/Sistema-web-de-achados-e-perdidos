@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('rua');
             $table->string('numero');
             $table->string('bairro');
+            $table->string('cidade');
+            $table->string('estado');
+            $table->string('cep', 8); // Adicionando o campo CEP
             $table->string('referencial')->nullable();
             $table->timestamps();
         });
