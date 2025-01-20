@@ -12,7 +12,7 @@ class UsuarioController extends Controller
      */
     public function index()
     {
-        //
+        return view('form-registro');
     }
 
     /**
@@ -20,38 +20,21 @@ class UsuarioController extends Controller
      */
     public function criarUsuario(Request $request)
     {
-        // Validação dos dados recebidos
+        
         $validatedData = $request->validate([
-            'nome' => 'required|string|max:255',             // Nome do usuário
-            'email' => 'required|email|unique:usuarios,email', // Validação de e-mail único
-            'telefone' => 'required|string|max:15',          // Telefone do usuário
-            'senha' => 'required|string|min:8',              // Senha com no mínimo 8 caracteres
-            'foto' => 'nullable|string',                     // Foto é opcional
-            'cpf' => 'required|string|unique:usuarios,cpf|size:11', // CPF único e com 11 caracteres
+            'nome' => 'required|string|max:255',            
+            'email' => 'required|email|unique:usuarios,email', 
+            'telefone' => 'required|string|max:15',       
+            'senha' => 'required|string|min:8',            
+            'foto' => 'nullable|string',                    
+            'cpf' => 'required|string|unique:usuarios,cpf|size:11', 
         ]);
-    
-        // Criptografa a senha antes de salvar no banco de dados
+       
         $validatedData['senha'] = bcrypt($validatedData['senha']);
-    
-        // Define a role como 'usuario'
         $validatedData['role'] = 'usuario';
+        $usuario = Usuario::create($validatedData);
     
-        try {
-            // Criação do usuário com os dados validados
-            $usuario = Usuario::create($validatedData);
-    
-            // Retorna resposta de sucesso com os dados do usuário
-            return response()->json([
-                'mensagem' => 'Usuário criado com sucesso!',
-                'usuario' => $usuario
-            ], 201);
-        } catch (\Exception $e) {
-            // Caso ocorra algum erro durante a criação, retorna uma resposta de erro
-            return response()->json([
-                'mensagem' => 'Erro ao criar usuário.',
-                'erro' => $e->getMessage()
-            ], 500);
-        }
+        
     }
     
     /**
