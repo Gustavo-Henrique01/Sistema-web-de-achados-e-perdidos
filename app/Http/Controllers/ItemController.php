@@ -7,17 +7,56 @@ use Illuminate\Http\Request;
 
 class ItemController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+   
+
+
+
     public function index()
     {
         //
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    
+   
+    public function registroItem(Request $request)
+    {
+        // Validação do endereço
+        $validatedEndereco = $request->validate([
+            'rua' => 'required|string|max:100',
+            'numero' => 'nullable|string|max:10',
+            'bairro' => 'required|string|max:255',
+            'referencia' => 'nullable|string|max:1000',
+        ]);
+
+        $validatedEndereco['cidade'] = 'Campo Grande';
+        $validatedEndereco['estado'] = 'Mato Grosso do sul';
+
+        
+            
+        // Criação do endereço
+        $endereco = Endereco::create($validatedEndereco);
+    
+        // Validação do item
+        $validatedItem = $request->validate([
+            'categoria' => 'required|string|max:255',
+            'foto' => 'nullable|file',
+            'descricao' => 'required|string|max:1000',
+            'tipo' => 'required|in:achado,perdido',
+            'status' => 'required|in:pendente,resolvido',
+        ]);
+    
+        // Adiciona o ID do endereço e do usuário autenticado
+        $validatedItem['id_endereco'] = $endereco->id;
+        $validatedItem['id_usuario'] = auth()->id();
+    
+        // Criação do item
+        $item = Item::create($validatedItem);
+    
+    }
+    
+
+
+
     public function create()
     {
         //

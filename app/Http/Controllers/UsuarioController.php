@@ -12,7 +12,7 @@ class UsuarioController extends Controller
      */
     public function index()
     {
-        return view('form-registro');
+        return view('forms.form-registro');
     }
 
     /**
@@ -33,13 +33,12 @@ class UsuarioController extends Controller
         $validatedData['senha'] = bcrypt($validatedData['senha']);
         $validatedData['role'] = 'usuario';
         $usuario = Usuario::create($validatedData);
-    
+
+    return view('forms.form-registroItem');
         
     }
     
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
         //
