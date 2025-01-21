@@ -1,26 +1,52 @@
 <?php
-
 namespace App\Http\Controllers;
-use App\Models\Usuario;
 
+use App\Models\Usuario;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class UsuarioController extends Controller
 {
+    public function login(Request $request)
+{
+    $validatedData = $request->validate([
+        'email' => 'required|email',
+        'senha' => 'required|string|min:8',
+    ]);
+
+    // Autenticação usando 'email' e 'senha'
+    if (Auth::attempt(['email' => $validatedData['email'], 'password' => $validatedData['senha']])) {
+        return redirect()->route('cadastro-item');
+    }
+
+    return redirect()->route('login')->withErrors(['email' => 'Credenciais inválidas']);
+}
+
+
     /**
-     * Display a listing of the resource.
+     * Realiza o logout do usuário.
      */
+    public function logout()
+    {
+        Auth::logout();
+        return redirect('/login'); // Redireciona para a página de login após o logout
+    }
+
+
+
     public function index()
     {
         return view('forms.form-registro');
     }
 
+    public function showLogin (){
+        return view('Auth.login');
+    }
     /**
      * Show the form for creating a new resource.
      */
     public function criarUsuario(Request $request)
     {
-        
         $validatedData = $request->validate([
             'nome' => 'required|string|max:255',            
             'email' => 'required|email|unique:usuarios,email', 
@@ -29,15 +55,20 @@ class UsuarioController extends Controller
             'foto' => 'nullable|string',                    
             'cpf' => 'required|string|unique:usuarios,cpf|size:11', 
         ]);
+        
+        // Criptografa a senha
        
-        $validatedData['senha'] = bcrypt($validatedData['senha']);
+        // Define o papel como usuário
         $validatedData['role'] = 'usuario';
+        
+        // Cria o usuário
         $usuario = Usuario::create($validatedData);
 
-    return view('forms.form-registroItem');
+       
+        
+        return redirect()->route('login');
         
     }
-    
 
     public function store(Request $request)
     {

@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Item;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Usuario;
+use App\Models\Endereco;
+use Illuminate\Support\Carbon;
 
 class ItemController extends Controller
 {
@@ -13,7 +17,7 @@ class ItemController extends Controller
 
     public function index()
     {
-        //
+        return view('forms.form-registroItem');
     }
 
     
@@ -31,6 +35,7 @@ class ItemController extends Controller
         $validatedEndereco['cidade'] = 'Campo Grande';
         $validatedEndereco['estado'] = 'Mato Grosso do sul';
 
+
         
             
         // Criação do endereço
@@ -39,15 +44,21 @@ class ItemController extends Controller
         // Validação do item
         $validatedItem = $request->validate([
             'categoria' => 'required|string|max:255',
-            'foto' => 'nullable|file',
+            'foto' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'descricao' => 'required|string|max:1000',
             'tipo' => 'required|in:achado,perdido',
-            'status' => 'required|in:pendente,resolvido',
+          
         ]);
+        
+        if ($request->hasFile('imagem')) {
+            $validatedItem['foto'] = $request->file('imagem')->store( 'imagens','public');
+        }
     
         // Adiciona o ID do endereço e do usuário autenticado
         $validatedItem['id_endereco'] = $endereco->id;
-        $validatedItem['id_usuario'] = auth()->id();
+        $validatedData['id_usuario'] = Auth::id(); 
+        $validatedItem['data_registro'] = Carbon::now(); // Data e hora atual
+
     
         // Criação do item
         $item = Item::create($validatedItem);

@@ -56,7 +56,7 @@
 
             <!-- Formulário de Endereço -->
             <div class="mb-3 border p-3 rounded">
-                <h4 class="mb-3">Informe o Local onde foi perdido ou achado o Item</h4>
+                <h4 class="mb-3">Informe o Local onde perdido ou achado o Item</h4>
                 <!-- Rua -->
                 <div class="mb-3">
                     <label for="rua" class="form-label">Rua</label>
