@@ -31,6 +31,10 @@ Route::get('/', [UsuarioController::class, 'index']);
 
 Route::get('/itens', [ItemController::class, 'listarItens'])->name('itens.index');
 
+Route::get('/meus-itens-cadastrados', [UsuarioController::class, 'listarItens']);
+
+
+
 
 
 

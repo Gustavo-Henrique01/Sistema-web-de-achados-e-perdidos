@@ -86,11 +86,17 @@ class UsuarioController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function listarItens()
     {
-        //
-    }
+  
+        $user = Auth::user();
 
+        // Obtém todos os itens do usuário logado
+        $itens = $user->itens; // Acessa os itens do usuário logado
+
+        // Retorna a view com os itens
+        return view('listagens.itens-cadastrados-usuario', compact('itens'));
+    }
     /**
      * Update the specified resource in storage.
      */
