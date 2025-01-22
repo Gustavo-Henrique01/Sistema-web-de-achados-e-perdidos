@@ -29,15 +29,4 @@ Route::get('/', [UsuarioController::class, 'index']);
 use Illuminate\Support\Facades\Hash;
 use App\Models\Usuario;
 
-Route::get('/test-login', function () {
-    $email = 'gusta@gmail.com';
-    $senha = '123456789'; // Substitua pela senha que você quer testar
 
-    $usuario = Usuario::where('email', $email)->first();
-
-    if ($usuario && Hash::check($senha, $usuario->senha)) {
-        return "Login bem-sucedido!";
-    } else {
-        return "Email ou senha incorretos.";
-    }
-});

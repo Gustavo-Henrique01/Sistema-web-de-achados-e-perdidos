@@ -34,10 +34,7 @@ class ItemController extends Controller
 
         $validatedEndereco['cidade'] = 'Campo Grande';
         $validatedEndereco['estado'] = 'Mato Grosso do sul';
-
-
         
-            
         // Criação do endereço
         $endereco = Endereco::create($validatedEndereco);
     
@@ -50,14 +47,14 @@ class ItemController extends Controller
           
         ]);
         
-        if ($request->hasFile('imagem')) {
-            $validatedItem['foto'] = $request->file('foto')->store( 'imagens','public');
+        if ($request->hasFile('foto')) {
+            $validatedItem['foto'] = $request->file('foto')->store('imagens','public');
         }
     
         // Adiciona o ID do endereço e do usuário autenticado
         $validatedItem['id_endereco'] = $endereco->id;
-        $validatedItem['data_registro'] = Carbon::now(); // Data e hora atual
-
+        $validatedItem['data_registro'] = Carbon::now();
+        $validatedItem['id_usuario'] =  auth()->id();
     
         // Criação do item
         $item = Item::create($validatedItem);
