@@ -60,6 +60,13 @@ class ItemController extends Controller
         $item = Item::create($validatedItem);
     
     }
+
+
+    public function listarItens() {
+        $itens = Item::all();
+    
+        return view('listagens.listar-itens', ['itens' => $itens]);
+    }
     
 
 

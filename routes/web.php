@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ItemController;
+use Illuminate\Support\Facades\Hash;
+use App\Models\Usuario;
+
 
 // Rota para exibir o formulário de registro do usuário
 Route::get('/usuario', [UsuarioController::class, 'index']);
@@ -26,7 +29,8 @@ Route::post('/entrar', [UsuarioController::class, 'login'])->name("autenticar");
 // Rota para a página inicial (GET)
 Route::get('/', [UsuarioController::class, 'index']);
 
-use Illuminate\Support\Facades\Hash;
-use App\Models\Usuario;
+Route::get('/itens', [ItemController::class, 'listarItens'])->name('itens.index');
+
+
 
 
