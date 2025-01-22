@@ -53,6 +53,8 @@ class ItemController extends Controller
     
         // Adiciona o ID do endereço e do usuário autenticado
         $validatedItem['id_endereco'] = $endereco->id;
+        $validatedItem['status'] = "pendente";
+
         $validatedItem['data_registro'] = Carbon::now();
         $validatedItem['id_usuario'] =  auth()->id();
     
@@ -68,6 +70,7 @@ class ItemController extends Controller
         return view('listagens.listar-itens', ['itens' => $itens]);
     }
     
+
 
 
 

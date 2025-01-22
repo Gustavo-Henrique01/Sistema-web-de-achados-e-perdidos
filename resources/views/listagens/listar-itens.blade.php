@@ -14,6 +14,7 @@
                         <h5 class="card-title">Categoria: {{ $item->categoria }}</h5>
                         <!-- Descrição -->
                         <p class="card-text">Descrição: {{ $item->descricao }}</p>
+                        <p class="card-text">tipo: {{ $item->tipo }}</p>
                         <!-- Data de Registro -->
                         <p class="card-text">
                             <small class="text-muted">Registrado em: {{ \Carbon\Carbon::parse($item->data_registro)->format('d/m/Y') }}</small>

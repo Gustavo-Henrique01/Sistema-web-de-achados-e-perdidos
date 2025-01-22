@@ -26,6 +26,10 @@
                     <option value="Outros">Outros</option>
                 </select>
             </div>
+            <div class="mb-3" id="categoriaOutros" style="display: none;">
+                <label for="categoriaOutrosInput" class="form-label">Digite a categoria</label>
+                <input type="text" class="form-control" id="categoriaOutrosInput" name="categoriaOutros" placeholder="Digite a categoria">
+            </div>
 
             <!-- Tipo -->
             <div class="mb-3">
@@ -91,5 +95,21 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Função para exibir o campo de texto se "Outros" for selecionado
+        document.getElementById('categoria').addEventListener('change', function () {
+            var categoria = this.value;
+            var categoriaOutrosInput = document.getElementById('categoriaOutros');
+            
+            // Verifica se a categoria selecionada é "Outros"
+            if (categoria === 'Outros') {
+                categoriaOutrosInput.style.display = 'block'; // Exibe o campo de texto
+            } else {
+                categoriaOutrosInput.style.display = 'none'; // Esconde o campo de texto
+            }
+        });
+    </script>
+
 </body>
 </html>
