@@ -51,7 +51,7 @@ class ItemController extends Controller
         ]);
         
         if ($request->hasFile('imagem')) {
-            $validatedItem['foto'] = $request->file('imagem')->store( 'imagens','public');
+            $validatedItem['foto'] = $request->file('foto')->store( 'imagens','public');
         }
     
         // Adiciona o ID do endereço e do usuário autenticado

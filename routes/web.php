@@ -41,4 +41,3 @@ Route::get('/test-login', function () {
         return "Email ou senha incorretos.";
     }
 });
-
