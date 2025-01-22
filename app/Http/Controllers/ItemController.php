@@ -56,7 +56,6 @@ class ItemController extends Controller
     
         // Adiciona o ID do endereço e do usuário autenticado
         $validatedItem['id_endereco'] = $endereco->id;
-        $validatedData['id_usuario'] = Auth::id(); 
         $validatedItem['data_registro'] = Carbon::now(); // Data e hora atual
 
     
