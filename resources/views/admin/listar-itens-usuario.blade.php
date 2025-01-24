@@ -1,7 +1,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <div class="container mt-4">
-    <h2>Listagem de Itens Pendentes</h2>
+    <h2>Itens cadastrados por {{ $usuario->nome }} (ID: {{ $usuario->id }})</h2>
+    <a href="{{ route('admin.itens.pendentes') }}" class="btn btn-secondary mb-3">Voltar para a listagem geral</a>
     <div class="row">
         @foreach ($itens as $item)
             <div class="col-md-4 mb-3">
@@ -15,18 +16,6 @@
                             <small class="text-muted">Registrado em: {{ \Carbon\Carbon::parse($item->data_registro)->format('d/m/Y') }}</small>
                         </p>
                         <p class="card-text">Status: {{ $item->status }}</p>
-                        
-                        <!-- Nome do Usuário como link -->
-                        @if ($item->usuario)
-                            <p class="card-text">
-                                Usuário: 
-                                <a href="{{ route('usuario.itens', $item->usuario->id) }}">
-                                    {{ $item->usuario->nome }} (ID: {{ $item->usuario->id }})
-                                </a>
-                            </p>
-                        @else
-                            <p class="card-text text-danger">Usuário não encontrado</p>
-                        @endif
                     </div>
                 </div>
             </div>

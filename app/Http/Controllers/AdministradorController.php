@@ -7,25 +7,27 @@ use App\Models\Item;
 
 class AdministradorController extends Controller
 {
-    // Middleware para autenticação e verificação de administrador
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware(function ($request, $next) {
-            if (auth()->user()->role !== 'administrador') {
-                abort(403, 'Acesso negado. Você não tem permissões de administrador.');
-            }
-            return $next($request);
-        });
-    }
+   
 
     // Função para listar itens pendentes ou impróprios
-    public function listarItens()
-    {
-        $itens = Item::where('status', 'pendente')->get(); // Itens com status 'pendente'
+  // Listar itens pendentes com os usuários associados
+  public function listarItens()
+  {
+      $itens = Item::where('status', 'pendente')
+          ->with('usuario') // Carrega o relacionamento com usuários
+          ->get();
 
-        return view('admin.listar-itens', compact('itens'));
-    }
+      return view('admin.listar-itens-pendentes', compact('itens'));
+  }
+
+  // Listar todos os itens cadastrados por um usuário específico
+  public function listarItensPorUsuario($id)
+  {
+      $usuario = Usuario::findOrFail($id); // Verifica se o usuário existe
+      $itens = Item::where('id_usuario', $id)->get(); // Busca itens associados ao usuário
+
+      return view('admin.listar-itens-usuario', compact('usuario', 'itens'));
+  }
 
     // Função para excluir itens impróprios
     public function excluirItem($id)

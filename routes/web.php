@@ -6,6 +6,7 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ItemController;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Usuario;
+use App\Http\Controllers\AdministradorController;
 
 
 // Rota para exibir o formulário de registro do usuário
@@ -32,6 +33,18 @@ Route::get('/', [UsuarioController::class, 'index']);
 Route::get('/itens', [ItemController::class, 'listarItens'])->name('itens.index');
 
 Route::get('/meus-itens-cadastrados', [UsuarioController::class, 'listarItens']);
+
+
+// Rota para listar itens pendentes
+Route::get('/admin/itens/pendentes', [AdministradorController::class, 'listarItens'])->name('admin.itens.pendentes');
+// Rotas para aprovar ou rejeitar itens
+Route::get('/admin/usuarios', [AdministradorController::class, 'listarUsuarios'])->name('admin.listar-usuarios');
+Route::delete('/admin/usuario/{id}', [AdministradorController::class, 'excluirUsuario'])->name('admin.deletar-usuario');
+Route::delete('/admin/item/{id}', [AdministradorController::class, 'excluirItem'])->name('admin.deletar-item');
+
+Route::get('/usuario/{id}/itens', [AdministradorController::class, 'listarItensPorUsuario'])->name('usuario.itens');
+
+
 
 
 

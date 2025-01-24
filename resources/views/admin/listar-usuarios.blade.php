@@ -1,15 +1,8 @@
-@extends('layouts.app')
-
-@section('content')
+@
 <div class="container mt-4">
     <h1 class="mb-4">Usuários Cadastrados</h1>
 
-    @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
-
+ 
     <table class="table table-striped table-bordered">
         <thead class="table-dark">
             <tr>
@@ -40,7 +33,7 @@
                     </td>
                     <td>{{ ucfirst($usuario->role) }}</td>
                     <td>
-                        <form action="{{ route('admin.usuarios.excluir', $usuario->id) }}" method="POST" class="d-inline">
+                        <form action="{{ route('admin.deletar-usuario', $usuario->id) }}" method="POST" class="d-inline">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este usuário?');">Excluir</button>
@@ -51,4 +44,3 @@
         </tbody>
     </table>
 </div>
-@endsection
