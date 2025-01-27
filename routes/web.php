@@ -48,6 +48,8 @@ Route::get('/usuario/{id}/itens', [AdministradorController::class, 'listarItensP
 Route::post('/admin/itens/{id}/aprovar', [AdministradorController::class, 'aprovarItem'])->name('admin.itens-aprovar');
 Route::post('/admin/itens/{id}/rejeitar', [AdministradorController::class, 'rejeitarItem'])->name('admin.itens-rejeitar');
 
+Route::get('/usuario/{id}', [UsuarioController::class, 'showPerfilUsuario'])->name('admin.ver-usuario-perfil');
+
 
 });
 

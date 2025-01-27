@@ -42,8 +42,12 @@
                         <!-- Data de Registro -->
                         <td>{{ \Carbon\Carbon::parse($item->data_registro)->format('d/m/Y') }}</td>
                         <!-- Usuário -->
-                        <td>{{ $item->usuario->nome ?? 'Usuário não encontrado' }}</td>
-                        <!-- Endereço -->
+                        <td>
+                            <a href="{{ route('admin.ver-usuario-perfil', $item->usuario->id) }}">
+                                {{ $item->usuario->nome ?? 'Usuário não encontrado' }}
+                            </a>
+                        </td>
+                        
                         <td>
                             @if ($item->endereco)
                                 {{ $item->endereco->rua }}, {{ $item->endereco->numero ?? 'S/N' }} - {{ $item->endereco->bairro }}

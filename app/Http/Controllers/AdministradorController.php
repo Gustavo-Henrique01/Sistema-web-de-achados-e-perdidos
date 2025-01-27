@@ -29,9 +29,7 @@ class AdministradorController extends Controller
     }
 
 
-    /**
-     * Remover item (soft delete)
-     */
+  
     public function removerItem(Item $item)
     {
         $item->delete(); // Requer softDeletes no model
@@ -61,10 +59,10 @@ class AdministradorController extends Controller
   
 
   // Listar todos os itens cadastrados por um usuário específico
-  public function listarItensPorUsuario($id)
+  public function showPerfilUsuario($id)
   {
-      $usuario = Usuario::findOrFail($id); // Verifica se o usuário existe
-      $itens = Item::where('id_usuario', $id)->get(); // Busca itens associados ao usuário
+      $usuario = Usuario::findOrFail($id); 
+      $itens = Item::where('id_usuario', $id)->get(); 
 
       return view('admin.listar-itens-usuario', compact('usuario', 'itens'));
   }
