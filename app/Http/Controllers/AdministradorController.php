@@ -9,8 +9,34 @@ class AdministradorController extends Controller
 {
    
 
-    // Função para listar itens pendentes ou impróprios
-  // Listar itens pendentes com os usuários associados
+
+
+    public function aprovarItem(Item $item)
+    {
+        $item->update(['aprovado' => true, 'aprovado_em' => now()]);
+        return redirect()->back()->with('success', 'Item aprovado!');
+    }
+
+    /**
+     * Remover item (soft delete)
+     */
+    public function removerItem(Item $item)
+    {
+        $item->delete(); // Requer softDeletes no model
+        return redirect()->back()->with('warning', 'Item removido!');
+    }
+
+    /**
+     * Marcar item como devolvido
+     */
+    public function marcarComoDevolvido(Item $item)
+    {
+        $item->update(['status' => 'devolvido']);
+        return redirect()->back()->with('success', 'Status atualizado!');
+    }
+
+
+
   public function listarItens()
   {
       $itens = Item::where('status', 'pendente')
@@ -57,4 +83,13 @@ class AdministradorController extends Controller
 
         return redirect()->back()->with('success', 'Usuário excluído com sucesso!');
     }
+
+    public function dashboard()
+{
+    $totalUsuarios = Usuario::count();
+    $totalItens = Item::count();
+    $itensRecentes = Item::latest()->take(5)->get();
+
+    return view('admin.dashboard', compact('totalUsuarios', 'totalItens', 'itensRecentes'));
+}
 }
