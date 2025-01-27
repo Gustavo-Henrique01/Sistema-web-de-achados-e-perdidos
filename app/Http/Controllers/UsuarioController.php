@@ -61,7 +61,7 @@ class UsuarioController extends Controller
         // Define o papel como usuário
         $validatedData['role'] = 'usuario';
         $validatedData['ativo']=true;
-        // Cria o usuário
+
         $usuario = Usuario::create($validatedData);
 
        
