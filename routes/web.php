@@ -35,16 +35,18 @@ Route::get('/itens', [ItemController::class, 'listarItens'])->name('itens.index'
 Route::get('/meus-itens-cadastrados', [UsuarioController::class, 'listarItens']);
 
 
+
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 // Rota para listar itens pendentes
-Route::get('/admin/itens/pendentes', [AdministradorController::class, 'listarItens'])->name('admin.itens.pendentes');
+Route::get('/itens/pendentes', [AdministradorController::class, 'listarItens'])->name('admin.itens.pendentes');
 // Rotas para aprovar ou rejeitar itens
-Route::get('/admin/usuarios', [AdministradorController::class, 'listarUsuarios'])->name('admin.listar-usuarios');
-Route::delete('/admin/usuario/{id}', [AdministradorController::class, 'excluirUsuario'])->name('admin.deletar-usuario');
-Route::delete('/admin/item/{id}', [AdministradorController::class, 'excluirItem'])->name('admin.deletar-item');
+Route::get('/usuarios', [AdministradorController::class, 'listarUsuarios'])->name('admin.listar-usuarios');
+Route::delete('/usuario/{id}', [AdministradorController::class, 'excluirUsuario'])->name('admin.deletar-usuario');
+Route::delete('/item/{id}', [AdministradorController::class, 'excluirItem'])->name('admin.deletar-item');
 
 Route::get('/usuario/{id}/itens', [AdministradorController::class, 'listarItensPorUsuario'])->name('usuario.itens');
 
-
+});
 
 
 
