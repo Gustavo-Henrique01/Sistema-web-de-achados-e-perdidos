@@ -1,35 +1,79 @@
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Bootstrap CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Bootstrap Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+<!-- Bootstrap JS (para tooltips) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <div class="container mt-4">
-    <h2>Listagem de Itens Pendentes</h2>
-    <div class="row">
-        @foreach ($itens as $item)
-            <div class="col-md-4 mb-3">
-                <div class="card">
-                    <img src="{{ asset('storage/'.$item->foto) }}" class="card-img-top" alt="Foto do item">
-                    <div class="card-body">
-                        <h5 class="card-title">Categoria: {{ $item->categoria }}</h5>
-                        <p class="card-text">Descrição: {{ $item->descricao }}</p>
-                        <p class="card-text">Tipo: {{ $item->tipo }}</p>
-                        <p class="card-text">
-                            <small class="text-muted">Registrado em: {{ \Carbon\Carbon::parse($item->data_registro)->format('d/m/Y') }}</small>
-                        </p>
-                        <p class="card-text">Status: {{ $item->status }}</p>
-                        
-                        <!-- Nome do Usuário como link -->
-                        @if ($item->usuario)
-                            <p class="card-text">
-                                Usuário: 
-                                <a href="{{ route('usuario.itens', $item->usuario->id) }}">
-                                    {{ $item->usuario->nome }} (ID: {{ $item->usuario->id }})
-                                </a>
-                            </p>
-                        @else
-                            <p class="card-text text-danger">Usuário não encontrado</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        @endforeach
-    </div>
+    <h1 class="mb-4">Itens Pendentes</h1>
+
+    @if ($itens->isEmpty())
+        <p class="text-muted">Nenhum item pendente encontrado.</p>
+    @else
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-dark text-center">
+                <tr>
+                    <th>#</th>
+                    <th>Categoria</th>
+                    <th>Descrição</th>
+                    <th>Foto</th>
+                    <th>Data de Registro</th>
+                    <th>Usuário</th>
+                    <th>Endereço</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($itens as $item)
+                    <tr>
+                        <td class="text-center">{{ $item->id }}</td>
+                        <td>{{ $item->categoria }}</td>
+                        <td>{{ $item->descricao }}</td>
+                        <!-- Foto -->
+                        <td class="text-center">
+                            @if ($item->foto)
+                                <img src="{{ asset('storage/'.$item->foto) }}" class="img-thumbnail" style="width: 80px; height: 80px; object-fit: cover;">
+                            @else
+                                <span class="text-muted">Sem foto</span>
+                            @endif
+                        </td>
+                        <!-- Data de Registro -->
+                        <td>{{ \Carbon\Carbon::parse($item->data_registro)->format('d/m/Y') }}</td>
+                        <!-- Usuário -->
+                        <td>{{ $item->usuario->nome ?? 'Usuário não encontrado' }}</td>
+                        <!-- Endereço -->
+                        <td>
+                            @if ($item->endereco)
+                                {{ $item->endereco->rua }}, {{ $item->endereco->numero ?? 'S/N' }} - {{ $item->endereco->bairro }}
+                            @else
+                                <span class="text-muted">Endereço não encontrado</span>
+                            @endif
+                        </td>
+                        <!-- Ações -->
+                        <td class="text-center">
+                            <form action="{{ route('admin.itens-aprovar', $item->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-success btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Aprovar item">
+                                    <i class="bi bi-check-circle"></i> Aprovar
+                                </button>
+                            </form>
+                            <form action="{{ route('admin.itens-rejeitar', $item->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-danger btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Rejeitar item">
+                                    <i class="bi bi-x-circle"></i> Rejeitar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <!-- Paginação -->
+        <div class="d-flex justify-content-center">
+            {{ $itens->links() }}
+        </div>
+    @endif
 </div>

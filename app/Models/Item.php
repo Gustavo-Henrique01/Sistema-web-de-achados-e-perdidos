@@ -18,7 +18,9 @@ class Item extends Model
         'status',
         'id_usuario',
         'id_endereco',
-        'tipo'
+        'tipo',
+        'aprovado',
+        'aprovado_em'
     ];
 
 

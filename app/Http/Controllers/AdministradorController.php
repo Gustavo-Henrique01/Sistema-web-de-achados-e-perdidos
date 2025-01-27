@@ -11,11 +11,23 @@ class AdministradorController extends Controller
 
 
 
-    public function aprovarItem(Item $item)
+    public function aprovarItem($id)
     {
-        $item->update(['aprovado' => true, 'aprovado_em' => now()]);
-        return redirect()->back()->with('success', 'Item aprovado!');
+        $item = Item::findOrFail($id);
+        $item ->status = 'aprovado';
+        $item ->aprovado = true;
+        $item->aprovado_em =now();
+        $item->save();
+
     }
+    public function rejeitarItem($id)
+    {
+        $item = Item::findOrFail($id);
+        $item ->status = 'reprovado';
+        $item->save();
+
+    }
+
 
     /**
      * Remover item (soft delete)
@@ -37,14 +49,16 @@ class AdministradorController extends Controller
 
 
 
-  public function listarItens()
+  public function listarItensPendentes()
   {
-      $itens = Item::where('status', 'pendente')
-          ->with('usuario') // Carrega o relacionamento com usuários
-          ->get();
+      $itens = Item::where('status', 'pendente') // Filtra apenas itens pendentes
+          ->with(['usuario', 'endereco']) // Carrega os relacionamentos
+          ->paginate(10); // Paginação para 10 itens por página
+  
+          return view('admin.listar-itens-pendentes', compact('itens'));
 
-      return view('admin.listar-itens-pendentes', compact('itens'));
   }
+  
 
   // Listar todos os itens cadastrados por um usuário específico
   public function listarItensPorUsuario($id)
