@@ -20,6 +20,7 @@ class Usuario extends Authenticatable
         'foto',
         'cpf',
         'role',
+        'ativo'
     ];
 
     // Campos que devem ser escondidos (não expostos)
