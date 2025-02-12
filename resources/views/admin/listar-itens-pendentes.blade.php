@@ -1,11 +1,6 @@
+@extends('admin.dashboard')
 
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- Bootstrap Icons -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
-<!-- Bootstrap JS (para tooltips) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+@section('content')
 <div class="container mt-4">
     <h1 class="mb-4">Itens Pendentes</h1>
 
@@ -81,3 +76,4 @@
         </div>
     @endif
 </div>
+@endsection

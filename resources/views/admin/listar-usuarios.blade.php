@@ -1,4 +1,6 @@
-@
+@extends('admin.dashboard')
+
+@section('content')
 <div class="container mt-4">
     <h1 class="mb-4">Usuários Cadastrados</h1>
 
@@ -44,3 +46,4 @@
         </tbody>
     </table>
 </div>
+@endsection

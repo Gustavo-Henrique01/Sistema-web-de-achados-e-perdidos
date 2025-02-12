@@ -7,10 +7,20 @@ use App\Http\Controllers\ItemController;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Usuario;
 use App\Http\Controllers\AdministradorController;
+use App\Http\Controllers\Auth\LoginController;
+
+Route::get('/', [LoginController::class, 'showLoginForm'])->name('form.login');
+Route::post('/save', [LoginController::class, 'login'])->name('login');;
+
+ Route::post('/logout', [LoginController::class, 'sair'])->name('logout');
+
+    
+
+
 
 
 // Rota para exibir o formulário de registro do usuário
-Route::get('/usuario', [UsuarioController::class, 'index']);
+Route::get('/usuario', [UsuarioController::class, 'index'])->name('home');
 
 // Rota para criar um novo usuário (POST)
 Route::post('/usuarios', [UsuarioController::class, 'criarUsuario'])->name("criar-usuario");
@@ -21,14 +31,8 @@ Route::post('/item', [ItemController::class, 'registroItem'])->name("registrar-i
 // Rota para exibir o formulário de cadastro de item
 Route::get('/form-item', [ItemController::class, 'index'])->name("cadastro-item");
 
-// Rota para exibir o formulário de login (GET)
-Route::get('/login', [UsuarioController::class, 'showLogin'])->name("login");
 
-// Rota para autenticar o usuário (POST)
-Route::post('/entrar', [UsuarioController::class, 'login'])->name("autenticar");
 
-// Rota para a página inicial (GET)
-Route::get('/', [UsuarioController::class, 'index']);
 
 Route::get('/itens', [ItemController::class, 'listarItens'])->name('itens.index');
 
@@ -48,7 +52,9 @@ Route::get('/usuario/{id}/itens', [AdministradorController::class, 'listarItensP
 Route::post('/admin/itens/{id}/aprovar', [AdministradorController::class, 'aprovarItem'])->name('admin.itens-aprovar');
 Route::post('/admin/itens/{id}/rejeitar', [AdministradorController::class, 'rejeitarItem'])->name('admin.itens-rejeitar');
 
-Route::get('/usuario/{id}', [UsuarioController::class, 'showPerfilUsuario'])->name('admin.ver-usuario-perfil');
+
+Route::get('/', [AdministradorController::class, 'pageAdm'])->name('admin.principal');
+
 
 
 });

@@ -7,31 +7,10 @@ use Illuminate\Http\Request;
 
 class UsuarioController extends Controller
 {
-    public function login(Request $request)
-{
-    $validatedData = $request->validate([
-        'email' => 'required|email',
-        'senha' => 'required|string|min:8',
-    ]);
-
-    // Autenticação usando 'email' e 'senha'
-    if (Auth::attempt(['email' => $validatedData['email'], 'password' => $validatedData['senha']])) {
-        return redirect()->route('cadastro-item');
-    }
-
-    return redirect()->route('login')->withErrors(['email' => 'Credenciais inválidas']);
-}
+  
 
 
-    /**
-     * Realiza o logout do usuário.
-     */
-    public function logout()
-    {
-        Auth::logout();
-        return redirect('/login'); // Redireciona para a página de login após o logout
-    }
-
+   
 
 
     public function index()
