@@ -20,7 +20,7 @@ Route::post('/save', [LoginController::class, 'login'])->name('login');;
 
 
 // Rota para exibir o formulário de registro do usuário
-Route::get('/usuario', [UsuarioController::class, 'index'])->name('home');
+Route::get('/usuario', [UsuarioController::class, 'index'])->name('registrar');
 
 // Rota para criar um novo usuário (POST)
 Route::post('/usuarios', [UsuarioController::class, 'criarUsuario'])->name("criar-usuario");
@@ -42,12 +42,12 @@ Route::get('/meus-itens-cadastrados', [UsuarioController::class, 'listarItens'])
 
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 // Rota para listar itens pendentes
-Route::get('/itens/pendentes', [AdministradorController::class, 'listarItensPendentes'])->name('admin.itens.pendentes');
+Route::get('/itens/pendentes', [AdministradorController::class, 'listarItens'])->name('admin.listarItem');
 // Rotas para aprovar ou rejeitar itens
 Route::get('/usuarios', [AdministradorController::class, 'listarUsuarios'])->name('admin.listar-usuarios');
 Route::delete('/usuario/{id}', [AdministradorController::class, 'excluirUsuario'])->name('admin.deletar-usuario');
 Route::delete('/item/{id}', [AdministradorController::class, 'excluirItem'])->name('admin.deletar-item');
-Route::get('/usuario/{id}/itens', [AdministradorController::class, 'listarItensPorUsuario'])->name('usuario.itens');
+Route::get('/usuario/{id}/itens', [AdministradorController::class, 'PerfilUser'])->name('admin.perfilUser');
 
 Route::post('/admin/itens/{id}/aprovar', [AdministradorController::class, 'aprovarItem'])->name('admin.itens-aprovar');
 Route::post('/admin/itens/{id}/rejeitar', [AdministradorController::class, 'rejeitarItem'])->name('admin.itens-rejeitar');

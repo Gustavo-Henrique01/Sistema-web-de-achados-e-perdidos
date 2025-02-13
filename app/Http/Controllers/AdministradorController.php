@@ -23,9 +23,7 @@ class AdministradorController extends Controller
         return redirect()->back()->with('success', 'Item aprovado com sucesso!');
     }
 
-    /**
-     * Rejeita um item.
-     */
+    
     public function rejeitarItem($id)
     {
         $item = Item::findOrFail($id);
@@ -52,6 +50,25 @@ class AdministradorController extends Controller
         return redirect()->back()->with('success', 'Status atualizado para devolvido.');
     }
 
+    public function listarItens(Request $request) {
+        // Obtém o status da requisição (se for nulo ou 'todos', mostra tudo)
+        $status = $request->input('status', 'todos');
+    
+        // Cria a query base
+        $query = Item::query();
+    
+        // Aplica o filtro apenas se o status for diferente de 'todos'
+        if ($status !== 'todos') {
+            $query->where('status', $status);
+        }
+    
+        // Pagina os resultados
+        $itens = $query->paginate(10);
+    
+        return view('admin.listar-itens.user', compact('itens'));
+    }
+    
+
     /**
      * Lista itens pendentes.
      */
@@ -60,11 +77,32 @@ class AdministradorController extends Controller
         $itens = Item::where('status', 'pendente')->paginate(10);
         return view('admin.listar-itens-pendentes', compact('itens'));
     }
+     
+    public function listarAllItens() {
 
-    /**
-     * Exibe o perfil de um usuário e seus itens.
-     */
-    public function showPerfilUsuario($id)
+        $itens = All();
+    
+        return view('listar.itens.reprovados ', compact('itens'));
+    }
+
+
+     
+    public function listarItensAprovados() {
+
+        $itens = Item::where('status', 'aprovado');
+    
+        return view('listar.itens.reprovados ', compact('itens'));
+    }
+
+    public   function listarItensReprovados() {
+
+        $itens = Item::where('status', 'reprovado');
+        return view('listar.itens-reprovados');
+    }
+    
+
+   
+    public function PerfilUser($id)
     {
         $usuario = Usuario::findOrFail($id);
         $itens = Item::where('id_usuario', $id)->get();
@@ -103,9 +141,8 @@ class AdministradorController extends Controller
         return redirect()->back()->with('success', 'Usuário excluído com sucesso!');
     }
 
-    /**
-     * Exibe o dashboard do administrador.
-     */
+    
+    
     public function dashboard()
     {
         $totalUsuarios = Usuario::count();

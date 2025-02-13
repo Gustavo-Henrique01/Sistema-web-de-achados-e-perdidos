@@ -9,10 +9,6 @@ class UsuarioController extends Controller
 {
   
 
-
-   
-
-
     public function index()
     {
         return view('forms.form-registro');
@@ -21,31 +17,24 @@ class UsuarioController extends Controller
     public function showLogin (){
         return view('Auth.login');
     }
-    /**
-     * Show the form for creating a new resource.
-     */
+    
     public function criarUsuario(Request $request)
     {
         $validatedData = $request->validate([
             'nome' => 'required|string|max:255',            
             'email' => 'required|email|unique:usuarios,email', 
             'telefone' => 'required|string|max:15',       
-            'senha' => 'required|string|min:8',            
+            'senha' => 'required|string|min:6',            
             'foto' => 'nullable|string',                    
             'cpf' => 'required|string|unique:usuarios,cpf|size:11', 
         ]);
         
-        // Criptografa a senha
-       
-        // Define o papel como usuário
         $validatedData['role'] = 'usuario';
         $validatedData['ativo']=true;
 
         $usuario = Usuario::create($validatedData);
-
-       
         
-        return redirect()->route('login');
+        return redirect()->route('form.login');
         
     }
 
@@ -62,9 +51,7 @@ class UsuarioController extends Controller
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+   
     public function listarItens()
     {
   

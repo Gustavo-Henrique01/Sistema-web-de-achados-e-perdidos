@@ -22,7 +22,7 @@
             @foreach ($usuarios as $usuario)
                 <tr>
                     <td>{{ $usuario->id }}</td>
-                    <td>{{ $usuario->nome }}</td>
+                    <td> <a href="{{ route('admin.perfilUser', $item->usuario->id) }}">{{ $usuario->nome }} </a> </td>
                     <td>{{ $usuario->email }}</td>
                     <td>{{ $usuario->telefone ?? 'Não informado' }}</td>
                     <td>{{ $usuario->cpf }}</td>
@@ -33,7 +33,7 @@
                             <span>Sem foto</span>
                         @endif
                     </td>
-                    <td>{{ ucfirst($usuario->role) }}</td>
+                    <td>{{ ucfirst($usuario->role->value) }}</td>
                     <td>
                         <form action="{{ route('admin.deletar-usuario', $usuario->id) }}" method="POST" class="d-inline">
                             @csrf

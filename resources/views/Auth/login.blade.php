@@ -46,6 +46,7 @@
 
             
             </form>
+                <p>Não possui conta ? <a href="{{ route('registrar') }}">Crie uma conta</a></p>
         </div>
     </div>
 
