@@ -65,27 +65,25 @@ class AdministradorController extends Controller
         // Pagina os resultados
         $itens = $query->paginate(10);
     
-        return view('admin.listar-itens.user', compact('itens'));
+        return view('admin.listar-all-itens', compact('itens','status'));
     }
     
 
     /**
      * Lista itens pendentes.
      */
-    public function listarItensPendentes()
+    public function listarItensAll()
     {
-        $itens = Item::where('status', 'pendente')->paginate(10);
-        return view('admin.listar-itens-pendentes', compact('itens'));
+        $itens = Item::paginate(10); // 10 itens por página
+
+        return view('admin.listar-itens-user', compact('itens'));
     }
      
-    public function listarAllItens() {
-
-        $itens = All();
     
-        return view('listar.itens.reprovados ', compact('itens'));
-    }
 
-
+  /**
+     * Lista itens pendentes.
+     */
      
     public function listarItensAprovados() {
 
