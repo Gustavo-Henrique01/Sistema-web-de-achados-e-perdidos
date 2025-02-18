@@ -17,10 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Registre os middlewares AQUI (não fora!)
         $middleware->alias([
             'admin' =>  isAdmin::class,
-        ]);
-        $middleware->alias([
             'user' =>  isUser::class,
         ]);
+      
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

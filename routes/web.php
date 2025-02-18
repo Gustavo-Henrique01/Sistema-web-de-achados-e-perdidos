@@ -36,26 +36,13 @@ Route::get('/form-item', [ItemController::class, 'index'])->name("cadastro-item"
 
 Route::get('/itens', [ItemController::class, 'listarItens'])->name('itens.index');
 
-Route::get('/meus-itens-cadastrados', [UsuarioController::class, 'listarItens']);
 
-Route::prefix('usuario')->middleware(['auth', 'user'])->group(function () { 
-    Route::get('/home', [UsuarioController::class, 'home'])->name('home');
+Route::prefix('user')->middleware(['auth', 'user'])->group(function () { 
+    Route::get('/home', [UsuarioController::class,'home'])->name('usuario.home');
+    Route::get('/form-item', [ItemController::class, 'index'])->name("usuario.cadastrar-item");
+    Route::post('/item', [ItemController::class, 'registroItem'])->name("registrar-item");
 
-    Route::get('/meus-dados', [UsuarioController::class, 'meusDados
-    '])->name('usuario.meus-dados');
-    Route::get('/editar-dados', [UsuarioController::class, 'editarDados'])->name('usuario.editar-dados');
-    Route::post('/atualizar-dados', [UsuarioController::class, 'atual
-    izarDados'])->name('usuario.atualizar-dados');
-    Route::get('/meus-itens', [UsuarioController::class, 'listarIt
-    ens'])->name('usuario.meus-itens');
-    Route::get('/meus-itens/{id}', [UsuarioController::class, 'list
-    arItem'])->name('usuario.meu-item');
-    Route::get('/meus-itens/{id}/editar', [UsuarioController::class,
-    'editarItem'])->name('usuario.editar-item');
-    Route::post('/meus-itens/{id}/atualizar', [UsuarioController::
-    class, 'atualizarItem'])->name('usuario.atualizar-item');
-    Route::get('/meus-itens/{id}/excluir', [UsuarioController::class
-    , 'excluirItem'])->name('usuario.excluir-item');
+    Route::get('/itens', [ItemController::class, 'listarItens'])->name('listar-todos-itens');
     });
 
 

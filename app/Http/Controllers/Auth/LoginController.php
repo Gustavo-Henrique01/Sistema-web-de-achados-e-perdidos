@@ -25,7 +25,7 @@ class LoginController extends Controller
                 return redirect()->route('admin.principal');
             }
 
-           return redirect()->route('home'); // Página do usuário comum
+           return redirect()->route('usuario.home'); 
         }
 
     }

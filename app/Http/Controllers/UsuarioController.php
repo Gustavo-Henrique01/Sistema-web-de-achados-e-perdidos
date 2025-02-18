@@ -7,7 +7,10 @@ use Illuminate\Http\Request;
 
 class UsuarioController extends Controller
 {
-  
+    
+    public function home(){
+        return view('usuario.home');
+    }
 
     public function index()
     {

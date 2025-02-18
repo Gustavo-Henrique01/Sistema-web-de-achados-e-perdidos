@@ -65,11 +65,19 @@ class ItemController extends Controller
 
 
     public function listarItens() {
-        $itens = Item::all();
-    
-        return view('listagens.listar-itens', ['itens' => $itens]);
+        $itens = Item::where('status', 'aprovado')->get();
+        return view('listagens.listar-itens',compact('itens') );
     }
-    
+
+    public function listarItensUsuario()
+    {
+  
+        $user = Auth::user();
+        $itens = $user->itens;
+
+        return view('perfilUsuario', compact('user','itens'));
+    }
+   
 
 
 

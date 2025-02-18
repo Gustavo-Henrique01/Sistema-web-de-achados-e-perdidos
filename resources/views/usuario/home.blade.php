@@ -8,21 +8,26 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand" href="{{ route('home') }}">Meu App</a>
+            <a class="navbar-brand" href="{{ route('usuario.home') }}">Meu App</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('home') }}">Home</a>
+                        <a class="nav-link" href="{{ route('usuario.home') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('register_item') }}">Registrar Item</a>
+                        <a class="nav-link" href="{{route('usuario.cadastrar-item')}}">Registrar Item</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('profile') }}">Ver Perfil</a>
+                        <a class="nav-link" href="{{route('listar-todos-itens')}}"> itens </a>  
+                       
                     </li>
+                    <li>    <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">🚪 Sair</a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form></li>
                 </ul>
             </div>
         </div>
