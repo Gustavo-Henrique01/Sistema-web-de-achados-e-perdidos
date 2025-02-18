@@ -28,7 +28,7 @@
             </div>
 
             <div class="col-md-8">
-                <!-- Lista de Itens Cadastrados pelo Usuário -->
+                <!-- Lista de Itens Cadastrados pelo Usuário em Cards -->
                 <div class="card">
                     <div class="card-header bg-success text-white">
                         <h5 class="card-title">Itens Cadastrados</h5>
@@ -37,31 +37,36 @@
                         @if ($usuario->itens->isEmpty())
                             <p class="text-muted">Nenhum item cadastrado.</p>
                         @else
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Categoria</th>
-                                            <th>Descrição</th>
-                                            <th>Data de Registro</th>
-                                            <th>Status</th>
-                                            <th>Tipo</th>
-                                            <th>Endereço</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($usuario->itens as $item)
-                                            <tr>
-                                                <td>{{ $item->categoria }}</td>
-                                                <td>{{ $item->descricao }}</td>
-                                                <td>{{ $item->data_registro->format('d/m/Y') }}</td>
-                                                <td>{{ $item->status }}</td>
-                                                <td>{{ $item->tipo }}</td>
-                                                <td>{{ $item->endereco->logradouro ?? 'N/A' }}</td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                            <div class="row">
+                                @foreach ($usuario->itens as $item)
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card h-100">
+                                            @if ($item->foto)
+                                                <img src="{{ asset('storage/' . $item->foto) }}" alt="Foto do Item" class="card-img-top" style="height: 200px; object-fit: cover;">
+                                            @else
+                                                <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
+                                                    <span>Sem Foto</span>
+                                                </div>
+                                            @endif
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{ $item->categoria }}</h5>
+                                                <p class="card-text"><strong>Descrição:</strong> {{ $item->descricao }}</p>
+                                                <p class="card-text"><strong>Data de Registro:</strong> {{ \Carbon\Carbon::parse($item->data_registro)->format('d/m/Y') }}</p>
+                                                <p class="card-text"><strong>Status:</strong> {{ $item->status }}</p>
+                                                <p class="card-text"><strong>Tipo:</strong> {{ $item->tipo }}</p>
+                                                <p class="card-text"><strong>Endereço:</strong> {{ $item->endereco->logradouro ?? 'N/A' }}</p>
+                                                
+                                            </div>
+                                            <a href="{{ route('usuario.editar-item', $item->id) }}" class="btn btn-primary">Editar</a>
+                                            
+                                            <form action="{{ route('usuario.deletar-item', $item->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este usuário?');">Excluir</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
                         @endif
                     </div>
@@ -73,4 +78,4 @@
     <!-- Bootstrap JS e dependências -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
-    @endsection
+@endsection

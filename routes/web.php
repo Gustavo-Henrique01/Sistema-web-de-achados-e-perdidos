@@ -44,6 +44,9 @@ Route::prefix('user')->middleware(['auth', 'user'])->group(function () {
 
     Route::get('/itens', [ItemController::class, 'listarItens'])->name('listar-todos-itens');
     Route::get('/meus-perfil', [ItemController::class, 'listarItensUsuario'])->name('perfil-usuario');
+    Route::get('/editar/{id}', [UsuarioController::class, 'editarItem'])->name('usuario.editar-item');
+    Route::put('/atualizar/{id}', [UsuarioController::class, 'atualizarItem'])->name('usuario.atualizar-item');
+    Route::delete('/deletar-item/{id}', [UsuarioController::class, 'excluirItem'])->name('usuario.deletar-item');
 
 });
 

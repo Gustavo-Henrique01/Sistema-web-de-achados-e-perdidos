@@ -29,7 +29,7 @@ class ItemController extends Controller
             'rua' => 'required|string|max:100',
             'numero' => 'nullable|string|max:10',
             'bairro' => 'required|string|max:255',
-            'referencia' => 'nullable|string|max:1000',
+            'referencial' => 'nullable|string|max:1000',
         ]);
 
         $validatedEndereco['cidade'] = 'Campo Grande';
@@ -58,9 +58,8 @@ class ItemController extends Controller
         $validatedItem['data_registro'] = Carbon::now();
         $validatedItem['id_usuario'] =  auth()->id();
     
-        // Criação do item
         $item = Item::create($validatedItem);
-    
+        return redirect()->route('home')->with('success', 'Item cadastrado com sucesso!');
     }
 
 
@@ -77,6 +76,7 @@ class ItemController extends Controller
 
         return view('usuario.perfil-usuario', compact('usuario','itens'));
     }
+     
    
 
 

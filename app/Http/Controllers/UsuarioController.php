@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Models\Item;
+use App\Models\Endereco;
 
 class UsuarioController extends Controller
 {
@@ -69,14 +71,88 @@ class UsuarioController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function editarItem($id)
     {
-        //
+        // Busca o item pelo ID
+        $item = Item::find($id);
+    
+        // Verifica se o item existe
+        if (!$item) {
+            return redirect()->route('home')->with('error', 'Item não encontrado.');
+        }
+    
+        // Verifica se o item pertence ao usuário autenticado (opcional, mas recomendado)
+        if ($item->id_usuario !== auth()->id()) {
+            return redirect()->route('home')->with('error', 'Você não tem permissão para editar este item.');
+        }
+    
+        // Busca o endereço associado ao item
+        $endereco = $item->endereco;
+    
+        // Retorna a view com os dados do item e do endereço
+        return view('forms.form-registroitem', compact('item', 'endereco'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+  public function atualizarItem(Request $request, $id)
+  {
+      // Busca o item pelo ID
+      $item = Item::find($id);
+      if (!$item) {
+          return redirect()->back()->with('error', 'Item não encontrado.');
+      }
+  
+      // Validação do endereço
+      $validatedEndereco = $request->validate([
+          'rua' => 'required|string|max:100',
+          'numero' => 'nullable|string|max:10',
+          'bairro' => 'required|string|max:255',
+          'referencial' => 'nullable|string|max:1000',
+      ]);
+
+      $validatedEndereco['cidade'] = 'Campo Grande';
+      $validatedEndereco['estado'] = 'Mato Grosso do Sul';
+  
+      // Atualiza o endereço associado ao item
+      $endereco = Endereco::find($item->id_endereco);
+      if ($endereco) {
+          $endereco->update($validatedEndereco);
+      } else {
+          return redirect()->back()->with('error', 'Endereço não encontrado.');
+      }
+  
+      // Validação do item
+      $validatedItem = $request->validate([
+          'categoria' => 'required|string|max:255',
+          'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // Foto é opcional
+          'descricao' => 'required|string|max:1000',
+          'tipo' => 'required|in:achado,perdido',
+      ]);
+  
+      // Atualiza a foto, se fornecida
+      if ($request->hasFile('foto')) {
+          // Remove a foto antiga, se existir
+          if ($item->foto && Storage::disk('public')->exists($item->foto)) {
+              Storage::disk('public')->delete($item->foto);
+          }
+          // Armazena a nova foto
+          $validatedItem['foto'] = $request->file('foto')->store('imagens', 'public');
+      }
+  
+      // Atualiza os dados do item
+      $item->update($validatedItem);
+  
+      return redirect()->route('usuario.home')->with('success', 'Item atualizado com sucesso!');
+  }
+    public function excluirItem($id)
+    {
+        $item = Item::find($id);
+        if (!$item) {
+            return redirect()->back()->with('error', 'Item não encontrado.');
+        }   
+        $item->delete();
+        return redirect()->route('usuario.home')->with('success', 'Item excluído com sucesso
+        ');
+     }
     public function destroy(string $id)
     {
         //
