@@ -22,7 +22,7 @@
             @foreach ($usuarios as $usuario)
                 <tr>
                     <td>{{ $usuario->id }}</td>
-                    <td> <a href="{{ route('admin.perfilUser', $item->usuario->id) }}">{{ $usuario->nome }} </a> </td>
+                    <td> <a href="{{ route('admin.perfilUser', $usuario->id) }}">{{ $usuario->nome }} </a> </td>
                     <td>{{ $usuario->email }}</td>
                     <td>{{ $usuario->telefone ?? 'Não informado' }}</td>
                     <td>{{ $usuario->cpf }}</td>

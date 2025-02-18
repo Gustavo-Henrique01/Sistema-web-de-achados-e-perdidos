@@ -35,10 +35,11 @@ class AdministradorController extends Controller
     /**
      * Remove um item.
      */
-    public function removerItem(Item $item)
-    {
+    public function removerItem($id)
+    {   
+        $item = Item::findOrFail($id);
         $item->delete();
-        return redirect()->back()->with('warning', 'Item removido!');
+        return redirect()->route('admin.listar-itens');
     }
 
     /**

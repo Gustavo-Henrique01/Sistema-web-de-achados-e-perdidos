@@ -16,7 +16,7 @@
         </div>
     </div>
     <h3>Itens cadastrados por {{ $usuario->nome }} (ID: {{ $usuario->id }})</h3>
-    <a href="{{ route('admin.itens.pendentes') }}" class="btn btn-secondary mb-3">Voltar para a listagem geral</a>
+    <a href="{{ route('admin.listar-itens-all') }}" class="btn btn-secondary mb-3">Voltar para a listagem geral</a>
     <div class="row">
         @foreach ($itens as $item)
             <div class="col-md-4 mb-3">

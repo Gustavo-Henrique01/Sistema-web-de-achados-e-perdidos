@@ -61,6 +61,11 @@
                                     <i class="bi bi-x-circle"></i> Rejeitar
                                 </button>
                             </form>
+                            <form action="{{ route('admin.DeletarItem', $item->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este item?');">Excluir</button>
+                            </form>
                         </div>
                     </div>
                 </div>

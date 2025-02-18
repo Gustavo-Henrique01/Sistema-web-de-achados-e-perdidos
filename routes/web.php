@@ -38,6 +38,25 @@ Route::get('/itens', [ItemController::class, 'listarItens'])->name('itens.index'
 
 Route::get('/meus-itens-cadastrados', [UsuarioController::class, 'listarItens']);
 
+Route::prefix('usuario')->middleware(['auth', 'user'])->group(function () { 
+    Route::get('/home', [UsuarioController::class, 'home'])->name('home');
+
+    Route::get('/meus-dados', [UsuarioController::class, 'meusDados
+    '])->name('usuario.meus-dados');
+    Route::get('/editar-dados', [UsuarioController::class, 'editarDados'])->name('usuario.editar-dados');
+    Route::post('/atualizar-dados', [UsuarioController::class, 'atual
+    izarDados'])->name('usuario.atualizar-dados');
+    Route::get('/meus-itens', [UsuarioController::class, 'listarIt
+    ens'])->name('usuario.meus-itens');
+    Route::get('/meus-itens/{id}', [UsuarioController::class, 'list
+    arItem'])->name('usuario.meu-item');
+    Route::get('/meus-itens/{id}/editar', [UsuarioController::class,
+    'editarItem'])->name('usuario.editar-item');
+    Route::post('/meus-itens/{id}/atualizar', [UsuarioController::
+    class, 'atualizarItem'])->name('usuario.atualizar-item');
+    Route::get('/meus-itens/{id}/excluir', [UsuarioController::class
+    , 'excluirItem'])->name('usuario.excluir-item');
+    });
 
 
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
@@ -54,10 +73,8 @@ Route::get('/usuario/{id}/itens', [AdministradorController::class, 'PerfilUser']
 Route::post('/admin/itens/{id}/aprovar', [AdministradorController::class, 'aprovarItem'])->name('admin.itens-aprovar');
 Route::post('/admin/itens/{id}/rejeitar', [AdministradorController::class, 'rejeitarItem'])->name('admin.itens-rejeitar');
 
-
+Route::delete('/admin/item/{id}/delete', [AdministradorController::class, 'removerItem'])->name('admin.DeletarItem');
 Route::get('/', [AdministradorController::class, 'pageAdm'])->name('admin.principal');
-
-
 
 });
 

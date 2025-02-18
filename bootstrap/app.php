@@ -3,6 +3,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\isAdmin; 
+use App\Http\Middleware\isUser; 
 
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -16,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Registre os middlewares AQUI (não fora!)
         $middleware->alias([
             'admin' =>  isAdmin::class,
+        ]);
+        $middleware->alias([
+            'user' =>  isUser::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
