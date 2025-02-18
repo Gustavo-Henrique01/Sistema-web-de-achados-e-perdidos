@@ -43,7 +43,9 @@ Route::prefix('user')->middleware(['auth', 'user'])->group(function () {
     Route::post('/item', [ItemController::class, 'registroItem'])->name("registrar-item");
 
     Route::get('/itens', [ItemController::class, 'listarItens'])->name('listar-todos-itens');
-    });
+    Route::get('/meus-perfil', [ItemController::class, 'listarItensUsuario'])->name('perfil-usuario');
+
+});
 
 
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {

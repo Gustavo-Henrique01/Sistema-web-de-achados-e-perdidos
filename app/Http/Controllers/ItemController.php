@@ -72,10 +72,10 @@ class ItemController extends Controller
     public function listarItensUsuario()
     {
   
-        $user = Auth::user();
-        $itens = $user->itens;
+        $usuario = Auth::user();
+        $itens = $usuario->itens;
 
-        return view('perfilUsuario', compact('user','itens'));
+        return view('usuario.perfil-usuario', compact('usuario','itens'));
     }
    
 
