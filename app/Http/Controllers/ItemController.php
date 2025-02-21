@@ -59,7 +59,7 @@ class ItemController extends Controller
         $validatedItem['id_usuario'] =  auth()->id();
     
         $item = Item::create($validatedItem);
-        return redirect()->route('home')->with('success', 'Item cadastrado com sucesso!');
+        return redirect()->route('usuario.home')->with('success', 'Item cadastrado com sucesso!');
     }
 
 

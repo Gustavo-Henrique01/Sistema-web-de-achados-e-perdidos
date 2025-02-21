@@ -24,9 +24,8 @@ class Endereco extends Model
     // Caso o campo 'created_at' e 'updated_at' não sejam usados ou tenham outro nome
     // Você pode desabilitar as timestamps, caso contrário, o Laravel assume que você está usando elas.
     public $timestamps = true;
-
-    public function itens()
+    public function item()
     {
-        return $this->hasMany(Item::class, 'id_endereco');
+        return $this->hasOne(Item::class, 'id_endereco');
     }
 }
