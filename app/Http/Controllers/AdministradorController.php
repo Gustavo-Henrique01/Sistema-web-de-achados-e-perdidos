@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Usuario;
 use App\Models\Item;
+use App\Models\Categoria;
 
 class AdministradorController extends Controller
 {
@@ -154,5 +155,41 @@ class AdministradorController extends Controller
 
     public function pageAdm () {
         return view('admin.dashboard'); // ou o nome correto da view
+    }
+
+
+    public function cadastrarCategoria(Request $request) {
+        $validatedData = $request->validate([
+            'nome_categoria' => 'required|string|max:255',
+
+        ]);
+
+        // Cria a categoria
+        $categoria = Categoria::create($validatedData);
+        return redirect()->route('listar-categoria')->with('success', 'Categoria cadastrada com sucesso!');
+    }
+
+    public function listarCategorias() {
+        $categorias = Categoria::all();
+        return view('listagens.listar-categorias-cadastradas', compact('categorias'));
+
+    }
+    
+    public function excluirCategoria($id) {
+        $categoria = Categoria::findOrFail($id);
+        $categoria->delete();
+        return redirect()->route('listar-categorias')->with('success', 'Categoria excluída com sucesso!');
+    }
+    public function editarCategoria($id) {
+        $categoria = Categoria::findOrFail($id);
+        return view('forms.form-categoria', compact('categoria'));
+    }
+    public function atualizarCategoria(Request $request, $id) {
+        $categoria = Categoria::findOrFail($id);
+        $categoria->update($request->all());
+        return redirect()->route('listar-categorias')->with('success', 'Categoria atualizada com sucesso!');
+    }
+    public function formCategoria() {
+        return view('forms.form-categoria');
     }
 }
