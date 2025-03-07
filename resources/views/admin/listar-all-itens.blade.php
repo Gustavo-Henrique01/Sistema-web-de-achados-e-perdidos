@@ -28,7 +28,9 @@
                 <div class="col-md-4 mb-4">
                     <div class="card shadow-sm">
                         <div class="card-header bg-dark text-white">
-                            <h5 class="mb-0">{{ $item->categoria }}</h5>
+                            <h5 class="mb-0">{{ $item->categoria->nome_categoria }}
+
+                            </h5>
                         </div>
                         <div class="card-body">
                             <!-- Foto -->

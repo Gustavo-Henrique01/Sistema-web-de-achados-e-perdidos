@@ -23,7 +23,7 @@
                 <div class="card">
                     <img src="{{ asset('storage/'.$item->foto) }}" class="card-img-top" alt="Foto do item">
                     <div class="card-body">
-                        <h5 class="card-title">Categoria: {{ $item->categoria }}</h5>
+                        <h5 class="card-title">Categoria: {{ $item->categoria->nome_categoria }}</h5>
                         <p class="card-text">Descrição: {{ $item->descricao }}</p>
                         <p class="card-text">Tipo: {{ $item->tipo }}</p>
                         <p class="card-text">

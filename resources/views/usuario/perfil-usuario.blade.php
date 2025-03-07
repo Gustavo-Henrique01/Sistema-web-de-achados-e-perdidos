@@ -49,21 +49,24 @@
                                                 </div>
                                             @endif
                                             <div class="card-body">
-                                                <h5 class="card-title">{{ $item->categoria }}</h5>
+                                                <h5 class="card-title">
+                                                    <!-- Exibe o nome da categoria associada ao item -->
+                                                    <strong>Categoria:</strong> {{ $item->categoria->nome_categoria }}
+                                                </h5>
                                                 <p class="card-text"><strong>Descrição:</strong> {{ $item->descricao }}</p>
                                                 <p class="card-text"><strong>Data de Registro:</strong> {{ \Carbon\Carbon::parse($item->data_registro)->format('d/m/Y') }}</p>
                                                 <p class="card-text"><strong>Status:</strong> {{ $item->status }}</p>
                                                 <p class="card-text"><strong>Tipo:</strong> {{ $item->tipo }}</p>
                                                 <p class="card-text"><strong>Endereço:</strong> {{ $item->endereco->logradouro ?? 'N/A' }}</p>
-                                                
                                             </div>
-                                            <a href="{{ route('usuario.editar-item', $item->id) }}" class="btn btn-primary">Editar</a>
-                                            
-                                            <form action="{{ route('usuario.deletar-item', $item->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este usuário?');">Excluir</button>
-                                            </form>
+                                            <div class="card-footer">
+                                                <a href="{{ route('usuario.editar-item', $item->id) }}" class="btn btn-primary">Editar</a>
+                                                <form action="{{ route('usuario.deletar-item', $item->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este item?');">Excluir</button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
@@ -72,8 +75,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
     <!-- Bootstrap JS e dependências -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>

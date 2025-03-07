@@ -72,33 +72,43 @@
     <form action="{{ route('registrar-item') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
-        <!-- Categoria -->
-        <div class="mb-3">
-            <label for="categoria" class="form-label">Categoria</label>
-            <select name="categoria" id="categoria" class="form-select" required>
-                <option value="" disabled>Selecione uma categoria</option>
-                <option value="Documentos">Documentos</option>
-                <option value="Eletrônicos">Eletrônicos</option>
-                <option value="Acessórios">Acessórios</option>
-                <option value="Roupas">Roupas</option>
-                <option value="Outros">Outros</option>
-            </select>
-        </div>
+            <!-- Categoria -->
+            <div class="mb-3">
+                <label for="id_categoria" class="form-label">Categoria</label>
+                <select name="id_categoria" id="id_categoria" class="form-select" required>
+                    <option value="" disabled selected>Selecione uma categoria</option>
+                    @foreach ($categorias as $categoria)
+                        <option value="{{ $categoria->id }}" {{ old('id_categoria', $item->id_categoria ?? '') == $categoria->id ? 'selected' : '' }}>
+                            {{ $categoria->nome_categoria }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-        <!-- Tipo -->
-        <div class="mb-3">
-            <label class="form-label">Tipo</label>
-            <div>
-                <div class="form-check form-check-inline">
-                    <input type="radio" id="tipoAchado" name="tipo" value="achado" class="form-check-input" required>
-                    <label for="tipoAchado" class="form-check-label">Achado</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input type="radio" id="tipoPerdido" name="tipo" value="perdido" class="form-check-input" required>
-                    <label for="tipoPerdido" class="form-check-label">Perdido</label>
+            <!-- Tipo -->
+            <div class="mb-3">
+                <label class="form-label">Tipo</label>
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" id="tipoAchado" name="tipo" value="achado" class="form-check-input" required {{ old('tipo', $item->tipo ?? '') == 'achado' ? 'checked' : '' }}>
+                        <label for="tipoAchado" class="form-check-label">Achado</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input type="radio" id="tipoPerdido" name="tipo" value="perdido" class="form-check-input" required {{ old('tipo', $item->tipo ?? '') == 'perdido' ? 'checked' : '' }}>
+                        <label for="tipoPerdido" class="form-check-label">Perdido</label>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Data de Perdido ou Encontrado -->
+            <div class="mb-3" id="campo_data_perdido" style="display: {{ old('tipo', $item->tipo ?? '') == 'perdido' ? 'block' : 'none' }};">
+                <label for="data_perdido" class="form-label">Data em que o item foi perdido</label>
+                <input type="date" name="data_perdido" id="data_perdido" class="form-control" value="{{ old('data_perdido', $item->data_perdido ?? '') }}">
+            </div>
+            <div class="mb-3" id="campo_data_encontrado" style="display: {{ old('tipo', $item->tipo ?? '') == 'achado' ? 'block' : 'none' }};">
+                <label for="data_encontrado" class="form-label">Data em que o item foi encontrado</label>
+                <input type="date" name="data_encontrado" id="data_encontrado" class="form-control" value="{{ old('data_encontrado', $item->data_encontrado ?? '') }}">
+            </div>
 
         <!-- Descrição -->
         <div class="mb-3">
@@ -112,97 +122,162 @@
             <input type="file" name="foto" id="foto" class="form-control" required>
         </div>
 
-        <!-- Endereço -->
-        <div class="mb-3 border p-3 rounded">
-            <h4 class="mb-3">Informe o Local onde perdido ou achado o Item</h4>
+            <!-- Localização -->
+                <!-- Localização -->
+   <!-- Localização -->
+<div class="mb-3 border p-3 rounded">
+    <h4 class="mb-3">Informe o Local onde o item foi perdido ou achado</h4>
 
-            <!-- Mapa -->
-            <div id="map"></div>
+    <!-- Campo de endereço com autocomplete -->
+    <div class="mb-3">
+        <label for="endereco" class="form-label">Pesquisar Endereço</label>
+        <div id="endereco" class="autocomplete-container"></div>
+        <input type="hidden" name="endereco" id="endereco_input">
+    </div>
 
-            <!-- Campos ocultos para latitude e longitude -->
-            <input type="hidden" id="latitude" name="latitude">
-            <input type="hidden" id="longitude" name="longitude">
+    <!-- Campos ocultos para latitude e longitude -->
+    <input type="hidden" name="latitude" id="latitude">
+    <input type="hidden" name="longitude" id="longitude">
 
-            <!-- Rua -->
-            <div class="mb-3">
-                <label for="rua" class="form-label">Rua</label>
-                <input type="text" name="rua" id="rua" class="form-control" placeholder="Digite a rua" required>
-            </div>
+    <!-- Campo para nome do local -->
+    <div class="mb-3">
+        <label for="nome_local" class="form-label">Nome do Local</label>
+        <input type="text" name="nome_local" id="nome_local" class="form-control" placeholder="Ex: Shopping Campo Grande" required>
+    </div>
 
-            <!-- Número -->
-            <div class="mb-3">
-                <label for="numero" class="form-label">Número</label>
-                <input type="text" name="numero" id="numero" class="form-control" placeholder="Digite o número">
-            </div>
+    <!-- Campo para referência -->
+    <div class="mb-3">
+        <label for="referencia" class="form-label">Referência</label>
+        <input type="text" name="referencia" id="referencia" class="form-control" placeholder="Ex: Próximo ao Banco do Brasil">
+    </div>
 
-            <!-- Bairro -->
-            <div class="mb-3">
-                <label for="bairro" class="form-label">Bairro</label>
-                <input type="text" name="bairro" id="bairro" class="form-control" placeholder="Digite o bairro" required>
-            </div>
+    
+            <!-- Botão de envio -->
+            <button type="submit" class="btn btn-primary">
+                {{ isset($item) ? 'Atualizar Item' : 'Registrar Item' }}
+            </button>
+        </form>
+    </div>
 
-            <!-- Referência -->
-            <div class="mb-3">
-                <label for="referencial" class="form-label">Referência (opcional)</label>
-                <textarea name="referencial" id="referencial" class="form-control" rows="2" placeholder="Ponto de referência"></textarea>
-            </div>
-        </div>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-        <!-- Botão de envio -->
-        <button type="submit" class="btn btn-primary mt-3">Registrar Item</button>
-    </form>
+    <!-- Biblioteca do Geoapify Autocomplete -->
+    <script src="https://unpkg.com/@geoapify/geocoder-autocomplete@1.x/dist/index.min.js"></script>
 
+    <!-- Script para o autocompletar de endereços -->
     <script>
-        // Inicializa o mapa
-        var map = L.map('map').setView([-20.4697, -54.6201], 13); // Coordenadas de Campo Grande
-    
-        // Adiciona o tile layer do OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
-    
-        // Define os limites (bounds) para Campo Grande, MS
-        const bounds = [
-            [-54.720, -20.592], // Canto sudoeste (lng, lat)
-            [-54.520, -20.347]  // Canto nordeste (lng, lat)
-        ];
-    
-        // Configura o Leaflet GeoSearch com os limites
-        const provider = new GeoSearch.OpenStreetMapProvider({
-            params: {
-                bounded: 1, // Ativa a restrição por bounds
-                viewbox: bounds.flat().join(','), // Define a área de restrição
-                countrycodes: 'br' // Restringe a busca ao Brasil
-            }
-        });
-    
-        const searchControl = new GeoSearch.GeoSearchControl({
-            provider: provider,
-            style: 'bar', // Estilo da barra de pesquisa
-            showMarker: true, // Mostrar marcador no mapa
-            autoClose: true, // Fechar a lista de sugestões após seleção
-            retainZoomLevel: false, // Manter o nível de zoom ao selecionar um local
-            animateZoom: true, // Animação ao mudar o zoom
-            searchLabel: 'Digite o endereço em Campo Grande', // Placeholder da barra de pesquisa
-            keepResult: true // Manter o resultado no mapa após a seleção
-        });
-    
-        // Adiciona o controle de pesquisa ao mapa
-        map.addControl(searchControl);
-    
-        // Evento quando um endereço é selecionado
-        map.on('geosearch/showlocation', function(result) {
-            const location = result.location;
-            const address = result.location.label; // Endereço completo
-            const parts = address.split(','); // Divide o endereço em partes
-    
-            // Preenche os campos de endereço
-            document.getElementById('rua').value = parts[0] || '';
-            document.getElementById('numero').value = parts[1] || '';
-            document.getElementById('bairro').value = parts[2] || '';
-            document.getElementById('latitude').value = location.y; // Latitude
-            document.getElementById('longitude').value = location.x; // Longitude
-        });
+      // Chave de API do Geoapify
+      const myAPIKey = 'ae3d02cb3064452fbe92218ccb0bc14f'; // Substitua pela sua chave de API
+
+// Configuração do autocomplete para o campo de endereço
+const enderecoInput = new autocomplete.GeocoderAutocomplete(
+    document.getElementById("endereco"),
+    myAPIKey, {
+        type: "street", // Tipo de busca (rua)
+        allowNonVerifiedHouseNumber: true,
+        allowNonVerifiedStreet: true,
+        skipDetails: false, // Precisamos dos detalhes completos
+        skipIcons: true,
+        placeholder: "Digite o endereço"
+    }
+);
+
+// Evento de seleção de um endereço
+enderecoInput.on('select', (endereco) => {
+    if (endereco) {
+        // Preenche os campos de latitude e longitude
+        document.getElementById('latitude').value = endereco.properties.lat; // Latitude
+        document.getElementById('longitude').value = endereco.properties.lon; // Longitude
+
+        // Preenche o campo de endereço visível e oculto
+        document.getElementById('endereco').value = endereco.properties.formatted || '';
+        document.getElementById('endereco_input').value = endereco.properties.formatted || '';
+
+        // Verifica se o endereço está em Campo Grande, MS
+        const cidade = endereco.properties.city;
+        const estado = endereco.properties.state;
+
+        if (cidade === 'Campo Grande' && estado === 'MS') {
+            document.getElementById('enderecoError').style.display = 'none';
+        } else {
+            document.getElementById('enderecoError').style.display = 'block';
+        }
+    }
+});
+
+// Evento de mudança no campo de endereço
+enderecoInput.on('change', (endereco) => {
+    if (!endereco) {
+        // Limpa os campos se o endereço for apagado
+        document.getElementById('latitude').value = '';
+        document.getElementById('longitude').value = '';
+        document.getElementById('endereco_input').value = '';
+    }
+});
+        document.addEventListener('DOMContentLoaded', function() {
+    const tipoAchado = document.getElementById('tipoAchado');
+    const tipoPerdido = document.getElementById('tipoPerdido');
+    const campoDataAchado = document.getElementById('campo_data_encontrado');
+    const campoDataPerdido = document.getElementById('campo_data_perdido');
+
+    tipoAchado.addEventListener('change', function() {
+        campoDataAchado.style.display = 'block';
+        campoDataPerdido.style.display = 'none';
+    });
+
+    tipoPerdido.addEventListener('change', function() {
+        campoDataPerdido.style.display = 'block';
+        campoDataAchado.style.display = 'none';
+    });
+});
     </script>
-</div>
+
+    <!-- Estilos para o container de sugestões -->
+    <style>
+        /* Estilo para o container do autocomplete */
+        .autocomplete-container {
+            position: relative;
+        }
+    
+        /* Estilo para o input do autocomplete */
+        .geoapify-autocomplete-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+    
+        /* Estilo para o container das sugestões */
+        .geoapify-autocomplete-items {
+            position: absolute;
+            border: 1px solid #ccc;
+            border-top: none;
+            max-height: 150px;
+            overflow-y: auto;
+            width: 100%;
+            background-color: #fff;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    
+        /* Estilo para cada item da lista de sugestões */
+        .geoapify-autocomplete-items div {
+            padding: 8px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+    
+        /* Estilo para o hover nos itens da lista */
+        .geoapify-autocomplete-items div:hover {
+            background-color: #f1f1f1;
+        }
+    
+        /* Estilo para o item ativo (selecionado com as setas do teclado) */
+        .geoapify-autocomplete-items .active {
+            background-color: #e9e9e9;
+        }
+    </style>
 @endsection
