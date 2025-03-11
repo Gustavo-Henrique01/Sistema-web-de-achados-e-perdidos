@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\Usuario;
 use App\Http\Controllers\AdministradorController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\MapController;
+
 
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('form.login');
 Route::post('/save', [LoginController::class, 'login'])->name('login');;
@@ -36,6 +38,8 @@ Route::get('/form-item', [ItemController::class, 'index'])->name("cadastro-item"
 
 Route::get('/itens', [ItemController::class, 'listarItens'])->name('itens.index');
 
+
+Route::get('/mapa', [MapController::class, 'mostrarMapa'])->name('mapa');
 
 Route::prefix('user')->middleware(['auth', 'user'])->group(function () { 
     Route::get('/home', [UsuarioController::class,'home'])->name('usuario.home');
