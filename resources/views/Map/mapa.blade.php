@@ -80,5 +80,3 @@
 </body>
 </html>
 
-
-[{"id":3,"id_categoria":1,"foto":"imagens\/VwM9gy9A6yg90Y2AWbzpTKBohE3Z9nBlSJLDgDdV.jpg","descricao":"dsfdfdssdfsfd","data_perdido":null,"data_encontrado":null,"status":"aprovado","id_usuario":26,"id_localizacao":3,"aprovado":true,"aprovado_em":"2025-03-07 20:43:42","created_at":"2025-03-07T19:11:05.000000Z","updated_at":"2025-03-07T20:43:42.000000Z","tipo":"perdido","localizacao":{"id":3,"nome_local":"rodoviara","endereco":"rodoviara","latitude":"-20.4342144","longitude":"-54.5873331","created_at":"2025-03-07T19:11:05.000000Z","updated_at":"2025-03-07T19:11:05.000000Z","referencia":null}}];
