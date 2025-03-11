@@ -155,8 +155,8 @@
 
             <!-- Campo para referência -->
             <div class="mb-3">
-                <label for="referencia" class="form-label">Referência</label>
-                <input type="text" name="referencia" id="referencia" class="form-control" placeholder="Ex: Próximo ao Banco do Brasil">
+                <label for="referencia" class="form-label">Referêncial</label>
+                <input type="text" name="referencial" id="referencial" class="form-control" placeholder="Ex: Próximo ao Banco do Brasil">
             </div>
         </div>
 

@@ -57,7 +57,7 @@
                                                 <p class="card-text"><strong>Data de Registro:</strong> {{ \Carbon\Carbon::parse($item->data_registro)->format('d/m/Y') }}</p>
                                                 <p class="card-text"><strong>Status:</strong> {{ $item->status }}</p>
                                                 <p class="card-text"><strong>Tipo:</strong> {{ $item->tipo }}</p>
-                                                <p class="card-text"><strong>Endereço:</strong> {{ $item->endereco->logradouro ?? 'N/A' }}</p>
+                                                <p class="card-text"><strong>Endereço:</strong> {{ $item->localizacao->endereco ?? 'N/A' }}</p>
                                             </div>
                                             <div class="card-footer">
                                                 <a href="{{ route('usuario.editar-item', $item->id) }}" class="btn btn-primary">Editar</a>

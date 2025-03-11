@@ -42,6 +42,7 @@ class ItemController extends Controller
             'tipo' => 'required|in:achado,perdido',
             'data_perdido' => $request->tipo === 'perdido' ? 'required|date' : 'nullable|date',
             'data_encontrado' => $request->tipo === 'achado' ? 'required|date' : 'nullable|date',
+            'referencial' => 'required|string|max:1000',
         ]);
     
         // Salva a foto no storage
