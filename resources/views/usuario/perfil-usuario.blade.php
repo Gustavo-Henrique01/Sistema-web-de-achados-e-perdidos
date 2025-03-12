@@ -10,19 +10,19 @@
                         <h5 class="card-title">Informações do Usuário</h5>
                     </div>
                     <div class="card-body">
-                        @if ($usuario->foto)
-                            <img src="{{ asset('storage/' . $usuario->foto) }}" alt="Foto do Usuário" class="img-fluid rounded-circle mb-3" style="width: 100px; height: 100px;">
+                        @if ($user->foto)
+                            <img src="{{ asset('storage/' . $user->foto) }}" alt="Foto do Usuário" class="img-fluid rounded-circle mb-3" style="width: 100px; height: 100px;">
                         @else
                             <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
                                 <span>Sem Foto</span>
                             </div>
                         @endif
-                        <p><strong>Nome:</strong> {{ $usuario->nome }}</p>
-                        <p><strong>Email:</strong> {{ $usuario->email }}</p>
-                        <p><strong>Telefone:</strong> {{ $usuario->telefone }}</p>
-                        <p><strong>CPF:</strong> {{ $usuario->cpf }}</p>
-                        <p><strong>Status:</strong> {{ $usuario->ativo ? 'Ativo' : 'Inativo' }}</p>
-                        <p><strong>Função:</strong> {{ $usuario->role->value }}</p>
+                        <p><strong>Nome:</strong> {{ $user->name }}</p> <!-- Alterado de 'nome' para 'name' -->
+                        <p><strong>Email:</strong> {{ $user->email }}</p>
+                        <p><strong>Telefone:</strong> {{ $user->telefone }}</p>
+                        <p><strong>CPF:</strong> {{ $user->cpf }}</p>
+                        <p><strong>Status:</strong> {{ $user->ativo ? 'Ativo' : 'Inativo' }}</p>
+                        <p><strong>Função:</strong> {{ $user->role->value }}</p>
                     </div>
                 </div>
             </div>
@@ -34,11 +34,11 @@
                         <h5 class="card-title">Itens Cadastrados</h5>
                     </div>
                     <div class="card-body">
-                        @if ($usuario->itens->isEmpty())
+                        @if ($user->itens->isEmpty())
                             <p class="text-muted">Nenhum item cadastrado.</p>
                         @else
                             <div class="row">
-                                @foreach ($usuario->itens as $item)
+                                @foreach ($user->itens as $item)
                                     <div class="col-md-6 mb-4">
                                         <div class="card h-100">
                                             @if ($item->foto)
@@ -75,6 +75,8 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
     <!-- Bootstrap JS e dependências -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>

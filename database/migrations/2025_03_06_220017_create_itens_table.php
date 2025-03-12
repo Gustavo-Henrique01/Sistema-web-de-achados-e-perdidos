@@ -19,7 +19,7 @@ return new class extends Migration
             $table->date('data_perdido')->nullable(); // Data em que o item foi perdido (opcional)
             $table->date('data_encontrado')->nullable(); // Data em que o item foi encontrado (opcional)
             $table->enum('status', ['aprovado', 'pendente', 'reprovado'])->default('pendente'); // Status do item
-            $table->foreignId('id_usuario')->constrained('usuarios'); // Chave estrangeira para usuários
+            $table->foreignId('user_id')->constrained('users'); // Chave estrangeira para usuários
             $table->foreignId('id_localizacao')->constrained('localizacoes'); // Chave estrangeira para localizações
             $table->boolean('aprovado')->default(false); // Item aprovado ou não
             $table->timestamp('aprovado_em')->nullable(); // Data de aprovação (opcional)

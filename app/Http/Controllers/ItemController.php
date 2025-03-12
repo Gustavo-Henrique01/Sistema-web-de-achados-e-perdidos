@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Item;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Usuario;
+use App\Models\User;
 use App\Models\Localizacao;
 use App\Models\Categoria;
 use Illuminate\Support\Carbon;
@@ -61,7 +61,7 @@ class ItemController extends Controller
     
         // Adiciona o ID da localização e do usuário autenticado
         $validatedItem['id_localizacao'] = $localizacao->id;
-        $validatedItem['id_usuario'] = auth()->id();
+        $validatedItem['user_id'] = auth()->id();
     
         // Define o status como "pendente" e aprovado como "false"
         $validatedItem['status'] = 'pendente';
@@ -81,10 +81,10 @@ class ItemController extends Controller
     public function listarItensUsuario()
     {
   
-        $usuario = Auth::user();
-        $itens = $usuario->itens;
+        $user = Auth::user();
+        $itens = $user->itens;
 
-        return view('usuario.perfil-usuario', compact('usuario','itens'));
+        return view('usuario.perfil-usuario', compact('user','itens'));
     }
      
    

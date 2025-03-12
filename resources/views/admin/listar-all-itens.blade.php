@@ -44,7 +44,7 @@
                             <p><strong>Descrição:</strong> {{ $item->descricao }}</p>
                             <p><strong>Data:</strong> {{ \Carbon\Carbon::parse($item->data_registro)->format('d/m/Y') }}</p>
                             <p><strong>Usuário:</strong> 
-                                <a href="{{ route('admin.perfilUser', $item->usuario->id) }}">
+                                <a href="{{ route('admin.perfilUser', $item->user->id) }}">
                                     {{ $item->usuario->nome ?? 'Usuário não encontrado' }}
                                 </a>
                             </p>

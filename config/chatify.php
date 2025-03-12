@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'user_model' => App\Models\Usuario::class,
     /*
     |-------------------------------------
     | Messenger display name
@@ -122,5 +121,4 @@ return [
         'public_path' => 'sounds/chatify',
         'new_message' => 'new-message-sound.mp3',
     ]
-    
 ];

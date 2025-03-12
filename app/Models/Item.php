@@ -33,7 +33,7 @@ class Item extends Model
     // Relacionamento com a tabela usuarios
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'id_usuario');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     // Relacionamento com a tabela localizacoes

@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::create('mensagens', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_usuario'); // FK para usuarios
+            $table->unsignedBigInteger('user_id'); // FK para usuarios
             $table->unsignedBigInteger('id_item'); // FK para itens
             $table->text('texto');
             $table->dateTime('data_envio');
-            $table->foreign('id_usuario')->references('id')->on('usuarios')->onDelete('cascade');
+            $table->foreign('id_usuario')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('id_item')->references('id')->on('itens')->onDelete('cascade');
             $table->timestamps();
         });

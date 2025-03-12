@@ -27,7 +27,7 @@ $lastMessageBody = strlen($lastMessageBody) > 30 ? mb_substr($lastMessageBody, 0
     <tr data-action="0">
         {{-- Avatar side --}}
         <td style="position: relative">
-            @if($usuario->active_status)
+            @if($user->active_status)
                 <span class="activeStatus"></span>
             @endif
         <div class="avatar av-m"
@@ -36,8 +36,8 @@ $lastMessageBody = strlen($lastMessageBody) > 30 ? mb_substr($lastMessageBody, 0
         </td>
         {{-- center side --}}
         <td>
-        <p data-id="{{ $usuario->id }}" data-type="user">
-            {{ strlen($usuario->nome) > 12 ? trim(substr($usuario->nome,0,12)).'..' : $usuario->nome }}
+        <p data-id="{{ $user->id }}" data-type="user">
+            {{ strlen($user->name) > 12 ? trim(substr($user->name,0,12)).'..' : $user->name }}
             <span class="contact-item-time" data-time="{{$lastMessage->created_at}}">{{ $lastMessage->timeAgo }}</span></p>
         <span>
             {{-- Last Message user indicator --}}
@@ -64,18 +64,18 @@ $lastMessageBody = strlen($lastMessageBody) > 30 ? mb_substr($lastMessageBody, 0
 
 {{-- -------------------- Search Item -------------------- --}}
 @if($get == 'search_item')
-<table class="messenger-list-item" data-contact="{{ $usuario->id }}">
+<table class="messenger-list-item" data-contact="{{ $user->id }}">
     <tr data-action="0">
         {{-- Avatar side --}}
         <td>
         <div class="avatar av-m"
-        style="background-image: url('{{ $usuario->avatar }}');">
+        style="background-image: url('{{ $user->avatar }}');">
         </div>
         </td>
         {{-- center side --}}
         <td>
             <p data-id="{{ $user->id }}" data-type="user">
-            {{ strlen($usuario->nome) > 12 ? trim(substr($usuario->nome,0,12)).'..' :$usuario->nome }}
+            {{ strlen($user->name) > 12 ? trim(substr($user->name,0,12)).'..' : $user->name }}
         </td>
 
     </tr>

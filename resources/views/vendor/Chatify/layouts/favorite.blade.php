@@ -1,8 +1,8 @@
 <div class="favorite-list-item">
-    @if($usuario)
-        <div data-id="{{ $usuario->id }}" data-action="0" class="avatar av-m"
-            style="background-image: url('{{ Chatify::getUserWithAvatar($usuario)->avatar }}');">
+    @if($user)
+        <div data-id="{{ $user->id }}" data-action="0" class="avatar av-m"
+            style="background-image: url('{{ Chatify::getUserWithAvatar($user)->avatar }}');">
         </div>
-        <p>{{ strlen($usuario->nome) > 5 ? substr($usuario->nome,0,6).'..' : $usuario->nome}}</p>
+        <p>{{ strlen($user->name) > 5 ? substr($user->name,0,6).'..' : $user->name }}</p>
     @endif
 </div>
