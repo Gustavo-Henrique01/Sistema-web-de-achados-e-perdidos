@@ -17,7 +17,7 @@ class Localizacao extends Model
         'endereco',
         'latitude',
         'longitude',
-        'referencial'
+        'referencia'
     ];
 
     // Relacionamento com a tabela itens

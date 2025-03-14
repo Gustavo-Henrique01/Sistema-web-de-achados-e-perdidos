@@ -79,8 +79,11 @@
         </div>
     @endif
 
-    <form action="{{ route('registrar-item') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ isset($item) ? route('usuario.atualizar-item', $item->id) : route('registrar-item') }}" method="POST" enctype="multipart/form-data">
         @csrf
+        @if (isset($item))
+            @method('PUT') <!-- Método HTTP para atualização -->
+        @endif
 
         <!-- Categoria -->
         <div class="mb-3">
@@ -123,13 +126,24 @@
         <!-- Descrição -->
         <div class="mb-3">
             <label for="descricao" class="form-label">Descrição</label>
-            <textarea name="descricao" id="descricao" class="form-control" rows="4" placeholder="Descreva o item (cor, características, etc.)" required></textarea>
+            <textarea name="descricao" id="descricao" class="form-control" rows="4" placeholder="Descreva o item (cor, características, etc.)" required>{{ old('descricao', $item->descricao ?? '') }}</textarea>
         </div>
 
         <!-- Foto -->
         <div class="mb-3">
             <label for="foto" class="form-label">Foto</label>
-            <input type="file" name="foto" id="foto" class="form-control" required>
+        
+            <!-- Exibir a foto atual, se existir -->
+            @if (isset($item) && $item->foto)
+                <div class="mb-3">
+                    <img src="{{ asset('storage/' . $item->foto) }}" alt="Foto do item" style="max-width: 200px; height: auto;">
+                    <p class="text-muted">Foto atual</p>
+                </div>
+            @endif
+        
+            <!-- Campo para upload de nova foto -->
+            <input type="file" name="foto" id="foto" class="form-control">
+            <small class="text-muted">Deixe em branco para manter a foto atual.</small>
         </div>
 
         <!-- Localização -->
@@ -138,25 +152,23 @@
 
             <!-- Campo de endereço com autocomplete do Google Maps -->
             <div class="mb-3">
-                <label for="endereco" class="form-label">Pesquisar Endereço</label>
-                <input type="text" id="endereco" class="form-control" placeholder="Digite o endereço">
-                <input type="hidden" name="endereco" id="endereco_input">
+                <input type="text" id="endereco" class="form-control" placeholder="Digite o endereço" value="{{ old('endereco', $item->localizacao->endereco ?? '') }}">
+                <input type="hidden" name="endereco" id="endereco_input" value="{{ old('endereco', $item->localizacao->endereco ?? '') }}">
             </div>
 
-            <!-- Campos ocultos para latitude e longitude -->
-            <input type="hidden" name="latitude" id="latitude">
-            <input type="hidden" name="longitude" id="longitude">
+            <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude', $item->localizacao->latitude ?? '') }}">
+            <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude', $item->localizacao->longitude ?? '') }}">
 
             <!-- Campo para nome do local -->
             <div class="mb-3">
                 <label for="nome_local" class="form-label">Nome do Local</label>
-                <input type="text" name="nome_local" id="nome_local" class="form-control" placeholder="Ex: Shopping Campo Grande" required>
+                <input type="text" name="nome_local" id="nome_local" class="form-control" placeholder="Ex: Shopping Campo Grande" required value="{{ old('nome_local', $item->localizacao->nome_local ?? '') }}">
             </div>
 
             <!-- Campo para referência -->
             <div class="mb-3">
                 <label for="referencia" class="form-label">Referêncial</label>
-                <input type="text" name="referencial" id="referencial" class="form-control" placeholder="Ex: Próximo ao Banco do Brasil">
+                <input type="text" name="referencia" id="referencia" class="form-control" placeholder="Ex: Próximo ao Banco do Brasil" required value="{{ old('referencia', $item->localizacao->referencia ?? '') }}">
             </div>
         </div>
 
@@ -166,6 +178,7 @@
         </button>
     </form>
 </div>
+
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -17,7 +17,7 @@ class Item extends Model
         'data_perdido',
         'data_encontrado',
         'status',
-        'id_usuario',
+        'user_id',
         'id_localizacao',
         'aprovado',
         'tipo',

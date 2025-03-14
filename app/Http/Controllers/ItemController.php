@@ -37,12 +37,12 @@ class ItemController extends Controller
         // Validação do item
         $validatedItem = $request->validate([
             'id_categoria' => 'required|exists:categorias,id',
-            'foto' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'foto' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'descricao' => 'required|string|max:1000',
             'tipo' => 'required|in:achado,perdido',
             'data_perdido' => $request->tipo === 'perdido' ? 'required|date' : 'nullable|date',
             'data_encontrado' => $request->tipo === 'achado' ? 'required|date' : 'nullable|date',
-            'referencial' => 'required|string|max:1000',
+            'referencia' => 'required|string|max:1000',
         ]);
     
         // Salva a foto no storage

@@ -5,7 +5,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\Item;
-use App\Models\Endereco;
+use App\Models\Localizacao;
+use App\Models\Categoria;
 use Illuminate\Support\Facades\Storage;
 
 class UsuarioController extends Controller
@@ -70,22 +71,23 @@ class UsuarioController extends Controller
     {
         // Busca o item pelo ID
         $item = Item::find($id);
+        $categorias = Categoria::all();
 
         // Verifica se o item existe
         if (!$item) {
-            return redirect()->route('home')->with('error', 'Item não encontrado.');
+            return redirect()->route('usuario.home')->with('error', 'Item não encontrado.');
         }
 
         // Verifica se o item pertence ao usuário autenticado (opcional, mas recomendado)
-        if ($item->id_usuario !== auth()->id()) {
-            return redirect()->route('home')->with('error', 'Você não tem permissão para editar este item.');
+        if ($item->user_id !== auth()->id()) {
+            return redirect()->route('usuario.home')->with('error', 'Você não tem permissão para editar este item.');
         }
 
         // Busca o endereço associado ao item
-        $endereco = $item->endereco;
+        $localizacao= $item->localizacao;
 
         // Retorna a view com os dados do item e do endereço
-        return view('forms.form-registroitem', compact('item', 'endereco'));
+        return view('forms.form-registroitem', compact('item', 'localizacao','categorias'));
     }
 
     public function atualizarItem(Request $request, $id)
@@ -95,34 +97,34 @@ class UsuarioController extends Controller
         if (!$item) {
             return redirect()->back()->with('error', 'Item não encontrado.');
         }
-
-        // Validação do endereço
-        $validatedEndereco = $request->validate([
-            'rua' => 'required|string|max:100',
-            'numero' => 'nullable|string|max:10',
-            'bairro' => 'required|string|max:255',
-            'referencial' => 'nullable|string|max:1000',
+    
+        // Validação da localização
+        $validatedLocalizacao = $request->validate([
+            'nome_local' => 'required|string|max:255',
+            'endereco' => 'required|string|max:255', 
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'referencia' => 'required|string|max:1000',
         ]);
-
-        $validatedEndereco['cidade'] = 'Campo Grande';
-        $validatedEndereco['estado'] = 'Mato Grosso do Sul';
-
-        // Atualiza o endereço associado ao item
-        $endereco = Endereco::find($item->id_endereco);
-        if ($endereco) {
-            $endereco->update($validatedEndereco);
+    
+        // Atualiza a localização associada ao item
+        $localizacao = Localizacao::find($item->id_localizacao);
+        if ($localizacao) {
+            $localizacao->update($validatedLocalizacao);
         } else {
-            return redirect()->back()->with('error', 'Endereço não encontrado.');
+            return redirect()->back()->with('error', 'Localização não encontrada.');
         }
-
+    
         // Validação do item
         $validatedItem = $request->validate([
-            'categoria' => 'required|string|max:255',
+            'id_categoria' => 'required|exists:categorias,id',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // Foto é opcional
             'descricao' => 'required|string|max:1000',
             'tipo' => 'required|in:achado,perdido',
+            'data_perdido' => $request->tipo === 'perdido' ? 'required|date' : 'nullable|date',
+            'data_encontrado' => $request->tipo === 'achado' ? 'required|date' : 'nullable|date',
         ]);
-
+    
         // Atualiza a foto, se fornecida
         if ($request->hasFile('foto')) {
             // Remove a foto antiga, se existir
@@ -131,11 +133,14 @@ class UsuarioController extends Controller
             }
             // Armazena a nova foto
             $validatedItem['foto'] = $request->file('foto')->store('imagens', 'public');
+        } else {
+            // Mantém a foto atual se nenhuma nova foto for enviada
+            $validatedItem['foto'] = $item->foto;
         }
-
-        // Atualiza os dados do item
+    
+      
         $item->update($validatedItem);
-
+    
         return redirect()->route('usuario.home')->with('success', 'Item atualizado com sucesso!');
     }
 
