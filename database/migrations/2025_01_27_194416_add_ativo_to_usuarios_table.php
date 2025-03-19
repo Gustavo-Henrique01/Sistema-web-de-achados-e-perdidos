@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('usuarios', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table) {
             $table->boolean('ativo')->default(true)->after('role');  
         });
     }
     
     public function down()
     {
-        Schema::table('usuarios', function (Blueprint $table) {
+        Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('ativo'); 
         });
     }

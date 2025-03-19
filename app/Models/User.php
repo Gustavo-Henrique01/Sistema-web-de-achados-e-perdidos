@@ -13,14 +13,14 @@ enum UserRole: string
     case USER = 'usuario';
 }
 
-class Usuario extends Authenticatable
+class User extends Authenticatable
 {
     use Notifiable, SoftDeletes;
 
-    protected $table = 'usuarios';
+    protected $table = 'users';
     
     protected $fillable = [
-        'nome', 'email', 'telefone',  
+        'name', 'email', 'telefone',  
         'foto', 'cpf', 'role', 'ativo', 'senha'
     ];
 
@@ -42,7 +42,7 @@ class Usuario extends Authenticatable
 
     public function itens()
     {
-        return $this->hasMany(Item::class, 'id_usuario');
+        return $this->hasMany(Item::class, 'user_id');
     }
 
     public function isAdmin()

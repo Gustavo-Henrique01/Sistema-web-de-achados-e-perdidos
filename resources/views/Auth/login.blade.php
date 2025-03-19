@@ -12,6 +12,19 @@
         <div class="card shadow-lg p-4" style="width: 400px;">
             <h4 class="text-center mb-4">Autenticação</h4>
 
+            <!-- Exibe mensagens de erro/sucesso -->
+            @if(session('error'))
+                <div class="alert alert-danger">
+                    {{ session('error') }}
+                </div>
+            @endif
+
+            @if(session('success'))
+                <div class="alert alert-success">
+                    {{ session('success') }}
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('login') }}">
                 @csrf
                 
@@ -27,8 +40,8 @@
                 <!-- Campo para senha -->
                 <div class="mb-3">
                     <label for="senha" class="form-label">Senha</label>
-                    <input type="password" id="senha" name="senha" class="form-control @error('password') is-invalid @enderror" required>
-                    @error('password')
+                    <input type="password" id="senha" name="senha" class="form-control @error('senha') is-invalid @enderror" required>
+                    @error('senha')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
@@ -43,10 +56,10 @@
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary">Entrar</button>
                 </div>
-
-            
             </form>
-                <p>Não possui conta ? <a href="{{ route('registrar') }}">Crie uma conta</a></p>
+
+            <!-- Link para a página de registro -->
+            <p class="mt-3 text-center">Não possui conta? <a href="{{ route('registrar') }}">Crie uma conta</a></p>
         </div>
     </div>
 

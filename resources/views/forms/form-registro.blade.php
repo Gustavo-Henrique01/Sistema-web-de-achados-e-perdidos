@@ -12,6 +12,19 @@
 <div class="container mt-5">
     <h2>Cadastro de Usuário</h2>
     
+    <!-- Exibe mensagens de erro/sucesso -->
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <!-- Formulário com a validação do Laravel -->
     <form action="{{ route('criar-usuario') }}" method="POST" enctype="multipart/form-data">
         @csrf

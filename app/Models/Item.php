@@ -11,30 +11,36 @@ class Item extends Model
 
     // Campos que podem ser atribuídos em massa
     protected $fillable = [
-        'categoria',
+        'id_categoria',
         'foto',
         'descricao',
-        'data_registro',
+        'data_perdido',
+        'data_encontrado',
         'status',
-        'id_usuario',
-        'id_endereco',
-        'tipo',
+        'user_id',
+        'id_localizacao',
         'aprovado',
+        'tipo',
         'aprovado_em'
     ];
 
 
+    public function categoria()
+    {
+        return $this->belongsTo(Categoria::class, 'id_categoria');
+    }
+
+    // Relacionamento com a tabela usuarios
     public function usuario()
     {
-        return $this->belongsTo(Usuario::class, 'id_usuario');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    
-    public function endereco()
+    // Relacionamento com a tabela localizacoes
+    public function localizacao()
     {
-        return $this->belongsTo(Endereco::class, 'id_endereco');
+        return $this->belongsTo(Localizacao::class, 'id_localizacao');
     }
-
     // Campos que devem ser ocultados nas respostas JSON
     protected $hidden = [
         // Se necessário, adicione campos sensíveis aqui

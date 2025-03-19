@@ -28,7 +28,9 @@
                 <div class="col-md-4 mb-4">
                     <div class="card shadow-sm">
                         <div class="card-header bg-dark text-white">
-                            <h5 class="mb-0">{{ $item->categoria }}</h5>
+                            <h5 class="mb-0">{{ $item->categoria->nome_categoria }}
+
+                            </h5>
                         </div>
                         <div class="card-body">
                             <!-- Foto -->
@@ -42,7 +44,7 @@
                             <p><strong>Descrição:</strong> {{ $item->descricao }}</p>
                             <p><strong>Data:</strong> {{ \Carbon\Carbon::parse($item->data_registro)->format('d/m/Y') }}</p>
                             <p><strong>Usuário:</strong> 
-                                <a href="{{ route('admin.perfilUser', $item->usuario->id) }}">
+                                <a href="{{ route('admin.perfilUser', $item->user->id) }}">
                                     {{ $item->usuario->nome ?? 'Usuário não encontrado' }}
                                 </a>
                             </p>

@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\Usuario;
 use App\Http\Controllers\AdministradorController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\MapController;
+
 
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('form.login');
 Route::post('/save', [LoginController::class, 'login'])->name('login');;
@@ -36,6 +38,8 @@ Route::get('/form-item', [ItemController::class, 'index'])->name("cadastro-item"
 
 Route::get('/itens', [ItemController::class, 'listarItens'])->name('itens.index');
 
+
+Route::get('/mapa', [MapController::class, 'mostrarMapa'])->name('mapa');
 
 Route::prefix('user')->middleware(['auth', 'user'])->group(function () { 
     Route::get('/home', [UsuarioController::class,'home'])->name('usuario.home');
@@ -67,6 +71,14 @@ Route::post('/admin/itens/{id}/rejeitar', [AdministradorController::class, 'reje
 
 Route::delete('/admin/item/{id}/delete', [AdministradorController::class, 'removerItem'])->name('admin.DeletarItem');
 Route::get('/', [AdministradorController::class, 'pageAdm'])->name('admin.principal');
+
+Route::post('/save-categoria', [AdministradorController::class, 'cadastrarCategoria'])->name('registrar-categoria');
+Route::get('form-categoria', [AdministradorController::class, 'formCategoria'])->name("cadastro-categoria");
+Route::get ('/lisstar-categorias', [AdministradorController::class, 'listarCategorias'])->name('listar-categorias');
+Route::get('/editar-categoria/{id}', [AdministradorController::class, 'editarCategoria'])->name('editar-categoria');
+Route::put('/atualizar-categoria/{id}', [AdministradorController::class, 'atualizarCategoria'])->name('atualizar-categoria');
+Route::delete('/deletar-categoria/{id}', [AdministradorController::class, 'excluirCategoria'])->name('categorias.destroy');
+
 
 });
 

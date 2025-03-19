@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('administradores', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('id_usuario'); // FK para usuarios
-            $table->foreign('id_usuario')->references('id')->on('usuarios')->onDelete('cascade');
+            $table->unsignedBigInteger('user_id'); // FK para usuarios
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
         

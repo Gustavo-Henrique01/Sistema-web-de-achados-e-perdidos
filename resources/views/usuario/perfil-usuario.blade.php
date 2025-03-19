@@ -10,19 +10,19 @@
                         <h5 class="card-title">Informações do Usuário</h5>
                     </div>
                     <div class="card-body">
-                        @if ($usuario->foto)
-                            <img src="{{ asset('storage/' . $usuario->foto) }}" alt="Foto do Usuário" class="img-fluid rounded-circle mb-3" style="width: 100px; height: 100px;">
+                        @if ($user->foto)
+                            <img src="{{ asset('storage/' . $user->foto) }}" alt="Foto do Usuário" class="img-fluid rounded-circle mb-3" style="width: 100px; height: 100px;">
                         @else
                             <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
                                 <span>Sem Foto</span>
                             </div>
                         @endif
-                        <p><strong>Nome:</strong> {{ $usuario->nome }}</p>
-                        <p><strong>Email:</strong> {{ $usuario->email }}</p>
-                        <p><strong>Telefone:</strong> {{ $usuario->telefone }}</p>
-                        <p><strong>CPF:</strong> {{ $usuario->cpf }}</p>
-                        <p><strong>Status:</strong> {{ $usuario->ativo ? 'Ativo' : 'Inativo' }}</p>
-                        <p><strong>Função:</strong> {{ $usuario->role->value }}</p>
+                        <p><strong>Nome:</strong> {{ $user->name }}</p> <!-- Alterado de 'nome' para 'name' -->
+                        <p><strong>Email:</strong> {{ $user->email }}</p>
+                        <p><strong>Telefone:</strong> {{ $user->telefone }}</p>
+                        <p><strong>CPF:</strong> {{ $user->cpf }}</p>
+                        <p><strong>Status:</strong> {{ $user->ativo ? 'Ativo' : 'Inativo' }}</p>
+                        <p><strong>Função:</strong> {{ $user->role->value }}</p>
                     </div>
                 </div>
             </div>
@@ -34,11 +34,11 @@
                         <h5 class="card-title">Itens Cadastrados</h5>
                     </div>
                     <div class="card-body">
-                        @if ($usuario->itens->isEmpty())
+                        @if ($user->itens->isEmpty())
                             <p class="text-muted">Nenhum item cadastrado.</p>
                         @else
                             <div class="row">
-                                @foreach ($usuario->itens as $item)
+                                @foreach ($user->itens as $item)
                                     <div class="col-md-6 mb-4">
                                         <div class="card h-100">
                                             @if ($item->foto)
@@ -49,21 +49,24 @@
                                                 </div>
                                             @endif
                                             <div class="card-body">
-                                                <h5 class="card-title">{{ $item->categoria }}</h5>
+                                                <h5 class="card-title">
+                                                    <!-- Exibe o nome da categoria associada ao item -->
+                                                    <strong>Categoria:</strong> {{ $item->categoria->nome_categoria }}
+                                                </h5>
                                                 <p class="card-text"><strong>Descrição:</strong> {{ $item->descricao }}</p>
                                                 <p class="card-text"><strong>Data de Registro:</strong> {{ \Carbon\Carbon::parse($item->data_registro)->format('d/m/Y') }}</p>
                                                 <p class="card-text"><strong>Status:</strong> {{ $item->status }}</p>
                                                 <p class="card-text"><strong>Tipo:</strong> {{ $item->tipo }}</p>
-                                                <p class="card-text"><strong>Endereço:</strong> {{ $item->endereco->logradouro ?? 'N/A' }}</p>
-                                                
+                                                <p class="card-text"><strong>Endereço:</strong> {{ $item->localizacao->endereco ?? 'N/A' }}</p>
                                             </div>
-                                            <a href="{{ route('usuario.editar-item', $item->id) }}" class="btn btn-primary">Editar</a>
-                                            
-                                            <form action="{{ route('usuario.deletar-item', $item->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este usuário?');">Excluir</button>
-                                            </form>
+                                            <div class="card-footer">
+                                                <a href="{{ route('usuario.editar-item', $item->id) }}" class="btn btn-primary">Editar</a>
+                                                <form action="{{ route('usuario.deletar-item', $item->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este item?');">Excluir</button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach

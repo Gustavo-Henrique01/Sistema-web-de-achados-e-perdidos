@@ -1,254 +1,251 @@
 @extends('usuario.home')
 
 @section('content')
-    <div class="container mt-5">
-        <h1 class="mb-4">{{ isset($item) ? 'Editar Item' : 'Registrar Item' }}</h1>
-        <form action="{{ isset($item) ? route('usuario.atualizar-item', $item->id) : route('registrar-item') }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            @if (isset($item))
-                @method('PUT') <!-- Método PUT para atualização -->
+
+<style>
+    /* Estilo para o mapa */
+    #map {
+        height: 400px;
+        margin-bottom: 20px;
+    }
+
+    /* Ajustes para a barra de pesquisa */
+    .leaflet-control-geosearch {
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+    }
+
+    .leaflet-control-geosearch input {
+        width: 100%;
+        padding: 8px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .leaflet-control-geosearch ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .leaflet-control-geosearch ul li {
+        padding: 8px;
+        font-size: 14px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+    }
+
+    .leaflet-control-geosearch ul li:hover {
+        background-color: #f0f0f0;
+    }
+
+    /* Estilo para o container de sugestões do Google Maps */
+    .pac-container {
+        background-color: #fff;
+        z-index: 1000;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .pac-item {
+        padding: 8px;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .pac-item:hover {
+        background-color: #f1f1f1;
+    }
+</style>
+
+<div class="container mt-5">
+    <h1 class="mb-4">{{ isset($item) ? 'Editar Item' : 'Registrar Item' }}</h1>
+
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ isset($item) ? route('usuario.atualizar-item', $item->id) : route('registrar-item') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        @if (isset($item))
+            @method('PUT') <!-- Método HTTP para atualização -->
+        @endif
+
+        <!-- Categoria -->
+        <div class="mb-3">
+            <label for="id_categoria" class="form-label">Categoria</label>
+            <select name="id_categoria" id="id_categoria" class="form-select" required>
+                <option value="" disabled selected>Selecione uma categoria</option>
+                @foreach ($categorias as $categoria)
+                    <option value="{{ $categoria->id }}" {{ old('id_categoria', $item->id_categoria ?? '') == $categoria->id ? 'selected' : '' }}>
+                        {{ $categoria->nome_categoria }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <!-- Tipo -->
+        <div class="mb-3">
+            <label class="form-label">Tipo</label>
+            <div>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="tipoAchado" name="tipo" value="achado" class="form-check-input" required {{ old('tipo', $item->tipo ?? '') == 'achado' ? 'checked' : '' }}>
+                    <label for="tipoAchado" class="form-check-label">Achado</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input type="radio" id="tipoPerdido" name="tipo" value="perdido" class="form-check-input" required {{ old('tipo', $item->tipo ?? '') == 'perdido' ? 'checked' : '' }}>
+                    <label for="tipoPerdido" class="form-check-label">Perdido</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data de Perdido ou Encontrado -->
+        <div class="mb-3" id="campo_data_perdido" style="display: {{ old('tipo', $item->tipo ?? '') == 'perdido' ? 'block' : 'none' }};">
+            <label for="data_perdido" class="form-label">Data em que o item foi perdido</label>
+            <input type="date" name="data_perdido" id="data_perdido" class="form-control" value="{{ old('data_perdido', $item->data_perdido ?? '') }}">
+        </div>
+        <div class="mb-3" id="campo_data_encontrado" style="display: {{ old('tipo', $item->tipo ?? '') == 'achado' ? 'block' : 'none' }};">
+            <label for="data_encontrado" class="form-label">Data em que o item foi encontrado</label>
+            <input type="date" name="data_encontrado" id="data_encontrado" class="form-control" value="{{ old('data_encontrado', $item->data_encontrado ?? '') }}">
+        </div>
+
+        <!-- Descrição -->
+        <div class="mb-3">
+            <label for="descricao" class="form-label">Descrição</label>
+            <textarea name="descricao" id="descricao" class="form-control" rows="4" placeholder="Descreva o item (cor, características, etc.)" required>{{ old('descricao', $item->descricao ?? '') }}</textarea>
+        </div>
+
+        <!-- Foto -->
+        <div class="mb-3">
+            <label for="foto" class="form-label">Foto</label>
+        
+            <!-- Exibir a foto atual, se existir -->
+            @if (isset($item) && $item->foto)
+                <div class="mb-3">
+                    <img src="{{ asset('storage/' . $item->foto) }}" alt="Foto do item" style="max-width: 200px; height: auto;">
+                    <p class="text-muted">Foto atual</p>
+                </div>
             @endif
+        
+            <!-- Campo para upload de nova foto -->
+            <input type="file" name="foto" id="foto" class="form-control">
+            <small class="text-muted">Deixe em branco para manter a foto atual.</small>
+        </div>
 
-            <!-- Categoria -->
+        <!-- Localização -->
+        <div class="mb-3 border p-3 rounded">
+            <h4 class="mb-3">Informe o Local onde o item foi perdido ou achado</h4>
+
+            <!-- Campo de endereço com autocomplete do Google Maps -->
             <div class="mb-3">
-                <label for="categoria" class="form-label">Categoria</label>
-                <select name="categoria" id="categoria" class="form-select" required>
-                    <option value="" disabled>Selecione uma categoria</option>
-                    <option value="Documentos" {{ old('categoria', $item->categoria ?? '') == 'Documentos' ? 'selected' : '' }}>Documentos</option>
-                    <option value="Eletrônicos" {{ old('categoria', $item->categoria ?? '') == 'Eletrônicos' ? 'selected' : '' }}>Eletrônicos</option>
-                    <option value="Acessórios" {{ old('categoria', $item->categoria ?? '') == 'Acessórios' ? 'selected' : '' }}>Acessórios</option>
-                    <option value="Roupas" {{ old('categoria', $item->categoria ?? '') == 'Roupas' ? 'selected' : '' }}>Roupas</option>
-                    <option value="Outros" {{ old('categoria', $item->categoria ?? '') == 'Outros' ? 'selected' : '' }}>Outros</option>
-                </select>
-            </div>
-            <div class="mb-3" id="categoriaOutros" style="display: {{ old('categoria', $item->categoria ?? '') == 'Outros' ? 'block' : 'none' }};">
-                <label for="categoriaOutrosInput" class="form-label">Digite a categoria</label>
-                <input type="text" class="form-control" id="categoriaOutrosInput" name="categoriaOutros" placeholder="Digite a categoria" value="{{ old('categoriaOutros', $item->categoria ?? '') }}">
+                <input type="text" id="endereco" class="form-control" placeholder="Digite o endereço" value="{{ old('endereco', $item->localizacao->endereco ?? '') }}">
+                <input type="hidden" name="endereco" id="endereco_input" value="{{ old('endereco', $item->localizacao->endereco ?? '') }}">
             </div>
 
-            <!-- Tipo -->
+            <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude', $item->localizacao->latitude ?? '') }}">
+            <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude', $item->localizacao->longitude ?? '') }}">
+
+            <!-- Campo para nome do local -->
             <div class="mb-3">
-                <label class="form-label">Tipo</label>
-                <div>
-                    <div class="form-check form-check-inline">
-                        <input type="radio" id="tipoAchado" name="tipo" value="achado" class="form-check-input" required {{ old('tipo', $item->tipo ?? '') == 'achado' ? 'checked' : '' }}>
-                        <label for="tipoAchado" class="form-check-label">Achado</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input type="radio" id="tipoPerdido" name="tipo" value="perdido" class="form-check-input" required {{ old('tipo', $item->tipo ?? '') == 'perdido' ? 'checked' : '' }}>
-                        <label for="tipoPerdido" class="form-check-label">Perdido</label>
-                    </div>
-                </div>
+                <label for="nome_local" class="form-label">Nome do Local</label>
+                <input type="text" name="nome_local" id="nome_local" class="form-control" placeholder="Ex: Shopping Campo Grande" required value="{{ old('nome_local', $item->localizacao->nome_local ?? '') }}">
             </div>
 
-            <!-- Descrição -->
+            <!-- Campo para referência -->
             <div class="mb-3">
-                <label for="descricao" class="form-label">Descrição</label>
-                <textarea name="descricao" id="descricao" class="form-control" rows="4" placeholder="Descreva o item (cor, características, etc.)" required>{{ old('descricao', $item->descricao ?? '') }}</textarea>
+                <label for="referencia" class="form-label">Referêncial</label>
+                <input type="text" name="referencia" id="referencia" class="form-control" placeholder="Ex: Próximo ao Banco do Brasil" required value="{{ old('referencia', $item->localizacao->referencia ?? '') }}">
             </div>
+        </div>
 
-            <!-- Foto -->
-            <div class="mb-3">
-                <label for="foto" class="form-label">Foto</label>
-                <input type="file" name="foto" id="foto" class="form-control">
-                @if (isset($item) && $item->foto)
-                    <div class="mt-2">
-                        <img src="{{ asset('storage/' . $item->foto) }}" alt="Foto do Item" class="img-fluid" style="max-width: 200px;">
-                    </div>
-                @endif
-            </div>
+        <!-- Botão de envio -->
+        <button type="submit" class="btn btn-primary">
+            {{ isset($item) ? 'Atualizar Item' : 'Registrar Item' }}
+        </button>
+    </form>
+</div>
 
-            <!-- Formulário de Endereço -->
-            <div class="mb-3 border p-3 rounded">
-                <h4 class="mb-3">Informe o Local onde perdido ou achado o Item</h4>
 
-                <!-- Campo de busca de endereço -->
-                <div class="mb-3">
-                    <label for="endereco" class="form-label">Buscar Endereço</label>
-                    <input type="text" id="endereco" class="form-control" placeholder="Digite o endereço">
-                    <div id="sugestoes" class="list-group mt-2" style="display: none;"></div> <!-- Lista de sugestões -->
-                </div>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-                <!-- Mapa para visualização -->
-                <div id="map" style="height: 300px; width: 100%;" class="mb-3"></div>
-
-                <!-- Rua -->
-                <div class="mb-3">
-                    <label for="rua" class="form-label">Rua</label>
-                    <input type="text" name="rua" id="rua" class="form-control" placeholder="Digite a rua" value="{{ old('rua', $item->endereco->rua ?? '') }}" required>
-                </div>
-
-                <!-- Número -->
-                <div class="mb-3">
-                    <label for="numero" class="form-label">Número</label>
-                    <input type="text" name="numero" id="numero" class="form-control" placeholder="Digite o número" value="{{ old('numero', $item->endereco->numero ?? '') }}">
-                </div>
-
-                <!-- Bairro -->
-                <div class="mb-3">
-                    <label for="bairro" class="form-label">Bairro</label>
-                    <input type="text" name="bairro" id="bairro" class="form-control" placeholder="Digite o bairro" value="{{ old('bairro', $item->endereco->bairro ?? '') }}" required>
-                </div>
-
-                <!-- Referência -->
-                <div class="mb-3">
-                    <label for="referencia" class="form-label">Referência (opcional)</label>
-                    <textarea name="referencia" id="referencia" class="form-control" rows="2" placeholder="Ponto de referência">{{ old('referencia', $item->endereco->referencia ?? '') }}</textarea>
-                </div>
-
-                <!-- Mensagem de erro de endereço -->
-                <div id="enderecoError" class="alert alert-danger mt-3" style="display: none;">Endereço inválido ou fora de Campo Grande, MS.</div>
-            </div>
-
-            <!-- Botão de envio -->
-            <button type="submit" class="btn btn-primary">
-                {{ isset($item) ? 'Atualizar Item' : 'Registrar Item' }}
-            </button>
-        </form>
-    </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Leaflet JS (para o mapa) -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <script>
-        // Token de acesso do LocationIQ
-        const token = 'pk.e9f555d4e9c8aa5e6015c55fa37a16f4';
-
-        // Coordenadas de Campo Grande (latitude, longitude)
-        const campoGrandeBounds = {
-            latMin: -20.551,
-            lonMin: -54.722,
-            latMax: -20.350,
-            lonMax: -54.480,
-        };
-
-        // Inicializa o mapa
-        const map = L.map('map').setView([-20.469, -54.622], 13); // Centro de Campo Grande
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-
-        // Função para buscar sugestões de endereços
-        document.getElementById('endereco').addEventListener('input', function (e) {
-            const query = e.target.value;
-
-            // Faz a requisição para a API de Autocomplete do LocationIQ
-            fetch(`https://api.locationiq.com/v1/autocomplete?key=${token}&q=${query}&limit=5&countrycodes=br&bounded=1&viewbox=${campoGrandeBounds.lonMin},${campoGrandeBounds.latMin},${campoGrandeBounds.lonMax},${campoGrandeBounds.latMax}`)
-                .then(response => response.json())
-                .then(data => {
-                    const sugestoes = document.getElementById('sugestoes');
-                    sugestoes.innerHTML = ''; // Limpa as sugestões anteriores
-
-                    if (data.length > 0) {
-                        data.forEach(result => {
-                            const item = document.createElement('div');
-                            item.className = 'list-group-item list-group-item-action';
-                            item.textContent = result.display_name;
-                            item.addEventListener('click', () => {
-                                // Preenche os campos de endereço
-                                document.getElementById('endereco').value = result.display_name;
-                                document.getElementById('rua').value = result.address.road || '';
-                                document.getElementById('numero').value = result.address.house_number || '';
-                                document.getElementById('bairro').value = result.address.suburb || result.address.neighbourhood || '';
-
-                                // Centraliza o mapa no local selecionado
-                                map.setView([result.lat, result.lon], 15);
-
-                                // Adiciona um marcador no local
-                                L.marker([result.lat, result.lon]).addTo(map)
-                                    .bindPopup('Local selecionado')
-                                    .openPopup();
-
-                                // Esconde as sugestões
-                                sugestoes.style.display = 'none';
-                            });
-                            sugestoes.appendChild(item);
-                        });
-
-                        // Exibe as sugestões
-                        sugestoes.style.display = 'block';
-                    } else {
-                        sugestoes.style.display = 'none';
-                    }
-                })
-                .catch(error => console.error('Erro ao buscar sugestões:', error));
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places"></script>
+<!-- Script para o autocompletar de endereços do Google Maps -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicializa o autocomplete do Google Maps
+        const enderecoInput = document.getElementById('endereco');
+        const autocomplete = new google.maps.places.Autocomplete(enderecoInput, {
+            types: ['geocode'], // Restringe a busca a endereços
         });
 
-        // Função para validar o endereço manualmente
-        function validarEndereco() {
-            const rua = document.getElementById('rua').value;
-            const numero = document.getElementById('numero').value;
-            const bairro = document.getElementById('bairro').value;
 
-            if (!rua || !bairro) {
-                document.getElementById('enderecoError').style.display = 'block';
-                return false;
-            }
+        // Evento de seleção de um endereço
+        autocomplete.addListener('place_changed', function() {
+            const place = autocomplete.getPlace();
+            if (place.geometry) {
+                // Preenche os campos de latitude e longitude
+                document.getElementById('latitude').value = place.geometry.location.lat();
+                document.getElementById('longitude').value = place.geometry.location.lng();
 
-            // Faz a requisição para a API de Geocodificação do LocationIQ
-            fetch(`https://api.locationiq.com/v1/search.php?key=${token}&q=${rua}+${numero}+${bairro}+Campo+Grande+MS&format=json`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.length > 0) {
-                        // Verifica se o endereço está dentro dos limites de Campo Grande
-                        const lat = parseFloat(data[0].lat);
-                        const lon = parseFloat(data[0].lon);
-                        if (
-                            lat >= campoGrandeBounds.latMin &&
-                            lat <= campoGrandeBounds.latMax &&
-                            lon >= campoGrandeBounds.lonMin &&
-                            lon <= campoGrandeBounds.lonMax
-                        ) {
-                            document.getElementById('enderecoError').style.display = 'none';
-                            // Centraliza o mapa no local selecionado
-                            map.setView([lat, lon], 15);
 
-                            // Adiciona um marcador no local
-                            L.marker([lat, lon]).addTo(map)
-                                .bindPopup('Local selecionado')
-                                .openPopup();
-                        } else {
-                            document.getElementById('enderecoError').style.display = 'block';
-                        }
-                    } else {
-                        document.getElementById('enderecoError').style.display = 'block';
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao validar endereço:', error);
+                // Preenche o campo de endereço visível e oculto
+                document.getElementById('endereco').value = place.formatted_address || '';
+                document.getElementById('endereco_input').value = place.formatted_address || '';
+
+                // Verifica se o endereço está em Campo Grande, MS
+                const cidade = place.address_components.find(component => component.types.includes('locality'))?.long_name || '';
+                const estado = place.address_components.find(component => component.types.includes('administrative_area_level_1'))?.short_name || '';
+
+                if (cidade === 'Campo Grande' && estado === 'MS') {
+                    document.getElementById('enderecoError').style.display = 'none';
+                } else {
                     document.getElementById('enderecoError').style.display = 'block';
-                });
-        }
+                }
 
-        // Valida o endereço quando o usuário sai dos campos de endereço
-        document.getElementById('rua').addEventListener('blur', validarEndereco);
-        document.getElementById('numero').addEventListener('blur', validarEndereco);
-        document.getElementById('bairro').addEventListener('blur', validarEndereco);
-
-        // Função para exibir o campo de texto se "Outros" for selecionado
-        document.getElementById('categoria').addEventListener('change', function () {
-            var categoria = this.value;
-            var categoriaOutrosInput = document.getElementById('categoriaOutros');
-            
-            if (categoria === 'Outros') {
-                categoriaOutrosInput.style.display = 'block';
-            } else {
-                categoriaOutrosInput.style.display = 'none';
             }
         });
 
-        // Exibe o campo "Outros" se já estiver selecionado ao carregar a página
-        document.addEventListener('DOMContentLoaded', function () {
-            var categoria = document.getElementById('categoria').value;
-            var categoriaOutrosInput = document.getElementById('categoriaOutros');
-            
-            if (categoria === 'Outros') {
-                categoriaOutrosInput.style.display = 'block';
+        // Evento de mudança no campo de endereço
+        enderecoInput.addEventListener('change', function() {
+            if (!enderecoInput.value) {
+                // Limpa os campos se o endereço for apagado
+                document.getElementById('latitude').value = '';
+                document.getElementById('longitude').value = '';
+                document.getElementById('endereco_input').value = '';
             }
         });
-    </script>
+
+        // Lógica para mostrar/ocultar campos de data
+        const tipoAchado = document.getElementById('tipoAchado');
+        const tipoPerdido = document.getElementById('tipoPerdido');
+        const campoDataAchado = document.getElementById('campo_data_encontrado');
+        const campoDataPerdido = document.getElementById('campo_data_perdido');
+
+        tipoAchado.addEventListener('change', function() {
+            campoDataAchado.style.display = 'block';
+            campoDataPerdido.style.display = 'none';
+        });
+
+        tipoPerdido.addEventListener('change', function() {
+            campoDataPerdido.style.display = 'block';
+            campoDataAchado.style.display = 'none';
+        });
+    });
+</script>
 @endsection
