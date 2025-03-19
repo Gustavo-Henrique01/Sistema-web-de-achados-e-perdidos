@@ -1,50 +1,117 @@
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu App</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ route('usuario.home') }}">Meu App</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('usuario.home') }}">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{route('usuario.cadastrar-item')}}">Registrar Item</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{route('listar-todos-itens')}}"> itens </a>  
-                       
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{route('perfil-usuario')}}"> perfil usuario </a>  
-                       
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{route('mapa')}}"> visualizar mapa </a>  
-                       
-                    </li>
-                    <li>    <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">🚪 Sair</a>
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                            @csrf
-                        </form></li>
-                </ul>
+@extends('layouts.app')
+
+@section('title', 'Página Inicial')
+
+@section('content')
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h3 class="mb-2">Bem-vindo, {{ auth()->user()->name }}!</h3>
+                        <p class="text-muted mb-0">O que você gostaria de fazer hoje?</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <img src="{{ asset('storage/'.auth()->user()->foto) }}" alt="Foto de perfil" 
+                             class="rounded-circle border shadow-sm" width="60" height="60"
+                             onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=3498db&color=fff&size=60'">
+                    </div>
+                </div>
             </div>
         </div>
-    </nav>
+    </div>
+</div>
 
-    <div class="container mt-4">
-        @yield('content')
+<div class="row">
+    <!-- Card de Cadastrar Item -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-plus-circle fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">Cadastrar Item</h5>
+                <p class="card-text text-muted">Registre um novo item perdido ou encontrado.</p>
+            </div>
+            <div class="card-footer bg-transparent border-0 text-center pb-4">
+                <a href="{{ route('usuario.cadastrar-item') }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Novo Item
+                </a>
+            </div>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    <!-- Card de Meus Itens -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-clipboard-list fa-3x text-success"></i>
+                </div>
+                <h5 class="card-title">Meus Itens</h5>
+                <p class="card-text text-muted">Visualize e gerencie seus itens cadastrados.</p>
+            </div>
+            <div class="card-footer bg-transparent border-0 text-center pb-4">
+                <a href="{{ route('perfil-usuario') }}" class="btn btn-success">
+                    <i class="fas fa-eye me-2"></i>Ver Itens
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card de Explorar Mapa -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-map-marked-alt fa-3x text-warning"></i>
+                </div>
+                <h5 class="card-title">Mapa Interativo</h5>
+                <p class="card-text text-muted">Visualize os itens no mapa da cidade.</p>
+            </div>
+            <div class="card-footer bg-transparent border-0 text-center pb-4">
+                <a href="{{ route('mapa') }}" class="btn btn-warning text-white">
+                    <i class="fas fa-map-marker-alt me-2"></i>Ver Mapa
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card de Todos os Itens -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-search fa-3x text-info"></i>
+                </div>
+                <h5 class="card-title">Pesquisar Itens</h5>
+                <p class="card-text text-muted">Veja todos os itens cadastrados e encontre o seu.</p>
+            </div>
+            <div class="card-footer bg-transparent border-0 text-center pb-4">
+                <a href="{{ route('listar-todos-itens') }}" class="btn btn-info text-white">
+                    <i class="fas fa-search me-2"></i>Ver Todos
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card de Perfil -->
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="mb-3">
+                    <i class="fas fa-user-circle fa-3x text-secondary"></i>
+                </div>
+                <h5 class="card-title">Meu Perfil</h5>
+                <p class="card-text text-muted">Visualize e edite suas informações pessoais.</p>
+            </div>
+            <div class="card-footer bg-transparent border-0 text-center pb-4">
+                <a href="{{ route('perfil-usuario') }}" class="btn btn-secondary">
+                    <i class="fas fa-user me-2"></i>Ver Perfil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
