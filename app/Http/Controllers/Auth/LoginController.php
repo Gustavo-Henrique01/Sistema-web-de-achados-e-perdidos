@@ -23,6 +23,14 @@ class LoginController extends Controller
             if ($user->role === UserRole::ADMIN) {
 
                 return redirect()->route('admin.principal');
+            }elseif ($user->role === UserRole::USER) {
+                return redirect()->route('usuario.home');
+            } elseif ($user->role === UserRole::PARCEIRO) {
+                return redirect()->route('');
+
+            }
+            else{
+                return redirect()->route('form.login');
             }
 
            return redirect()->route('usuario.home'); 

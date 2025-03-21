@@ -9,13 +9,16 @@ use App\Models\Usuario;
 use App\Http\Controllers\AdministradorController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MapController;
+use App\Http\Controllers\IndexController;
+use App\Http\Controllers\ParceiroController;
 
 
-Route::get('/', [LoginController::class, 'showLoginForm'])->name('form.login');
-Route::post('/save', [LoginController::class, 'login'])->name('login');;
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('form.login');
+Route::post('/', [LoginController::class, 'login'])->name('login');;
 
  Route::post('/logout', [LoginController::class, 'sair'])->name('logout');
 
+ Route::get('/', [IndexController::class, 'paginaInicial'])->name('paginaInicial');
     
 
 
@@ -79,8 +82,31 @@ Route::get('/editar-categoria/{id}', [AdministradorController::class, 'editarCat
 Route::put('/atualizar-categoria/{id}', [AdministradorController::class, 'atualizarCategoria'])->name('atualizar-categoria');
 Route::delete('/deletar-categoria/{id}', [AdministradorController::class, 'excluirCategoria'])->name('categorias.destroy');
 
-
+// Rotas para gestão de parceiros
+Route::get('/parceiros', [ParceiroController::class, 'index'])->name('admin.parceiros.index');
+Route::get('/parceiros/create', [ParceiroController::class, 'create'])->name('admin.parceiros.create');
+Route::post('/parceiros', [ParceiroController::class, 'store'])->name('admin.parceiros.store');
+Route::get('/parceiros/{parceiro}', [ParceiroController::class, 'show'])->name('admin.parceiros.show');
+Route::get('/parceiros/{parceiro}/edit', [ParceiroController::class, 'edit'])->name('admin.parceiros.edit');
+Route::put('/parceiros/{parceiro}', [ParceiroController::class, 'update'])->name('admin.parceiros.update');
+Route::delete('/parceiros/{parceiro}', [ParceiroController::class, 'destroy'])->name('admin.parceiros.destroy');
+Route::get('/parceiros/{parceiro}/itens', [ParceiroController::class, 'listarItens'])->name('admin.parceiros.itens');
 });
+
+// Rotas para parceiros
+Route::prefix('parceiro')->middleware(['auth', 'parceiro'])->group(function () {
+    Route::get('/home', [ParceiroController::class, 'home'])->name('parceiro.home');
+    Route::get('/itens', function() {
+        $parceiro = auth()->user()->parceiro;
+        return app()->call([ParceiroController::class, 'listarItens'], ['parceiro' => $parceiro]);
+    })->name('parceiro.itens');
+    Route::get('/vincular-item', [ParceiroController::class, 'vincularItemForm'])->name('parceiro.vincular-item.form');
+    Route::post('/vincular-item', [ParceiroController::class, 'vincularItem'])->name('parceiro.vincular-item');
+    Route::post('/desvincular-item/{item}', [ParceiroController::class, 'desvincularItem'])->name('parceiro.desvincular-item');
+});
+
+// Rota para visualizar todos os parceiros no mapa (pública)
+Route::get('/parceiros/mapa', [ParceiroController::class, 'mapa'])->name('parceiros.mapa');
 
 
 

@@ -21,7 +21,8 @@ class Item extends Model
         'id_localizacao',
         'aprovado',
         'tipo',
-        'aprovado_em'
+        'aprovado_em',
+        'parceiro_id'
     ];
 
 
@@ -41,6 +42,13 @@ class Item extends Model
     {
         return $this->belongsTo(Localizacao::class, 'id_localizacao');
     }
+
+    // Relacionamento com a tabela parceiros
+    public function parceiro()
+    {
+        return $this->belongsTo(Parceiro::class, 'parceiro_id');
+    }
+
     // Campos que devem ser ocultados nas respostas JSON
     protected $hidden = [
         // Se necessário, adicione campos sensíveis aqui

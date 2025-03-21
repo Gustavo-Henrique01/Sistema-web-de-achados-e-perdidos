@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('senha');
             $table->string('foto')->nullable();
             $table->string('cpf', 11)->unique();
-            $table->enum('role', ['usuario', 'administrador']); // Define os papéis
+            $table->enum('role', ['usuario', 'administrador','parceiro']); // Define os papéis
             $table->timestamps();
         });
         

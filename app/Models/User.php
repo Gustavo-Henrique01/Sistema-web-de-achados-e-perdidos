@@ -11,6 +11,7 @@ enum UserRole: string
 {
     case ADMIN = 'administrador';
     case USER = 'usuario';
+    case PARCEIRO = 'parceiro';
 }
 
 class User extends Authenticatable
@@ -45,14 +46,28 @@ class User extends Authenticatable
         return $this->hasMany(Item::class, 'user_id');
     }
 
+    public function parceiro()
+    {
+        return $this->hasOne(Parceiro::class, 'user_id');
+    }
+
     public function isAdmin()
     {
         return $this->role === UserRole::ADMIN;
     }
     
-
     public function isUser(): bool
     {
         return $this->role === UserRole::USER;
+    }
+
+    public function isParceiro(): bool
+    {
+        return $this->role === UserRole::PARCEIRO;
+    }
+
+    public function hasParceiro(): bool
+    {
+        return $this->parceiro()->exists();
     }
 }
