@@ -32,6 +32,25 @@
       backdrop-filter: blur(10px);
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       transition: all 0.3s ease;
+      padding: 1rem 0;
+    }
+
+    @media (max-width: 991.98px) {
+      .navbar {
+        padding: 0.5rem 0;
+      }
+      
+      .navbar-collapse {
+        background: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-top: 0.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      
+      .nav-link {
+        padding: 0.5rem 1rem;
+      }
     }
 
     .navbar.scrolled {
@@ -41,6 +60,13 @@
     .navbar-brand {
       font-weight: 600;
       color: var(--primary-color) !important;
+      font-size: 1.5rem;
+    }
+
+    @media (max-width: 767.98px) {
+      .navbar-brand {
+        font-size: 1.25rem;
+      }
     }
 
     .nav-link {
@@ -48,6 +74,7 @@
       font-weight: 500;
       position: relative;
       transition: all 0.3s ease;
+      padding: 0.5rem 1rem;
     }
 
     .nav-link::after {
@@ -77,6 +104,18 @@
       position: relative;
       overflow: hidden;
     }
+
+    @media (max-width: 991.98px) {
+      .hero-section {
+        padding: 6rem 0 3rem;
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      .hero-section {
+        padding: 5rem 0 2rem;
+      }
+    }
     
     .hero-section::before {
       content: '';
@@ -96,6 +135,12 @@
       border-radius: 1rem;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     }
+
+    @media (max-width: 767.98px) {
+      .search-box {
+        padding: 1.5rem;
+      }
+    }
     
     .feature-card {
       border-radius: 1rem;
@@ -105,6 +150,13 @@
       background: white;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
       overflow: hidden;
+      padding: 2rem;
+    }
+
+    @media (max-width: 767.98px) {
+      .feature-card {
+        padding: 1.5rem;
+      }
     }
     
     .feature-card:hover {
@@ -123,6 +175,14 @@
       justify-content: center;
       margin: 0 auto 1.5rem;
       font-size: 1.75rem;
+    }
+
+    @media (max-width: 767.98px) {
+      .feature-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+      }
     }
     
     .btn-primary {
@@ -150,6 +210,12 @@
       height: 100%;
       transition: all 0.3s ease;
     }
+
+    @media (max-width: 767.98px) {
+      .stats-box {
+        padding: 2rem;
+      }
+    }
     
     .stats-box:hover {
       transform: translateY(-5px);
@@ -166,11 +232,24 @@
       justify-content: center;
       margin: 0 auto;
     }
+
+    @media (max-width: 767.98px) {
+      .icon-circle {
+        width: 70px;
+        height: 70px;
+      }
+    }
     
     .stats-number {
       font-size: 3rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
+    }
+
+    @media (max-width: 767.98px) {
+      .stats-number {
+        font-size: 2.5rem;
+      }
     }
     
     .stats-label {
@@ -179,100 +258,156 @@
       letter-spacing: 1px;
       opacity: 0.9;
     }
-    
-    .how-works-section {
-      background-color: var(--secondary-color);
-      position: relative;
+
+    @media (max-width: 767.98px) {
+      .stats-label {
+        font-size: 1rem;
+      }
     }
 
-    .how-works-section::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
+    .city-card {
+      position: relative;
+      border-radius: 1rem;
+      overflow: hidden;
+      height: 250px;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 767.98px) {
+      .city-card {
+        height: 200px;
+      }
+    }
+
+    .city-card img {
       width: 100%;
       height: 100%;
-      background: linear-gradient(45deg, #f1f5f9 25%, transparent 25%) -40px 0,
-                  linear-gradient(-45deg, #f1f5f9 25%, transparent 25%) -40px 0;
-      background-size: 80px 80px;
-      opacity: 0.5;
+      object-fit: cover;
+      transition: transform 0.3s ease;
     }
-    
-    .step-card {
-      background: white;
-      border-radius: 1rem;
-      padding: 2rem;
-      margin-bottom: 1.5rem;
-      position: relative;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+
+    .city-card:hover img {
+      transform: scale(1.05);
     }
-    
-    .step-number {
+
+    .city-card-overlay {
       position: absolute;
-      left: -15px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 3rem;
-      height: 3rem;
-      background: var(--primary-color);
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 1.5rem;
+      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
       color: white;
+    }
+
+    @media (max-width: 767.98px) {
+      .city-card-overlay {
+        padding: 1rem;
+      }
+    }
+
+    .city-card-overlay h5 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    @media (max-width: 767.98px) {
+      .city-card-overlay h5 {
+        font-size: 1.1rem;
+      }
+    }
+
+    .city-card-overlay p {
+      margin: 0.25rem 0 0;
+      opacity: 0.9;
+    }
+
+    .section-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    @media (max-width: 767.98px) {
+      .section-title {
+        font-size: 2rem;
+      }
+    }
+
+    .section-subtitle {
+      font-size: 1.25rem;
+      color: #64748b;
+      margin-bottom: 3rem;
+    }
+
+    @media (max-width: 767.98px) {
+      .section-subtitle {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+      }
+    }
+
+    .badge {
+      padding: 0.5rem 1rem;
+      font-weight: 500;
+      border-radius: 2rem;
+      margin: 0.25rem;
+      transition: all 0.3s ease;
+    }
+
+    @media (max-width: 767.98px) {
+      .badge {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    .hero-image {
+      height: 400px;
+      object-fit: cover;
+      border-radius: 1rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 991.98px) {
+      .hero-image {
+        height: 350px;
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      .hero-image {
+        height: 300px;
+      }
+    }
+
+    .timeline-marker {
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
       font-size: 1.25rem;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .city-card {
-      position: relative;
-      overflow: hidden;
-      border-radius: 1rem;
-      margin-bottom: 1.5rem;
-      height: 250px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    
-    .city-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.5s ease;
-    }
-    
-    .city-card:hover img {
-      transform: scale(1.1);
-    }
-    
-    .city-card-overlay {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-      color: white;
-      padding: 2rem 1.5rem 1.5rem;
+      flex-shrink: 0;
     }
 
-    .partner-section {
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    .timeline-item {
+      position: relative;
     }
-    
-    .partner-card {
-      background: white;
-      border-radius: 1rem;
-      padding: 2rem;
-      height: 100%;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+
+    .timeline-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 20px;
+      top: 40px;
+      bottom: -20px;
+      width: 2px;
+      background-color: var(--primary-color);
+      opacity: 0.2;
     }
-    
-    .partner-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
-    }
-    
+
     .partner-icon {
       width: 80px;
       height: 80px;
@@ -282,67 +417,40 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 1.5rem;
       font-size: 2rem;
     }
 
-    .footer {
-      background: #1e293b;
-      color: #cbd5e1;
-      padding: 4rem 0 2rem;
+    .benefit-icon {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
     }
 
-    .footer h5 {
-      color: white;
-      margin-bottom: 1.5rem;
-    }
-
-    .footer-link {
-      color: #cbd5e1;
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-
-    .footer-link:hover {
-      color: white;
-    }
-
-    .search-form {
-      position: relative;
-    }
-
-    .search-input {
-      padding: 1rem 1.5rem;
-      border-radius: 0.75rem;
-      border: 2px solid #e2e8f0;
-      width: 100%;
-      font-size: 1.1rem;
-    }
-
-    .search-button {
-      position: absolute;
-      right: 0.5rem;
-      top: 50%;
-      transform: translateY(-50%);
-      background: var(--primary-color);
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.5rem;
-      font-weight: 500;
-    }
-
-    @media (max-width: 768px) {
-      .hero-section {
-        padding: 4rem 0;
+    @media (max-width: 767.98px) {
+      .timeline-marker {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
       }
-      
-      .stats-box {
-        margin-bottom: 1rem;
+
+      .timeline-item:not(:last-child)::after {
+        left: 16px;
       }
-      
-      .step-card {
-        padding: 1.5rem;
+
+      .partner-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+      }
+
+      .benefit-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
       }
     }
   </style>
@@ -386,7 +494,7 @@
   <!-- Hero Section -->
   <section class="hero-section">
     <div class="container">
-      <div class="row align-items-center">
+      <div class="row align-items-center mt-auto">
         <div class="col-lg-7 mb-5 mb-lg-0">
           <h1 class="display-4 fw-bold mb-4">Encontre ou Devolva Itens Perdidos em Campo Grande</h1>
           <p class="lead mb-4">Conectamos pessoas que perderam seus pertences com aquelas que os encontraram. Uma iniciativa para tornar Campo Grande uma cidade mais solidária.</p>
@@ -403,14 +511,14 @@
             <span class="badge bg-light text-primary me-2 mb-2 p-2">Documentos</span>
             <span class="badge bg-light text-primary me-2 mb-2 p-2">Carteiras</span>
             <span class="badge bg-light text-primary me-2 mb-2 p-2">Chaves</span>
-            <span class="text-light ms-2 mb-2">Categorias populares</span>
+            <span class="text-light ms-2 mb-2">Categorias populares de itens</span>
           </div>
         </div>
         <div class="col-lg-5 d-none d-lg-block">
-          <img src="https://www.campogrande.ms.gov.br/wp-content/uploads/2022/05/0F0A2139-2-scaled.jpg" 
+          <img src="{{ Storage::url('img-page\araras.webp') }}" 
                alt="Campo Grande" 
-               class="img-fluid rounded-3 shadow-lg" 
-               style="object-fit: cover; height: 400px; width: 100%; filter: brightness(1.1) contrast(1.1);">
+               class="img-fluid rounded-2" 
+               style="object-fit: cover; height: 400px; width: 100%;">
         </div>
       </div>
     </div>
@@ -504,76 +612,108 @@
   </section>
 
   <!-- How it Works Section -->
-  <section class="how-works-section py-5" id="como-funciona">
-    <div class="container position-relative">
+  <section class="py-5 bg-light" id="como-funciona">
+    <div class="container">
       <div class="text-center mb-5">
-        <h2 class="display-5 fw-bold">Como Funciona</h2>
-        <p class="lead text-muted">Um processo simples e seguro para recuperar seus pertences</p>
+        <h2 class="section-title">Como Funciona</h2>
+        <p class="section-subtitle">Um processo simples e seguro para recuperar seus pertences</p>
       </div>
       
       <div class="row g-4">
         <div class="col-lg-6">
-          <div class="p-4 rounded-3 bg-white shadow-sm mb-4">
-            <h3 class="fw-bold mb-4">
-              <i class="fas fa-search text-primary me-2"></i>
-              Perdeu algo?
-            </h3>
-          
-            <div class="step-card">
-            <div class="step-number">1</div>
-              <h5>Faça seu cadastro</h5>
-              <p class="mb-0">Crie uma conta gratuita para acessar todas as funcionalidades.</p>
-          </div>
-          
-            <div class="step-card">
-            <div class="step-number">2</div>
-              <h5>Registre o item perdido</h5>
-              <p class="mb-0">Descreva o objeto, local e data aproximada da perda.</p>
-          </div>
-          
-            <div class="step-card">
-            <div class="step-number">3</div>
-              <h5>Receba notificações</h5>
-              <p class="mb-0">Seja alertado quando itens similares forem encontrados.</p>
-          </div>
-          
-          <div class="text-center mt-4">
-            <a href="{{ route('form.login') }}" class="btn btn-primary btn-lg">
-              <i class="fas fa-search me-2"></i>Reportar Item Perdido
-            </a>
+          <div class="card border-0 shadow-sm h-100 p-4">
+            <div class="card-body">
+              <h3 class="fw-bold mb-4 d-flex align-items-center">
+                <i class="fas fa-search text-primary me-3"></i>
+                Perdeu algo?
+              </h3>
+              
+              <div class="timeline">
+                <div class="timeline-item mb-4">
+                  <div class="d-flex">
+                    <div class="timeline-marker bg-primary text-white">1</div>
+                    <div class="ms-4">
+                      <h5 class="fw-bold">Faça seu cadastro</h5>
+                      <p class="mb-0 text-muted">Crie uma conta gratuita para acessar todas as funcionalidades.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="timeline-item mb-4">
+                  <div class="d-flex">
+                    <div class="timeline-marker bg-primary text-white">2</div>
+                    <div class="ms-4">
+                      <h5 class="fw-bold">Registre o item perdido</h5>
+                      <p class="mb-0 text-muted">Descreva o objeto, local e data aproximada da perda.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="timeline-item">
+                  <div class="d-flex">
+                    <div class="timeline-marker bg-primary text-white">3</div>
+                    <div class="ms-4">
+                      <h5 class="fw-bold">Receba notificações</h5>
+                      <p class="mb-0 text-muted">Seja alertado quando itens similares forem encontrados.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="text-center mt-4">
+                <a href="{{ route('form.login') }}" class="btn btn-primary btn-lg">
+                  <i class="fas fa-search me-2"></i>Reportar Item Perdido
+                </a>
+              </div>
             </div>
           </div>
         </div>
         
         <div class="col-lg-6">
-          <div class="p-4 rounded-3 bg-white shadow-sm mb-4">
-            <h3 class="fw-bold mb-4">
-              <i class="fas fa-hand-holding-heart text-primary me-2"></i>
-              Encontrou algo?
-            </h3>
-          
-            <div class="step-card">
-            <div class="step-number">1</div>
-              <h5>Cadastre-se</h5>
-              <p class="mb-0">Crie sua conta para registrar o item encontrado.</p>
-          </div>
-          
-            <div class="step-card">
-            <div class="step-number">2</div>
-              <h5>Descreva o item</h5>
-              <p class="mb-0">Adicione fotos e informações detalhadas do objeto.</p>
-          </div>
-          
-            <div class="step-card">
-            <div class="step-number">3</div>
-              <h5>Entregue com segurança</h5>
-              <p class="mb-0">Use nossos pontos parceiros para uma devolução segura.</p>
-          </div>
-          
-          <div class="text-center mt-4">
-            <a href="{{ route('form.login') }}" class="btn btn-primary btn-lg">
-              <i class="fas fa-hand-holding-heart me-2"></i>Registrar Item Encontrado
-            </a>
+          <div class="card border-0 shadow-sm h-100 p-4">
+            <div class="card-body">
+              <h3 class="fw-bold mb-4 d-flex align-items-center">
+                <i class="fas fa-hand-holding-heart text-primary me-3"></i>
+                Encontrou algo?
+              </h3>
+              
+              <div class="timeline">
+                <div class="timeline-item mb-4">
+                  <div class="d-flex">
+                    <div class="timeline-marker bg-primary text-white">1</div>
+                    <div class="ms-4">
+                      <h5 class="fw-bold">Cadastre-se</h5>
+                      <p class="mb-0 text-muted">Crie sua conta para registrar o item encontrado.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="timeline-item mb-4">
+                  <div class="d-flex">
+                    <div class="timeline-marker bg-primary text-white">2</div>
+                    <div class="ms-4">
+                      <h5 class="fw-bold">Descreva o item</h5>
+                      <p class="mb-0 text-muted">Adicione fotos e informações detalhadas do objeto.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="timeline-item">
+                  <div class="d-flex">
+                    <div class="timeline-marker bg-primary text-white">3</div>
+                    <div class="ms-4">
+                      <h5 class="fw-bold">Entregue com segurança</h5>
+                      <p class="mb-0 text-muted">Use nossos pontos parceiros para uma devolução segura.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="text-center mt-4">
+                <a href="{{ route('form.login') }}" class="btn btn-primary btn-lg">
+                  <i class="fas fa-hand-holding-heart me-2"></i>Registrar Item Encontrado
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -586,23 +726,23 @@
     <div class="container">
       <div class="text-center mb-5">
         <h2 class="display-5 fw-bold">Principais Locais</h2>
-        <p class="lead text-muted">Pontos com maior frequência de itens perdidos em Campo Grande</p>
+        <p class="lead text-muted">Pontos Parceiros  em Campo Grande</p>
       </div>
       
       <div class="row g-4">
         <div class="col-md-4">
           <div class="city-card">
-            <img src="https://www.campogrande.ms.gov.br/wp-content/uploads/2023/05/mercadao.jpg" alt="Mercadão Municipal">
+            <img src="{{ Storage::url('img-page\terminal-bandeirantes.jpeg') }}" alt="Mercadão Municipal">
             <div class="city-card-overlay">
-              <h5 class="fw-bold">Mercadão Municipal</h5>
-              <p class="small mb-0">Centro comercial histórico</p>
+              <h5 class="fw-bold">Terminal Bandeirantes</h5>
+              <p class="small mb-0">terminal de ônibus</p>
             </div>
             </div>
           </div>
           
         <div class="col-md-4">
           <div class="city-card">
-            <img src="https://www.campogrande.ms.gov.br/wp-content/uploads/2022/03/Shopping-Norte-Sul-Plaza.jpg" alt="Shopping Norte Sul Plaza">
+            <img src="{{ Storage::url('img-page\shopping-NORT-SUL-Plaza.jpeg') }}" alt="Shopping Norte Sul Plaza">
             <div class="city-card-overlay">
               <h5 class="fw-bold">Shopping Norte Sul Plaza</h5>
               <p class="small mb-0">Principal centro de compras</p>
@@ -612,7 +752,7 @@
           
         <div class="col-md-4">
           <div class="city-card">
-            <img src="https://www.campogrande.ms.gov.br/wp-content/uploads/2022/01/20191212_Cidade_Morena_dia_05_1100px-14.jpg" alt="UFMS">
+            <img src="{{ Storage::url('img-page\UFMS-750x410.jpg') }}" alt="UFMS">
             <div class="city-card-overlay">
               <h5 class="fw-bold">UFMS</h5>
               <p class="small mb-0">Campus universitário</p>
@@ -624,96 +764,96 @@
   </section>
 
   <!-- Partner Section -->
-  <section class="partner-section py-5" id="parceiros">
+  <section class="py-5" id="parceiros">
     <div class="container">
       <div class="text-center mb-5">
-        <h2 class="display-5 fw-bold">Seja um Parceiro</h2>
-        <p class="lead text-muted">Junte-se à nossa rede de pontos de coleta</p>
+        <h2 class="section-title">Seja um Parceiro</h2>
+        <p class="section-subtitle">Junte-se à nossa rede de pontos de coleta</p>
       </div>
       
-      <div class="row g-4">
+      <div class="row g-4 mb-5">
         <div class="col-lg-4">
-          <div class="partner-card text-center">
-            <div class="partner-icon">
-              <i class="fas fa-store"></i>
+          <div class="card partner-card border-0 shadow-sm h-100 text-center p-4">
+            <div class="card-body">
+              <div class="partner-icon mb-4 mx-auto">
+                <i class="fas fa-store"></i>
+              </div>
+              <h4 class="fw-bold mb-3">Estabelecimentos</h4>
+              <p class="text-muted mb-4">Torne seu estabelecimento um ponto oficial de coleta e devolução de itens perdidos.</p>
+              <a href="{{ route('form.login') }}" class="btn btn-outline-primary">
+                Cadastrar Estabelecimento
+              </a>
             </div>
-            <h4 class="fw-bold">Estabelecimentos</h4>
-            <p>Torne seu estabelecimento um ponto oficial de coleta e devolução.</p>
-            <a href="{{ route('form.login') }}" class="btn btn-outline-primary">
-              Cadastrar Estabelecimento
-            </a>
           </div>
         </div>
         
         <div class="col-lg-4">
-          <div class="partner-card text-center">
-            <div class="partner-icon">
-              <i class="fas fa-calendar-alt"></i>
+          <div class="card partner-card border-0 shadow-sm h-100 text-center p-4">
+            <div class="card-body">
+              <div class="partner-icon mb-4 mx-auto">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+              <h4 class="fw-bold mb-3">Eventos</h4>
+              <p class="text-muted mb-4">Integre o sistema de achados e perdidos ao seu evento e ofereça mais segurança.</p>
+              <a href="{{ route('form.login') }}" class="btn btn-outline-primary">
+                Cadastrar Evento
+              </a>
             </div>
-            <h4 class="fw-bold">Eventos</h4>
-            <p>Integre o sistema de achados e perdidos ao seu evento.</p>
-            <a href="{{ route('form.login') }}" class="btn btn-outline-primary">
-              Cadastrar Evento
-            </a>
           </div>
         </div>
         
         <div class="col-lg-4">
-          <div class="partner-card text-center">
-            <div class="partner-icon">
-              <i class="fas fa-university"></i>
+          <div class="card partner-card border-0 shadow-sm h-100 text-center p-4">
+            <div class="card-body">
+              <div class="partner-icon mb-4 mx-auto">
+                <i class="fas fa-university"></i>
+              </div>
+              <h4 class="fw-bold mb-3">Instituições</h4>
+              <p class="text-muted mb-4">Facilite a devolução de itens perdidos em sua instituição de forma organizada.</p>
+              <a href="{{ route('form.login') }}" class="btn btn-outline-primary">
+                Cadastrar Instituição
+              </a>
             </div>
-            <h4 class="fw-bold">Instituições</h4>
-            <p>Facilite a devolução de itens em sua instituição.</p>
-            <a href="{{ route('form.login') }}" class="btn btn-outline-primary">
-              Cadastrar Instituição
-            </a>
           </div>
         </div>
       </div>
 
-      <div class="row mt-5 align-items-center">
-        <div class="col-lg-6">
-          <img src="https://www.campogrande.ms.gov.br/wp-content/uploads/2022/05/14_de_Julho_Revitalizada_compressed.jpg" 
+      <div class="row align-items-center bg-light rounded-4 p-4 mt-5">
+        <div class="col-lg-6 mb-4 mb-lg-0">
+          <img src="{{ Storage::url('img-page/trem-monumento-cg.webp') }}" 
                alt="14 de Julho" 
-               class="img-fluid rounded-3 shadow">
+               class="img-fluid rounded-4 shadow-sm">
         </div>
         <div class="col-lg-6">
-          <h3 class="fw-bold mb-4">Benefícios para Parceiros</h3>
+          <h3 class="section-title h2 mb-4">Benefícios para Parceiros</h3>
           
-          <div class="d-flex align-items-start mb-4">
-            <div class="flex-shrink-0">
-              <div class="bg-primary text-white rounded-circle p-3">
-                <i class="fas fa-chart-line"></i>
-              </div>
+          <div class="benefit-item d-flex align-items-start mb-4">
+            <div class="benefit-icon bg-primary text-white rounded-3 p-3">
+              <i class="fas fa-chart-line"></i>
             </div>
             <div class="ms-4">
               <h5 class="fw-bold">Maior Visibilidade</h5>
-              <p class="mb-0">Seu estabelecimento aparecerá em destaque no mapa e buscas do sistema.</p>
+              <p class="text-muted mb-0">Seu estabelecimento aparecerá em destaque no mapa e buscas do sistema.</p>
             </div>
           </div>
           
-          <div class="d-flex align-items-start mb-4">
-            <div class="flex-shrink-0">
-              <div class="bg-primary text-white rounded-circle p-3">
-                <i class="fas fa-users"></i>
-              </div>
+          <div class="benefit-item d-flex align-items-start mb-4">
+            <div class="benefit-icon bg-primary text-white rounded-3 p-3">
+              <i class="fas fa-users"></i>
             </div>
             <div class="ms-4">
               <h5 class="fw-bold">Aumento de Público</h5>
-              <p class="mb-0">Receba mais visitantes interessados em recuperar ou devolver itens.</p>
+              <p class="text-muted mb-0">Receba mais visitantes interessados em recuperar ou devolver itens.</p>
             </div>
           </div>
           
-          <div class="d-flex align-items-start">
-            <div class="flex-shrink-0">
-              <div class="bg-primary text-white rounded-circle p-3">
-                <i class="fas fa-heart"></i>
-              </div>
+          <div class="benefit-item d-flex align-items-start">
+            <div class="benefit-icon bg-primary text-white rounded-3 p-3">
+              <i class="fas fa-heart"></i>
             </div>
             <div class="ms-4">
               <h5 class="fw-bold">Impacto Social</h5>
-              <p class="mb-0">Contribua para uma Campo Grande mais solidária e conectada.</p>
+              <p class="text-muted mb-0">Contribua para uma Campo Grande mais solidária e conectada.</p>
             </div>
           </div>
         </div>
@@ -739,11 +879,11 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <div class="container">
+    <div class="container mt-4">
       <div class="row">
         <div class="col-lg-4 mb-4 mb-lg-0">
           <h5>Achados e Perdidos CG</h5>
-          <p>Conectando pessoas e seus pertences desde 2023.</p>
+          <p>Conectando pessoas e seus pertences desde 2025.</p>
           <p><i class="fas fa-map-marker-alt me-2"></i>Campo Grande - MS</p>
           <div class="d-flex gap-3 mt-4">
             <a href="#" class="footer-link">
