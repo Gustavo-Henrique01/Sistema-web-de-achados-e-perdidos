@@ -6,25 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::table('itens', function (Blueprint $table) {
-            $table->string('tipo')->default('perdido');
-            //
+            // Verifica se a coluna existe antes de remover
+            if (Schema::hasColumn('itens', 'foto')) {
+                $table->dropColumn('foto');
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::table('itens', function (Blueprint $table) {
-            $table->dropColumn('tipo');
-            //
+            $table->string('foto')->nullable()->after('id_categoria');
         });
     }
 };

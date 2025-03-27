@@ -32,7 +32,7 @@ class UsuarioController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email', // Tabela 'users'
             'telefone' => 'required|string|max:15',
-            'senha' => 'required|string|min:6', // Campo 'senha'
+            'senha' => 'required|string|min:5', // Campo 'senha'
             'foto' => 'nullable|string',
             'cpf' => 'required|string|unique:users,cpf|size:11', // Tabela 'users'
         ]);
@@ -42,6 +42,8 @@ class UsuarioController extends Controller
 
         // O Eloquent já faz o hash da senha automaticamente (graças ao cast 'hashed' no model)
         $usuario = User::create($validatedData);
+        
+      
 
         return redirect()->route('form.login');
     }

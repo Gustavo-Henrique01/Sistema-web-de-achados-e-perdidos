@@ -23,6 +23,7 @@ class Item extends Model
         'tipo',
         'aprovado_em',
         'parceiro_id'
+        ,'data_registro'
     ];
 
 

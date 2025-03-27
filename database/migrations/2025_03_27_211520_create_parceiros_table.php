@@ -27,9 +27,7 @@ return new class extends Migration
         });
 
         // Adicionar campo parceiro_id na tabela itens
-        Schema::table('itens', function (Blueprint $table) {
-            $table->foreignId('parceiro_id')->nullable()->constrained('parceiros')->onDelete('set null');
-        });
+        
     }
 
     /**
@@ -38,10 +36,7 @@ return new class extends Migration
     public function down(): void
     {
         // Remover campo parceiro_id da tabela itens
-        Schema::table('itens', function (Blueprint $table) {
-            $table->dropForeign(['parceiro_id']);
-            $table->dropColumn('parceiro_id');
-        });
+        
 
         Schema::dropIfExists('parceiros');
     }
