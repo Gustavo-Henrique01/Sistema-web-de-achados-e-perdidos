@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
+        <div class="container-fluid">
     <!-- Header com Boas-vindas e Notificações -->
     <div class="row bg-primary py-3 mb-4">
         <div class="col-12">
@@ -22,7 +22,7 @@
                     <div class="dropdown">
                         <button class="btn btn-link text-white dropdown-toggle user-menu" type="button" id="userDropdown" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle fa-lg"></i>
-                        </button>
+            </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{{ route('perfil-usuario') }}"><i class="fas fa-user me-2"></i>Meu Perfil</a></li>
                             <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configurações</a></li>
@@ -32,7 +32,7 @@
                                     @csrf
                                     <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sair</button>
                                 </form>
-                            </li>
+                    </li>
                         </ul>
                     </div>
                 </div>
@@ -223,7 +223,7 @@
             </div>
         </div>
     </div>
-</div>
+    </div>
 
 <style>
     .card {

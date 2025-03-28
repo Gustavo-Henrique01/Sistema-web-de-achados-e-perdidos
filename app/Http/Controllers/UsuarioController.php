@@ -94,58 +94,63 @@ class UsuarioController extends Controller
 
     public function atualizarItem(Request $request, $id)
     {
-        // Busca o item pelo ID
-        $item = Item::find($id);
-        if (!$item) {
-            return redirect()->back()->with('error', 'Item não encontrado.');
-        }
-    
+        $item = Item::findOrFail($id);
+        
         // Validação da localização
         $validatedLocalizacao = $request->validate([
             'nome_local' => 'required|string|max:255',
-            'endereco' => 'required|string|max:255', 
+            'endereco' => 'required|string|max:255',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
             'referencia' => 'required|string|max:1000',
         ]);
     
-        // Atualiza a localização associada ao item
-        $localizacao = Localizacao::find($item->id_localizacao);
-        if ($localizacao) {
-            $localizacao->update($validatedLocalizacao);
-        } else {
-            return redirect()->back()->with('error', 'Localização não encontrada.');
-        }
+        // Atualiza a localização
+        $item->localizacao->update($validatedLocalizacao);
     
         // Validação do item
         $validatedItem = $request->validate([
             'id_categoria' => 'required|exists:categorias,id',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048', // Foto é opcional
+            'fotos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'descricao' => 'required|string|max:1000',
             'tipo' => 'required|in:achado,perdido',
             'data_perdido' => $request->tipo === 'perdido' ? 'required|date' : 'nullable|date',
             'data_encontrado' => $request->tipo === 'achado' ? 'required|date' : 'nullable|date',
         ]);
     
-        // Atualiza a foto, se fornecida
-        if ($request->hasFile('foto')) {
-            // Remove a foto antiga, se existir
-            if ($item->foto && Storage::disk('public')->exists($item->foto)) {
-                Storage::disk('public')->delete($item->foto);
-            }
-            // Armazena a nova foto
-            $validatedItem['foto'] = $request->file('foto')->store('imagens', 'public');
-        } else {
-            // Mantém a foto atual se nenhuma nova foto for enviada
-            $validatedItem['foto'] = $item->foto;
+        // Atualiza o item
+        $item->update($validatedItem);
+    
+        // Remove fotos marcadas para exclusão
+        if ($request->has('fotos_removidas')) {
+            ItemFoto::whereIn('id', $request->fotos_removidas)->delete();
         }
     
-      
-        $item->update($validatedItem);
+        // Atualiza foto principal
+        if ($request->has('foto_principal')) {
+            ItemFoto::where('item_id', $item->id)
+                ->update(['is_principal' => false]);
+                
+            ItemFoto::where('id', $request->foto_principal)
+                ->update(['is_principal' => true]);
+        }
+    
+        // Adiciona novas fotos
+        if ($request->hasFile('fotos')) {
+            foreach ($request->file('fotos') as $key => $foto) {
+                $path = $foto->store('imagens', 'public');
+                
+                ItemFoto::create([
+                    'item_id' => $item->id,
+                    'caminho' => $path,
+                    'ordem' => $key,
+                    'is_principal' => false // Nova foto não é principal por padrão
+                ]);
+            }
+        }
     
         return redirect()->route('usuario.home')->with('success', 'Item atualizado com sucesso!');
     }
-
     public function excluirItem($id)
     {
         $item = Item::find($id);

@@ -12,7 +12,6 @@ class Item extends Model
     // Campos que podem ser atribuídos em massa
     protected $fillable = [
         'id_categoria',
-        'foto',
         'descricao',
         'data_perdido',
         'data_encontrado',
@@ -22,10 +21,14 @@ class Item extends Model
         'aprovado',
         'tipo',
         'aprovado_em',
-        'parceiro_id'
-        ,'data_registro'
+        'parceiro_id',
+        'data_registro'
     ];
-
+    // No model Item.php
+        public function fotos()
+        {
+            return $this->hasMany(ItemFoto::class);
+        }
 
     public function categoria()
     {
