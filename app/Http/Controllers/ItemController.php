@@ -146,7 +146,7 @@ class ItemController extends Controller
      */
     public function show(Item $item)
     {
-        //
+        return view('usuario.detalhes-item', compact('item'));
     }
 
     /**

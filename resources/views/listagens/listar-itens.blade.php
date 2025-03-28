@@ -20,7 +20,7 @@
                             <small class="text-muted">Registrado em: {{ \Carbon\Carbon::parse($item->data_registro)->format('d/m/Y') }}</small>
                         </p>
                         <!-- Botões de Ação -->
-                      
+                        <a href="{{ route('itens.show', $item) }}" class="btn btn-primary">Ver Detalhes</a>
                     </div>
                 </div>
             </div>

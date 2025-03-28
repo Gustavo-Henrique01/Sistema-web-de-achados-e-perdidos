@@ -40,6 +40,7 @@ Route::get('/form-item', [ItemController::class, 'index'])->name("cadastro-item"
 
 
 Route::get('/itens', [ItemController::class, 'listarItens'])->name('itens.index');
+Route::get('/itens/{item}', [ItemController::class, 'show'])->name('itens.show');
 
 
 Route::get('/mapa', [MapController::class, 'mostrarMapa'])->name('mapa');
@@ -62,6 +63,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 // Rota para listar itens pendentes
 Route::get('/admin/filter', [AdministradorController::class, 'listarItens'])->name('admin.listar-itens');
 Route::get('/admin/itens', [AdministradorController::class, ' listarItensAll'])->name('admin.listar-itens-all');
+Route::get('/admin/itens/{id}/detalhes', [AdministradorController::class, 'getItemDetails'])->name('admin.item-detalhes');
 
 // Rotas para aprovar ou rejeitar itens
 Route::get('/usuarios', [AdministradorController::class, 'listarUsuarios'])->name('admin.listar-usuarios');

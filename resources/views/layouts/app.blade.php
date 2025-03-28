@@ -71,6 +71,11 @@
                             <i class="fas fa-map-marker-alt"></i> Mapa
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url('/chatify') }}">
+                            <i class="fas fa-comments"></i> Chat
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

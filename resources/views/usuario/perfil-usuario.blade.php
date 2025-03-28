@@ -360,6 +360,9 @@
                 <div class="profile-stats">
                     <div class="d-grid gap-2">
                         <a href="#" class="btn btn-primary">Editar Perfil</a>
+                        <a href="{{ url('/chatify') }}" class="btn btn-success">
+                            <i class="fas fa-comments me-2"></i>Mensagens
+                        </a>
                     </div>
                 </div>
             </div>
@@ -381,6 +384,23 @@
                             <p class="text-muted mb-0">Itens aprovados</p>
                         </div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Mensagens Recentes -->
+            <div class="profile-card">
+                <div class="profile-header">
+                    <h4 class="mb-0">Mensagens Recentes</h4>
+                </div>
+                
+                <div class="list-group list-group-flush">
+                    <a href="{{ url('/chatify') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-inbox me-2 text-primary"></i>
+                            <span>Ver todas as mensagens</span>
+                        </div>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
                 </div>
             </div>
         </div>

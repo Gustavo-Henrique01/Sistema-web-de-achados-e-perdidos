@@ -63,15 +63,47 @@ class AdministradorController extends Controller
         $status = $request->input('status', 'todos');
 
         // Cria a query base
-        $query = Item::query();
+        $query = Item::query()->with(['categoria', 'usuario', 'fotos']);
 
-        // Aplica o filtro apenas se o status for diferente de 'todos'
+        // Aplica o filtro de status
         if ($status !== 'todos') {
             $query->where('status', $status);
         }
+        
+        // Filtro de busca por texto (descrição ou ID)
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('descricao', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filtro por tipo (achado/perdido)
+        if ($request->has('tipo') && !empty($request->tipo)) {
+            $query->where('tipo', $request->tipo);
+        }
+        
+        // Filtro por categoria
+        if ($request->has('categoria') && !empty($request->categoria)) {
+            $query->where('categoria_id', $request->categoria);
+        }
+        
+        // Filtro por data de início
+        if ($request->has('data_inicio') && !empty($request->data_inicio)) {
+            $query->whereDate('created_at', '>=', $request->data_inicio);
+        }
+        
+        // Filtro por data de fim
+        if ($request->has('data_fim') && !empty($request->data_fim)) {
+            $query->whereDate('created_at', '<=', $request->data_fim);
+        }
+
+        // Ordenação
+        $query->orderBy('created_at', 'desc');
 
         // Pagina os resultados
-        $itens = $query->paginate(10);
+        $itens = $query->paginate(12);
 
         return view('admin.listar-all-itens', compact('itens', 'status'));
     }
@@ -111,7 +143,7 @@ class AdministradorController extends Controller
     public function PerfilUser($id)
     {
         $user = User::findOrFail($id); // Alterado de Usuario para User
-        $itens = Item::where('id_usuario', $id)->get();
+        $itens = Item::where('user_id', $id)->get(); // Usando o nome correto da coluna
 
         return view('admin.listar-itens-usuario', compact('user', 'itens'));
     }
@@ -225,5 +257,16 @@ class AdministradorController extends Controller
     public function formCategoria()
     {
         return view('forms.form-categoria');
+    }
+
+    /**
+     * Obtém os detalhes de um item específico para exibição no modal.
+     */
+    public function getItemDetails($id)
+    {
+        $item = Item::with(['categoria', 'usuario', 'fotos', 'localizacao'])
+                   ->findOrFail($id);
+        
+        return view('admin.partials.item-details-modal', compact('item'));
     }
 }

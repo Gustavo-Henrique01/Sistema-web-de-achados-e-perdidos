@@ -55,8 +55,8 @@
                         <a href="{{ route('listar-todos-itens') }}" class="list-group-item list-group-item-action">
                             <i class="fas fa-list me-2"></i> Ver Itens
                         </a>
-                        <a href="#" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#mensagensModal">
-                            <i class="fas fa-comments me-2"></i> Mensagens
+                        <a href="{{ url('/chatify') }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-comments me-2"></i> Chat
                             <span class="badge bg-primary rounded-pill float-end">5</span>
                         </a>
                         <a href="#" class="list-group-item list-group-item-action">
@@ -219,11 +219,14 @@
                         </div>
                         <p class="mb-1">Olá, encontrei um item que pode ser seu...</p>
                     </a>
+                    <a href="{{ url('/chatify') }}" class="list-group-item list-group-item-action bg-light text-center py-3">
+                        <i class="fas fa-comments me-2"></i> Abrir Chat Completo
+                    </a>
                 </div>
             </div>
         </div>
     </div>
-    </div>
+</div>
 
 <style>
     .card {
