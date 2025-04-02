@@ -63,17 +63,26 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 // Rota para listar itens pendentes
 Route::get('/admin/filter', [AdministradorController::class, 'listarItens'])->name('admin.listar-itens');
 Route::get('/admin/itens', [AdministradorController::class, ' listarItensAll'])->name('admin.listar-itens-all');
-Route::get('/admin/itens/{id}/detalhes', [AdministradorController::class, 'getItemDetails'])->name('admin.item-detalhes');
 
 // Rotas para aprovar ou rejeitar itens
 Route::get('/usuarios', [AdministradorController::class, 'listarUsuarios'])->name('admin.listar-usuarios');
 Route::delete('/usuario/{id}', [AdministradorController::class, 'excluirUsuario'])->name('admin.deletar-usuario');
+Route::post('/usuario/{id}/toggle-status', [AdministradorController::class, 'toggleUserStatus'])->name('admin.toggle-user-status');
 Route::delete('/item/{id}', [AdministradorController::class, 'excluirItem'])->name('admin.deletar-item');
 Route::get('/usuario/{id}/itens', [AdministradorController::class, 'PerfilUser'])->name('admin.perfilUser');
 
+// Rotas para gestão de administradores
+Route::get('/admins', [AdministradorController::class, 'listarAdmins'])->name('admin.listar-admins');
+Route::get('/admin/cadastrar', [AdministradorController::class, 'formAdmin'])->name('admin.cadastrar-admin');
+Route::post('/admin/cadastrar', [AdministradorController::class, 'cadastrarAdmin'])->name('admin.criar-admin');
+
+// Rotas para listagem e detalhes de itens
+Route::get('/itens', [AdministradorController::class, 'listarItens'])->name('admin.listar-itens');
+Route::get('/itens/{id}/detalhes', [AdministradorController::class, 'verDetalhesItem'])->name('admin.ver-detalhes-item');
+
+// Rotas para ações em itens
 Route::post('/admin/itens/{id}/aprovar', [AdministradorController::class, 'aprovarItem'])->name('admin.itens-aprovar');
 Route::post('/admin/itens/{id}/rejeitar', [AdministradorController::class, 'rejeitarItem'])->name('admin.itens-rejeitar');
-
 Route::delete('/admin/item/{id}/delete', [AdministradorController::class, 'removerItem'])->name('admin.DeletarItem');
 Route::get('/', [AdministradorController::class, 'pageAdm'])->name('admin.principal');
 
@@ -93,6 +102,12 @@ Route::get('/parceiros/{parceiro}/edit', [ParceiroController::class, 'edit'])->n
 Route::put('/parceiros/{parceiro}', [ParceiroController::class, 'update'])->name('admin.parceiros.update');
 Route::delete('/parceiros/{parceiro}', [ParceiroController::class, 'destroy'])->name('admin.parceiros.destroy');
 Route::get('/parceiros/{parceiro}/itens', [ParceiroController::class, 'listarItens'])->name('admin.parceiros.itens');
+
+// Rotas do perfil do administrador
+Route::get('/perfil', [AdministradorController::class, 'perfil'])->name('admin.perfil');
+Route::put('/perfil', [AdministradorController::class, 'atualizarPerfil'])->name('admin.atualizar-perfil');
+Route::put('/perfil/senha', [AdministradorController::class, 'alterarSenha'])->name('admin.alterar-senha');
+
 });
 
 // Rotas para parceiros

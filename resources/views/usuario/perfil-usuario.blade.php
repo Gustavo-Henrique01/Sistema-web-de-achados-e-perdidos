@@ -291,21 +291,21 @@
     }
 </style>
 
-<div class="container mt-5">
-    <div class="row">
+    <div class="container mt-5">
+        <div class="row">
         <!-- Perfil do Usuário -->
         <div class="col-lg-4 mb-4">
             <div class="profile-card">
                 <div class="profile-header">
                     <h4 class="mb-0">Perfil do Usuário</h4>
                     <p class="text-white-50">Membro desde {{ \Carbon\Carbon::parse($user->created_at)->format('d/m/Y') }}</p>
-                </div>
+                    </div>
                 
                 <!-- Avatar do Usuário -->
                 <div class="profile-avatar">
-                    @if ($user->foto)
+                        @if ($user->foto)
                         <img src="{{ asset('storage/' . $user->foto) }}" alt="Foto do Usuário">
-                    @else
+                        @else
                         <span class="text-muted">{{ substr($user->name, 0, 1) }}</span>
                     @endif
                 </div>
@@ -366,7 +366,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Estatísticas do Usuário -->
             <div class="profile-card">
                 <div class="profile-header">
@@ -386,7 +386,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Mensagens Recentes -->
             <div class="profile-card">
                 <div class="profile-header">
@@ -432,15 +432,15 @@
                         </div>
                     </div>
                     
-                    @if ($user->itens->isEmpty())
+                        @if ($user->itens->isEmpty())
                         <div class="no-items">
                             <i class="fas fa-box-open d-block"></i>
                             <p>Você ainda não cadastrou nenhum item.</p>
                             <a href="{{ route('registrar-item') }}" class="btn btn-primary">Cadastrar novo item</a>
                         </div>
-                    @else
-                        <div class="row">
-                            @foreach ($user->itens as $item)
+                        @else
+                            <div class="row">
+                                @foreach ($user->itens as $item)
                                 <div class="col-md-6 mb-4 item-container" data-status="{{ $item->status }}">
                                     <div class="item-card">
                                         <div class="item-gallery">
@@ -458,7 +458,7 @@
                                                             <i class="fas fa-chevron-right"></i>
                                                         </div>
                                                     @endif
-                                                @else
+                                            @else
                                                     <div class="d-flex align-items-center justify-content-center h-100">
                                                         <i class="fas fa-image text-muted fa-3x"></i>
                                                     </div>
@@ -510,24 +510,24 @@
                                                 <i class="fas fa-edit"></i> Editar
                                             </a>
                                             
-                                            <form action="{{ route('usuario.deletar-item', $item->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
+                                                <form action="{{ route('usuario.deletar-item', $item->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este item?');">
                                                     <i class="fas fa-trash"></i> Excluir
                                                 </button>
-                                            </form>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
 <!-- Adicionar Font Awesome para ícones -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

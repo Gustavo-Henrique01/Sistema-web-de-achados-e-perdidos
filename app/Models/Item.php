@@ -2,28 +2,44 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Item extends Model
 {
+    use HasFactory;
+
     // Defina o nome da tabela (se necessário)
     protected $table = 'itens';
 
     // Campos que podem ser atribuídos em massa
     protected $fillable = [
-        'id_categoria',
+        
         'descricao',
+        'id_categoria',
+        'user_id',
+        'status',
+        'aprovado',
+        'aprovado_por_id',
+        'reprovado_por_id',
+        'excluido_por_id',
+        'aprovado_em',
+        'reprovado_em',
+        'excluido_em',
+        'id_localizacao',
+        'tipo',
         'data_perdido',
         'data_encontrado',
-        'status',
-        'user_id',
-        'id_localizacao',
-        'aprovado',
-        'tipo',
-        'aprovado_em',
-        'parceiro_id',
-        'data_registro'
+        
     ];
+
+    protected $casts = [
+        'aprovado' => 'boolean',
+        'aprovado_em' => 'datetime',
+        'reprovado_em' => 'datetime',
+        'excluido_em' => 'datetime',
+    ];
+
     // No model Item.php
         public function fotos()
         {
@@ -51,6 +67,22 @@ class Item extends Model
     public function parceiro()
     {
         return $this->belongsTo(Parceiro::class, 'parceiro_id');
+    }
+
+    // Relacionamentos
+    public function aprovadoPor()
+    {
+        return $this->belongsTo(User::class, 'aprovado_por_id');
+    }
+
+    public function reprovadoPor()
+    {
+        return $this->belongsTo(User::class, 'reprovado_por_id');
+    }
+
+    public function excluidoPor()
+    {
+        return $this->belongsTo(User::class, 'excluido_por_id');
     }
 
     // Campos que devem ser ocultados nas respostas JSON

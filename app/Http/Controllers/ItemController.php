@@ -60,6 +60,7 @@ class ItemController extends Controller
         $validatedItem['status'] = 'pendente';
         $validatedItem['aprovado'] = false;
         $validatedItem['aprovado_em'] = null;
+        
     
         // Cria o item
         $item = Item::create($validatedItem);

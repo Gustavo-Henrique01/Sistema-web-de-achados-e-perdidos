@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\User; // Alterado de Usuario para User
 use App\Models\Item;
 use App\Models\Categoria;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AdministradorController extends Controller
 {
@@ -14,11 +16,23 @@ class AdministradorController extends Controller
      */
     public function aprovarItem($id)
     {
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->back()->with('error', 'Acesso não autorizado.');
+        }
+
         $item = Item::findOrFail($id);
+        
+        if ($item->status !== 'pendente') {
+            return redirect()->back()->with('error', 'Este item não está pendente de aprovação.');
+        }
+
         $item->update([
             'status' => 'aprovado',
             'aprovado' => true,
+            'aprovado_por_id' => auth()->id(),
             'aprovado_em' => now(),
+            'reprovado_por_id' => null,
+            'reprovado_em' => null
         ]);
 
         return redirect()->back()->with('success', 'Item aprovado com sucesso!');
@@ -29,10 +43,26 @@ class AdministradorController extends Controller
      */
     public function rejeitarItem($id)
     {
-        $item = Item::findOrFail($id);
-        $item->update(['status' => 'reprovado']);
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->back()->with('error', 'Acesso não autorizado.');
+        }
 
-        return redirect()->back()->with('warning', 'Item rejeitado.');
+        $item = Item::findOrFail($id);
+        
+        if ($item->status !== 'pendente') {
+            return redirect()->back()->with('error', 'Este item não está pendente de aprovação.');
+        }
+
+        $item->update([
+            'status' => 'reprovado',
+            'aprovado' => false,
+            'reprovado_por_id' => auth()->id(),
+            'reprovado_em' => now(),
+            'aprovado_por_id' => null,
+            'aprovado_em' => null
+        ]);
+
+        return redirect()->back()->with('success', 'Item rejeitado com sucesso!');
     }
 
     /**
@@ -40,9 +70,20 @@ class AdministradorController extends Controller
      */
     public function removerItem($id)
     {
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->back()->with('error', 'Acesso não autorizado.');
+        }
+
         $item = Item::findOrFail($id);
+        
+        $item->update([
+            'excluido_por_id' => auth()->id(),
+            'excluido_em' => now()
+        ]);
+
         $item->delete();
-        return redirect()->route('admin.listar-itens');
+
+        return redirect()->back()->with('success', 'Item excluído com sucesso!');
     }
 
     /**
@@ -162,10 +203,23 @@ class AdministradorController extends Controller
     /**
      * Lista os usuários cadastrados.
      */
-    public function listarUsuarios()
+    public function listarUsuarios(Request $request)
     {
-        $usuarios = User::where('role', 'usuario')->get(); // Alterado de Usuario para User
-        return view('admin.listar-usuarios', compact('usuarios'));
+        $query = User::where('role', 'usuario');
+
+        // Aplica o filtro de busca se houver
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('cpf', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->get();
+
+        return view('admin.listar-usuarios', compact('users'));
     }
 
     /**
@@ -260,13 +314,144 @@ class AdministradorController extends Controller
     }
 
     /**
-     * Obtém os detalhes de um item específico para exibição no modal.
+     * Ativa ou desativa um usuário.
      */
-    public function getItemDetails($id)
+    public function toggleUserStatus($id)
     {
-        $item = Item::with(['categoria', 'usuario', 'fotos', 'localizacao'])
-                   ->findOrFail($id);
-        
-        return view('admin.partials.item-details-modal', compact('item'));
+        $user = User::findOrFail($id);
+        $user->ativo = !$user->ativo;
+        $user->save();
+
+        return redirect()->back()->with('success', 'Status do usuário atualizado com sucesso!');
+    }
+
+    /**
+     * Exibe o formulário para cadastrar um novo administrador.
+     */
+    public function formAdmin()
+    {
+        return view('admin.form-admin');
+    }
+
+    /**
+     * Cadastra um novo administrador.
+     */
+    public function cadastrarAdmin(Request $request)
+    {
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+            'cpf' => 'required|string|max:14|unique:users',
+            'telefone' => 'required|string|max:15',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        // Cria o usuário com role de admin
+        $admin = new User();
+        $admin->name = $validatedData['name'];
+        $admin->email = $validatedData['email'];
+        $admin->password = Hash::make($validatedData['password']);
+        $admin->cpf = $validatedData['cpf'];
+        $admin->telefone = $validatedData['telefone'];
+        $admin->role = 'administrador';
+        $admin->ativo = true;
+
+        // Upload da foto se fornecida
+        if ($request->hasFile('foto')) {
+            $path = $request->file('foto')->store('avatars', 'public');
+            $admin->avatar = $path;
+            $admin->foto = $path; // Salva a mesma foto na coluna foto
+        }
+
+        $admin->save();
+
+        return redirect()->route('admin.listar-admins')->with('success', 'Administrador cadastrado com sucesso!');
+    }
+
+    /**
+     * Lista todos os administradores cadastrados.
+     */
+    public function listarAdmins()
+    {
+        $admins = User::where('role', 'administrador')
+                     ->orderBy('name')
+                     ->paginate(10); // 10 itens por página
+
+        return view('admin.listar-admins', compact('admins'));
+    }
+
+    /**
+     * Exibe a página de perfil do administrador
+     */
+    public function perfil()
+    {
+        return view('admin.perfil-admin');
+    }
+
+    /**
+     * Atualiza o perfil do administrador
+     */
+    public function atualizarPerfil(Request $request)
+    {
+        $user = auth()->user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'cpf' => 'required|string|unique:users,cpf,' . $user->id,
+            'telefone' => 'required|string',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048'
+        ]);
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->cpf = $request->cpf;
+        $user->telefone = $request->telefone;
+
+        if ($request->hasFile('foto')) {
+            // Remove a foto antiga se existir
+            if ($user->avatar) {
+                Storage::delete('public/' . $user->avatar);
+            }
+            if ($user->foto) {
+                Storage::delete('public/' . $user->foto);
+            }
+
+            // Salva a nova foto
+            $path = $request->file('foto')->store('avatars', 'public');
+            $user->avatar = $path;
+            $user->foto = $path; // Salva a mesma foto na coluna foto
+        }
+
+        $user->save();
+
+        return redirect()->route('admin.perfil')->with('success', 'Perfil atualizado com sucesso!');
+    }
+
+    /**
+     * Altera a senha do administrador
+     */
+    public function alterarSenha(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|current_password',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user = auth()->user();
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return redirect()->route('admin.perfil')->with('success', 'Senha alterada com sucesso!');
+    }
+
+    /**
+     * Exibe detalhes completos de um item para aprovação/reprovação
+     */
+    public function verDetalhesItem($id)
+    {
+        $item = Item::with(['categoria', 'usuario', 'fotos'])->findOrFail($id);
+        return view('admin.partials.detalhes-item', compact('item'));
     }
 }

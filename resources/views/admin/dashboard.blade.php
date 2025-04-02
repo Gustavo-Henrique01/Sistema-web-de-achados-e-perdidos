@@ -131,11 +131,18 @@
         <a href="{{ route('admin.listar-usuarios') }}" class="{{ request()->routeIs('admin.listar-usuarios') ? 'active' : '' }}">
             <i class="fas fa-users"></i> Usuários Cadastrados
         </a>
+        <a href="{{ route('admin.listar-admins') }}" class="{{ request()->routeIs('admin.listar-admins') ? 'active' : '' }}">
+            <i class="fas fa-user-shield"></i> Administradores
+        </a>
         <a href="{{ route('cadastro-categoria') }}" class="{{ request()->routeIs('cadastro-categoria') ? 'active' : '' }}">
             <i class="fas fa-tags"></i> Cadastrar Categoria
         </a>
         <a href="{{ route('listar-categorias') }}" class="{{ request()->routeIs('listar-categorias') ? 'active' : '' }}">
             <i class="fas fa-th-list"></i> Listar Categorias
+        </a>
+        <a href="{{ route('admin.perfil') }}" class="{{ request()->routeIs('admin.perfil') ? 'active' : '' }}">
+            <i class="fas fa-user-shield"></i>
+            <span>Meu Perfil</span>
         </a>
         <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <i class="fas fa-sign-out-alt"></i> Sair

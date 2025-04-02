@@ -286,8 +286,8 @@
             
             <!-- Campos para upload de novas fotos -->
             <div class="mb-3 p-3 bg-light rounded border border-1 border-secondary-subtle">
-                <input type="file" name="foto_temporaria" id="foto_temporaria" class="form-control mb-2" accept="image/jpeg, image/png, image/gif">
-                <button type="button" id="adicionar_foto" class="btn btn-secondary w-100">Adicionar Foto</button>
+                <input type="file" name="foto_temporaria" id="foto_temporaria" class="form-control" accept="image/jpeg, image/png, image/gif">
+                <button type="button" id="adicionar_foto" class="btn btn-secondary mt-2">Adicionar Foto</button>
                 <small class="text-muted d-block mt-2">Você pode enviar até 3 fotos. Tamanho máximo por foto: 2MB.</small>
             </div>
             <div id="fotos_selecionadas"></div>

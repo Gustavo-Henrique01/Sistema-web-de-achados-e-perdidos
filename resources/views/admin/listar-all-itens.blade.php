@@ -182,7 +182,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title text-truncate">
                                         <i class="fas fa-tag me-1 text-muted"></i>
-                                        {{ $item->categoria->nome_categoria }}
+                                        {{ $item->categoria ? $item->categoria->nome_categoria : 'Sem Categoria' }}
                                     </h5>
                                     
                                     <p class="card-text description-text">
@@ -366,43 +366,11 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Configurar listeners para os botões de detalhes
     const detailButtons = document.querySelectorAll('.item-details-btn');
-    const modal = new bootstrap.Modal(document.getElementById('itemDetailsModal'));
     
     detailButtons.forEach(button => {
         button.addEventListener('click', function() {
             const itemId = this.getAttribute('data-item-id');
-            const modalContent = document.getElementById('itemDetailsContent');
-            
-            modalContent.innerHTML = `
-                <div class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Carregando...</span>
-                    </div>
-                    <p class="mt-3 text-muted">Carregando detalhes do item...</p>
-                </div>
-            `;
-            
-            modal.show();
-            
-            // Carregar detalhes do item via fetch API
-            fetch(`/admin/admin/itens/${itemId}/detalhes`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Erro ao carregar detalhes do item');
-                    }
-                    return response.text();
-                })
-                .then(html => {
-                    modalContent.innerHTML = html;
-                })
-                .catch(error => {
-                    modalContent.innerHTML = `
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            ${error.message}
-                        </div>
-                    `;
-                });
+            showItemDetails(itemId);
         });
     });
     
@@ -413,5 +381,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+function showItemDetails(itemId) {
+    // Mostrar loading
+    document.querySelector('#itemDetailsModal .modal-body').innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+        </div>
+    `;
+    
+    // Mostrar o modal
+    const modal = new bootstrap.Modal(document.getElementById('itemDetailsModal'));
+    modal.show();
+    
+    // Fazer a requisição AJAX
+    fetch(`/admin/itens/${itemId}/detalhes`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.text())
+    .then(html => {
+        document.querySelector('#itemDetailsModal .modal-body').innerHTML = html;
+    })
+    .catch(error => {
+        document.querySelector('#itemDetailsModal .modal-body').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Erro ao carregar detalhes do item. Por favor, tente novamente.
+            </div>
+        `;
+    });
+}
 </script>
 @endsection
