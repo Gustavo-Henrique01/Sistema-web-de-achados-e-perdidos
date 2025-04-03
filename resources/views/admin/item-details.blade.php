@@ -138,94 +138,85 @@
                     </div>
                     <div class="card-body">
                         <div class="timeline">
-                            @if($item->aprovado_por)
-                                <div class="timeline-item success">
-                                    <div class="timeline-icon">
-                                        <i class="fas fa-check"></i>
+                            @if($item->aprovado_por_id)
+                                <div class="timeline-item border-start border-success ps-3 mb-3">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="badge bg-success me-2">Aprovado</span>
+                                        <small class="text-muted">{{ $item->aprovado_em->format('d/m/Y H:i') }}</small>
                                     </div>
-                                    <div class="timeline-content">
-                                        <h6 class="mb-1">Item Aprovado</h6>
-                                        <div class="d-flex align-items-center mb-2">
-                                            <div class="avatar-small me-2">
-                                                @if($item->aprovadoPor->avatar || $item->aprovadoPor->foto)
-                                                    <img src="{{ asset('storage/'.($item->aprovadoPor->avatar ?? $item->aprovadoPor->foto)) }}" alt="Avatar">
-                                                @else
-                                                    <i class="fas fa-user"></i>
-                                                @endif
+                                    <div class="d-flex align-items-center">
+                                        @if($item->aprovadoPor->foto)
+                                            <img src="{{ asset('storage/'.$item->aprovadoPor->foto) }}" 
+                                                 class="rounded-circle me-2" 
+                                                 style="width: 32px; height: 32px; object-fit: cover;">
+                                        @else
+                                            <div class="rounded-circle bg-secondary text-white me-2 d-flex align-items-center justify-content-center" 
+                                                 style="width: 32px; height: 32px;">
+                                                <i class="fas fa-user"></i>
                                             </div>
-                                            <div>
-                                                <p class="mb-0 fw-bold">{{ $item->aprovadoPor->name }}</p>
-                                                <small class="text-muted">{{ $item->aprovadoPor->email }}</small>
-                                            </div>
+                                        @endif
+                                        <div>
+                                            <div class="fw-bold">{{ $item->aprovadoPor->name }}</div>
+                                            <small class="text-muted">{{ $item->aprovadoPor->email }}</small>
                                         </div>
-                                        <p class="mb-0 text-muted">
-                                            <i class="far fa-clock me-1"></i>
-                                            {{ $item->aprovado_em->format('d/m/Y H:i') }}
-                                        </p>
                                     </div>
                                 </div>
                             @endif
 
-                            @if($item->reprovado_por)
-                                <div class="timeline-item danger">
-                                    <div class="timeline-icon">
-                                        <i class="fas fa-times"></i>
+                            @if($item->reprovado_por_id)
+                                <div class="timeline-item border-start border-danger ps-3 mb-3">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="badge bg-danger me-2">Reprovado</span>
+                                        <small class="text-muted">{{ $item->reprovado_em->format('d/m/Y H:i') }}</small>
                                     </div>
-                                    <div class="timeline-content">
-                                        <h6 class="mb-1">Item Reprovado</h6>
-                                        <div class="d-flex align-items-center mb-2">
-                                            <div class="avatar-small me-2">
-                                                @if($item->reprovadoPor->avatar || $item->reprovadoPor->foto)
-                                                    <img src="{{ asset('storage/'.($item->reprovadoPor->avatar ?? $item->reprovadoPor->foto)) }}" alt="Avatar">
-                                                @else
-                                                    <i class="fas fa-user"></i>
-                                                @endif
+                                    <div class="d-flex align-items-center">
+                                        @if($item->reprovadoPor->foto)
+                                            <img src="{{ asset('storage/'.$item->reprovadoPor->foto) }}" 
+                                                 class="rounded-circle me-2" 
+                                                 style="width: 32px; height: 32px; object-fit: cover;">
+                                        @else
+                                            <div class="rounded-circle bg-secondary text-white me-2 d-flex align-items-center justify-content-center" 
+                                                 style="width: 32px; height: 32px;">
+                                                <i class="fas fa-user"></i>
                                             </div>
-                                            <div>
-                                                <p class="mb-0 fw-bold">{{ $item->reprovadoPor->name }}</p>
-                                                <small class="text-muted">{{ $item->reprovadoPor->email }}</small>
-                                            </div>
+                                        @endif
+                                        <div>
+                                            <div class="fw-bold">{{ $item->reprovadoPor->name }}</div>
+                                            <small class="text-muted">{{ $item->reprovadoPor->email }}</small>
                                         </div>
-                                        <p class="mb-0 text-muted">
-                                            <i class="far fa-clock me-1"></i>
-                                            {{ $item->reprovado_em->format('d/m/Y H:i') }}
-                                        </p>
                                     </div>
                                 </div>
                             @endif
 
-                            @if($item->excluido_por)
-                                <div class="timeline-item danger">
-                                    <div class="timeline-icon">
-                                        <i class="fas fa-trash"></i>
+                            @if($item->excluido_por_id)
+                                <div class="timeline-item border-start border-dark ps-3 mb-3">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="badge bg-dark me-2">Excluído</span>
+                                        <small class="text-muted">{{ $item->excluido_em->format('d/m/Y H:i') }}</small>
                                     </div>
-                                    <div class="timeline-content">
-                                        <h6 class="mb-1">Item Excluído</h6>
-                                        <div class="d-flex align-items-center mb-2">
-                                            <div class="avatar-small me-2">
-                                                @if($item->excluidoPor->avatar || $item->excluidoPor->foto)
-                                                    <img src="{{ asset('storage/'.($item->excluidoPor->avatar ?? $item->excluidoPor->foto)) }}" alt="Avatar">
-                                                @else
-                                                    <i class="fas fa-user"></i>
-                                                @endif
+                                    <div class="d-flex align-items-center">
+                                        @if($item->excluidoPor->foto)
+                                            <img src="{{ asset('storage/'.$item->excluidoPor->foto) }}" 
+                                                 class="rounded-circle me-2" 
+                                                 style="width: 32px; height: 32px; object-fit: cover;">
+                                        @else
+                                            <div class="rounded-circle bg-secondary text-white me-2 d-flex align-items-center justify-content-center" 
+                                                 style="width: 32px; height: 32px;">
+                                                <i class="fas fa-user"></i>
                                             </div>
-                                            <div>
-                                                <p class="mb-0 fw-bold">{{ $item->excluidoPor->name }}</p>
-                                                <small class="text-muted">{{ $item->excluidoPor->email }}</small>
-                                            </div>
+                                        @endif
+                                        <div>
+                                            <div class="fw-bold">{{ $item->excluidoPor->name }}</div>
+                                            <small class="text-muted">{{ $item->excluidoPor->email }}</small>
                                         </div>
-                                        <p class="mb-0 text-muted">
-                                            <i class="far fa-clock me-1"></i>
-                                            {{ $item->excluido_em->format('d/m/Y H:i') }}
-                                        </p>
                                     </div>
                                 </div>
                             @endif
 
-                            @if(!$item->aprovado_por && !$item->reprovado_por && !$item->excluido_por)
-                                <div class="text-center text-muted py-4">
+                            @if(!$item->aprovado_por_id && !$item->reprovado_por_id && !$item->excluido_por_id)
+                                <div class="text-center text-muted py-3">
                                     <i class="fas fa-info-circle me-2"></i>
-                                    Nenhuma ação registrada.
+                                    Nenhuma ação administrativa registrada.
                                 </div>
                             @endif
                         </div>

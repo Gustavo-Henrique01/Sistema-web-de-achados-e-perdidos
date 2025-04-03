@@ -233,12 +233,10 @@
                                             @endif
                                             
                                             @if($item->status != 'reprovado')
-                                                <form action="{{ route('admin.itens-rejeitar', $item->id) }}" method="POST" class="d-inline flex-fill">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-warning btn-sm w-100">
-                                                        <i class="fas fa-times-circle me-1"></i> Rejeitar
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-warning btn-sm w-100" 
+                                                        onclick="showRejectModal('{{ route('admin.itens-rejeitar', $item->id) }}')">
+                                                    <i class="fas fa-times-circle me-1"></i> Rejeitar
+                                                </button>
                                             @endif
                                             
                                             <form action="{{ route('admin.DeletarItem', $item->id) }}" method="POST" class="d-inline flex-fill">
@@ -284,6 +282,32 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Adicione este modal no final do seu arquivo, antes do </body> -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rejeitar Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="rejectForm" action="" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="justificativa" class="form-label">Justificativa da Rejeição</label>
+                        <textarea class="form-control" id="justificativa" name="justificativa" rows="3" required minlength="10"></textarea>
+                        <div class="form-text">Por favor, explique o motivo da rejeição (mínimo 10 caracteres).</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Rejeitar Item</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -416,5 +440,23 @@ function showItemDetails(itemId) {
         `;
     });
 }
+
+function showRejectModal(formAction) {
+    const modal = document.getElementById('rejectModal');
+    const form = document.getElementById('rejectForm');
+    form.action = formAction;
+    
+    const bootstrapModal = new bootstrap.Modal(modal);
+    bootstrapModal.show();
+}
+
+// Validação do formulário
+document.getElementById('rejectForm').addEventListener('submit', function(e) {
+    const justificativa = document.getElementById('justificativa').value;
+    if (justificativa.length < 10) {
+        e.preventDefault();
+        alert('A justificativa deve ter pelo menos 10 caracteres.');
+    }
+});
 </script>
 @endsection

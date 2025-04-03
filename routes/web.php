@@ -108,6 +108,9 @@ Route::get('/perfil', [AdministradorController::class, 'perfil'])->name('admin.p
 Route::put('/perfil', [AdministradorController::class, 'atualizarPerfil'])->name('admin.atualizar-perfil');
 Route::put('/perfil/senha', [AdministradorController::class, 'alterarSenha'])->name('admin.alterar-senha');
 
+// Rota para o log de ações
+Route::get('/log-acoes', [AdministradorController::class, 'logAcoes'])->name('admin.log-acoes');
+
 });
 
 // Rotas para parceiros

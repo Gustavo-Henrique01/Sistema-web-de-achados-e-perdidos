@@ -20,8 +20,29 @@
                             </form>
                             <form action="{{ route('admin.itens-rejeitar', $item->id) }}" method="POST" class="d-inline">
                                 @csrf
-                                <button type="submit" class="btn btn-danger">
-                                    <i class="fas fa-times me-2"></i>Rejeitar
+                                <div class="modal fade" id="rejectModal{{ $item->id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Rejeitar Item</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <label for="justificativa" class="form-label">Justificativa da Rejeição</label>
+                                                    <textarea class="form-control" id="justificativa" name="justificativa" rows="3" required></textarea>
+                                                    <div class="form-text">Por favor, explique o motivo da rejeição.</div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-danger">Rejeitar Item</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $item->id }}">
+                                    <i class="fas fa-times me-1"></i> Rejeitar
                                 </button>
                             </form>
                         @endif
@@ -42,9 +63,9 @@
             <!-- Coluna da Esquerda - Informações -->
             <div class="col-md-8">
                 <!-- Informações Básicas -->
-                <div class="card mb-4">
-                    <div class="card-header bg-light">
-                        <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações Básicas</h6>
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informações do Item</h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -109,6 +130,98 @@
                         @else
                             <p class="mb-0 text-muted">Localização não especificada</p>
                         @endif
+                    </div>
+                </div>
+
+                <!-- Histórico de Ações -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Histórico de Ações</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            @if($item->aprovado_por_id)
+                                <div class="timeline-item border-start border-success ps-3 mb-3">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="badge bg-success me-2">Aprovado</span>
+                                        <small class="text-muted">{{ $item->aprovado_em->format('d/m/Y H:i') }}</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        @if($item->aprovadoPor->foto)
+                                            <img src="{{ asset('storage/'.$item->aprovadoPor->foto) }}" 
+                                                 class="rounded-circle me-2" 
+                                                 style="width: 32px; height: 32px; object-fit: cover;">
+                                        @else
+                                            <div class="rounded-circle bg-secondary text-white me-2 d-flex align-items-center justify-content-center" 
+                                                 style="width: 32px; height: 32px;">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <div class="fw-bold">{{ $item->aprovadoPor->name }}</div>
+                                            <small class="text-muted">{{ $item->aprovadoPor->email }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if($item->reprovado_por_id)
+                                <div class="timeline-item border-start border-danger ps-3 mb-3">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="badge bg-danger me-2">Reprovado</span>
+                                        <small class="text-muted">{{ $item->reprovado_em->format('d/m/Y H:i') }}</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        @if($item->reprovadoPor->foto)
+                                            <img src="{{ asset('storage/'.$item->reprovadoPor->foto) }}" 
+                                                 class="rounded-circle me-2" 
+                                                 style="width: 32px; height: 32px; object-fit: cover;">
+                                        @else
+                                            <div class="rounded-circle bg-secondary text-white me-2 d-flex align-items-center justify-content-center" 
+                                                 style="width: 32px; height: 32px;">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <div class="fw-bold">{{ $item->reprovadoPor->name }}</div>
+                                            <small class="text-muted">{{ $item->reprovadoPor->email }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if($item->excluido_por_id)
+                                <div class="timeline-item border-start border-dark ps-3 mb-3">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="badge bg-dark me-2">Excluído</span>
+                                        <small class="text-muted">{{ $item->excluido_em->format('d/m/Y H:i') }}</small>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        @if($item->excluidoPor->foto)
+                                            <img src="{{ asset('storage/'.$item->excluidoPor->foto) }}" 
+                                                 class="rounded-circle me-2" 
+                                                 style="width: 32px; height: 32px; object-fit: cover;">
+                                        @else
+                                            <div class="rounded-circle bg-secondary text-white me-2 d-flex align-items-center justify-content-center" 
+                                                 style="width: 32px; height: 32px;">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <div class="fw-bold">{{ $item->excluidoPor->name }}</div>
+                                            <small class="text-muted">{{ $item->excluidoPor->email }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if(!$item->aprovado_por_id && !$item->reprovado_por_id && !$item->excluido_por_id)
+                                <div class="text-center text-muted py-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Nenhuma ação administrativa registrada.
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
@@ -181,4 +294,39 @@
         <i class="fas fa-exclamation-circle me-2"></i>
         Item não encontrado.
     </div>
-@endif 
+@endif
+
+<style>
+.timeline-item {
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -0.5rem;
+    top: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 2px solid;
+}
+
+.timeline-item.border-success::before {
+    border-color: var(--bs-success);
+}
+
+.timeline-item.border-danger::before {
+    border-color: var(--bs-danger);
+}
+
+.timeline-item.border-dark::before {
+    border-color: var(--bs-dark);
+}
+</style> 

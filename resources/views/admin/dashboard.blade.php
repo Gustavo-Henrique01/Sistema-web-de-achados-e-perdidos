@@ -162,6 +162,9 @@
             <i class="fas fa-clipboard-list"></i> Gerenciar Itens
             <span class="badge rounded-pill bg-primary ms-auto">{{ App\Models\Item::where('status', 'pendente')->count() }}</span>
         </a>
+        <a href="{{ route('admin.log-acoes') }}" class="{{ request()->routeIs('admin.log-acoes') ? 'active' : '' }}">
+            <i class="fas fa-history"></i> Log de Ações
+        </a>
         <a href="{{ route('admin.listar-usuarios') }}" class="{{ request()->routeIs('admin.listar-usuarios') ? 'active' : '' }}">
             <i class="fas fa-users"></i> Usuários Cadastrados
         </a>

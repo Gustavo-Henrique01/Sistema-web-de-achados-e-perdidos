@@ -388,7 +388,7 @@ function viewItemDetails(itemId) {
     modal.show();
     
     // Carrega detalhes via AJAX
-    fetch(`/admin/admin/itens/${itemId}/detalhes`)
+    fetch(`/admin/itens/${itemId}/detalhes`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Erro ao carregar detalhes do item');

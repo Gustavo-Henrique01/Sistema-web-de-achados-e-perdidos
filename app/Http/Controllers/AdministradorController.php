@@ -8,9 +8,22 @@ use App\Models\Item;
 use App\Models\Categoria;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Models\AdminActionLog;
 
 class AdministradorController extends Controller
 {
+    private function registrarAcao($item, $acao, $justificativa = null, $statusAnterior = null)
+    {
+        AdminActionLog::create([
+            'admin_id' => auth()->id(),
+            'item_id' => $item->id,
+            'acao' => $acao,
+            'justificativa' => $justificativa,
+            'status_anterior' => $statusAnterior,
+            'status_novo' => $item->status
+        ]);
+    }
+
     /**
      * Aprova um item.
      */
@@ -26,6 +39,8 @@ class AdministradorController extends Controller
             return redirect()->back()->with('error', 'Este item não está pendente de aprovação.');
         }
 
+        $statusAnterior = $item->status;
+
         $item->update([
             'status' => 'aprovado',
             'aprovado' => true,
@@ -35,24 +50,27 @@ class AdministradorController extends Controller
             'reprovado_em' => null
         ]);
 
+        $this->registrarAcao($item, 'aprovacao', null, $statusAnterior);
+
         return redirect()->back()->with('success', 'Item aprovado com sucesso!');
     }
 
     /**
      * Rejeita um item.
      */
-    public function rejeitarItem($id)
+    public function rejeitarItem(Request $request, $id)
     {
         if (!auth()->user()->isAdmin()) {
             return redirect()->back()->with('error', 'Acesso não autorizado.');
         }
 
-        $item = Item::findOrFail($id);
-        
-        if ($item->status !== 'pendente') {
-            return redirect()->back()->with('error', 'Este item não está pendente de aprovação.');
-        }
+        $request->validate([
+            'justificativa' => 'required|string|min:10'
+        ]);
 
+        $item = Item::findOrFail($id);
+        $statusAnterior = $item->status;
+        
         $item->update([
             'status' => 'reprovado',
             'aprovado' => false,
@@ -61,6 +79,8 @@ class AdministradorController extends Controller
             'aprovado_por_id' => null,
             'aprovado_em' => null
         ]);
+
+        $this->registrarAcao($item, 'reprovacao', $request->justificativa, $statusAnterior);
 
         return redirect()->back()->with('success', 'Item rejeitado com sucesso!');
     }
@@ -76,11 +96,10 @@ class AdministradorController extends Controller
 
         $item = Item::findOrFail($id);
         
-        $item->update([
-            'excluido_por_id' => auth()->id(),
-            'excluido_em' => now()
-        ]);
-
+        // Primeiro, excluir os logs relacionados ao item
+        AdminActionLog::where('item_id', $item->id)->delete();
+        
+        // Depois, excluir o item
         $item->delete();
 
         return redirect()->back()->with('success', 'Item excluído com sucesso!');
@@ -451,7 +470,31 @@ class AdministradorController extends Controller
      */
     public function verDetalhesItem($id)
     {
-        $item = Item::with(['categoria', 'usuario', 'fotos'])->findOrFail($id);
+        $item = Item::with(['aprovadoPor', 'reprovadoPor', 'excluidoPor'])
+            ->findOrFail($id);
+
         return view('admin.partials.detalhes-item', compact('item'));
+    }
+
+    // Novo método para visualizar o log de ações
+    public function logAcoes(Request $request)
+    {
+        $query = AdminActionLog::with(['admin', 'item']);
+
+        // Aplicar filtro se existir
+        if ($request->filled('acao')) {
+            $query->where('acao', $request->acao);
+        }
+
+        // Ordenar por data mais recente
+        $query->orderBy('created_at', 'desc');
+
+        // Paginar resultados
+        $logs = $query->paginate(20)->withQueryString();
+
+        // Passar o filtro atual para a view
+        $filtroAtual = $request->acao;
+
+        return view('admin.log-acoes', compact('logs', 'filtroAtual'));
     }
 }
