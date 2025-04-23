@@ -165,6 +165,10 @@
         <a href="{{ route('admin.log-acoes') }}" class="{{ request()->routeIs('admin.log-acoes') ? 'active' : '' }}">
             <i class="fas fa-history"></i> Log de Ações
         </a>
+        <a href="{{ route('admin.parceiros.index') }}" class="{{ request()->routeIs('admin.parceiros.*') ? 'active' : '' }}">
+            <i class="fas fa-store"></i> Gerenciar Parceiros
+            <span class="badge rounded-pill bg-warning ms-auto">{{ App\Models\Parceiro::where('status', 'pendente')->count() }}</span>
+        </a>
         <a href="{{ route('admin.listar-usuarios') }}" class="{{ request()->routeIs('admin.listar-usuarios') ? 'active' : '' }}">
             <i class="fas fa-users"></i> Usuários Cadastrados
         </a>

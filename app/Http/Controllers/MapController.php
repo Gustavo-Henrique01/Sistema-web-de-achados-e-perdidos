@@ -18,7 +18,7 @@ class MapController extends Controller
             ->where('status', 'aprovado')
             ->with('localizacao') // Carrega os dados da localização
             ->get(); 
-             // Passa os itens para a view
+            
         return view('Map.mapa', compact('itens'));
         } 
      else {

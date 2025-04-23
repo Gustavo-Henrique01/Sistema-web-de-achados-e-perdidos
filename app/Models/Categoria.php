@@ -10,7 +10,7 @@ class Categoria extends Model
 
         protected $table = 'categorias';
     
-     
+        public $timestamps = false; // Desativa a verificação de timestamps
         protected $fillable = [
             'nome_categoria'
         ];
@@ -20,5 +20,5 @@ class Categoria extends Model
         {
             return $this->hasMany(Item::class, 'id_categoria');
         }
-    
+        
 }

@@ -1,40 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
-        <div class="container-fluid">
-    <!-- Header com Boas-vindas e Notificações -->
-    <div class="row bg-primary py-3 mb-4">
+<div class="container-fluid px-4">
+    <!-- Header com Boas-vindas -->
+    <div class="row bg-primary py-4 mb-4 rounded-3">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-1 text-white">Bem-vindo(a), {{ Auth::user()->name }}</h2>
                     <p class="mb-0 text-white-50">Gerencie seus itens e encontre o que procura</p>
-                </div>
-                <div class="d-flex align-items-center">
-                    <div class="position-relative me-3">
-                        <a href="#" class="text-white notification-btn" data-bs-toggle="modal" data-bs-target="#notificacoesModal">
-                            <i class="fas fa-bell fa-lg"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                3
-                            </span>
-                        </a>
-                    </div>
-                    <div class="dropdown">
-                        <button class="btn btn-link text-white dropdown-toggle user-menu" type="button" id="userDropdown" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle fa-lg"></i>
-            </button>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ route('perfil-usuario') }}"><i class="fas fa-user me-2"></i>Meu Perfil</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Configurações</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Sair</button>
-                                </form>
-                    </li>
-                        </ul>
-                    </div>
                 </div>
             </div>
         </div>
@@ -43,30 +17,36 @@
     <div class="row">
         <!-- Menu Lateral -->
         <div class="col-md-3 mb-4">
-            <div class="card border-0 shadow-sm">
+            <div class="card border-0 shadow-sm h-100">
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
-                        <a href="{{ route('usuario.home') }}" class="list-group-item list-group-item-action active">
-                            <i class="fas fa-home me-2"></i> Início
+                        <a href="{{ route('usuario.home') }}" class="list-group-item list-group-item-action active d-flex align-items-center">
+                            <i class="fas fa-home me-3"></i> 
+                            <span>Início</span>
                         </a>
-                        <a href="{{ route('usuario.cadastrar-item') }}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-plus-circle me-2"></i> Cadastrar Item
+                        <a href="{{ route('usuario.cadastrar-item') }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="fas fa-plus-circle me-3"></i>
+                            <span>Cadastrar Item</span>
                         </a>
-                        <a href="{{ route('listar-todos-itens') }}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-list me-2"></i> Ver Itens
+                        <a href="{{ route('listar-todos-itens') }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="fas fa-list me-3"></i>
+                            <span>Ver Itens</span>
                         </a>
-                        <a href="{{ url('/chatify') }}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-comments me-2"></i> Chat
-                            <span class="badge bg-primary rounded-pill float-end">5</span>
+                        <a href="{{ url('/chatify') }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="fas fa-comments me-3"></i>
+                            <span>Chat</span>
+                            @php
+                                $unreadChatMessages = Auth::user()->unreadNotifications
+                                    ->where('data.type', 'chat_message')
+                                    ->count();
+                            @endphp
+                            @if($unreadChatMessages > 0)
+                                <span class="badge bg-primary rounded-pill ms-auto">{{ $unreadChatMessages }}</span>
+                            @endif
                         </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="fas fa-map-marker-alt me-2"></i> Mapa
-                        </a>
-                        <a href="{{ route('perfil-usuario') }}" class="list-group-item list-group-item-action">
-                            <i class="fas fa-user me-2"></i> Perfil
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="fas fa-cog me-2"></i> Configurações
+                        <a href="{{ route('itens.mapa') }}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <i class="fas fa-map-marker-alt me-3"></i>
+                            <span>Mapa</span>
                         </a>
                     </div>
                 </div>
@@ -78,9 +58,9 @@
             <!-- Ações Rápidas -->
             <div class="row mb-4">
                 <div class="col-md-6 mb-3">
-                    <div class="card border-0 shadow-sm">
+                    <div class="card border-0 shadow-sm h-100">
                         <div class="card-body p-4">
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center mb-3">
                                 <div class="action-icon me-3">
                                     <i class="fas fa-plus-circle fa-2x text-primary"></i>
                                 </div>
@@ -89,16 +69,16 @@
                                     <p class="card-text text-muted mb-0">Registre um item perdido ou encontrado</p>
                                 </div>
                             </div>
-                            <a href="{{ route('usuario.cadastrar-item') }}" class="btn btn-primary w-100 mt-3">
+                            <a href="{{ route('usuario.cadastrar-item') }}" class="btn btn-primary w-100">
                                 <i class="fas fa-plus me-2"></i>Cadastrar
                             </a>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <div class="card border-0 shadow-sm">
+                    <div class="card border-0 shadow-sm h-100">
                         <div class="card-body p-4">
-                            <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center mb-3">
                                 <div class="action-icon me-3">
                                     <i class="fas fa-search fa-2x text-success"></i>
                                 </div>
@@ -107,7 +87,7 @@
                                     <p class="card-text text-muted mb-0">Encontre itens perdidos ou achados</p>
                                 </div>
                             </div>
-                            <a href="{{ route('listar-todos-itens') }}" class="btn btn-success w-100 mt-3">
+                            <a href="{{ route('listar-todos-itens') }}" class="btn btn-success w-100">
                                 <i class="fas fa-search me-2"></i>Buscar
                             </a>
                         </div>
@@ -119,24 +99,36 @@
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white border-0 py-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Meus Itens</h5>
-                        <div class="btn-group">
-                            <button type="button" class="btn btn-outline-primary active">Todos</button>
-                            <button type="button" class="btn btn-outline-primary">Perdidos</button>
-                            <button type="button" class="btn btn-outline-primary">Achados</button>
-                        </div>
+                        <h5 class="mb-0">Meus Itens Recentes</h5>
+                        <a href="{{ route('perfil-usuario') }}" class="btn btn-outline-primary btn-sm">Ver Todos</a>
                     </div>
                 </div>
                 <div class="card-body">
                     @if(isset($itens) && count($itens) > 0)
                         <div class="row">
-                            @foreach($itens as $item)
+                            @foreach($itens->take(3) as $item)
                                 <div class="col-md-4 mb-4">
-                                    <div class="card border-0 shadow-sm">
+                                    <div class="card border-0 shadow-sm h-100">
                                         <div class="position-relative">
-                                            <img src="{{ asset('images/placeholder.jpg') }}" class="card-img-top" alt="Item">
+                                            @if($item->fotos && $item->fotos->isNotEmpty())
+                                                @php
+                                                    $fotoPrincipal = $item->fotos->where('is_principal', true)->first();
+                                                    $foto = $fotoPrincipal ?? $item->fotos->first();
+                                                @endphp
+                                                @if($foto && $foto->caminho)
+                                                    <img src="{{ asset('storage/' . $foto->caminho) }}" class="card-img-top" alt="Item" style="height: 200px; object-fit: cover;">
+                                                @else
+                                                    <div class="d-flex align-items-center justify-content-center h-100" style="height: 200px; background-color: #f8f9fa;">
+                                                        <i class="fas fa-image text-muted fa-3x"></i>
+                                                    </div>
+                                                @endif
+                                            @else
+                                                <div class="d-flex align-items-center justify-content-center h-100" style="height: 200px; background-color: #f8f9fa;">
+                                                    <i class="fas fa-image text-muted fa-3x"></i>
+                                                </div>
+                                            @endif
                                             <div class="position-absolute top-0 end-0 m-2">
-                                                <span class="badge bg-{{ $item->status === 'pendente' ? 'warning' : 'success' }}">
+                                                <span class="badge bg-{{ $item->status === 'pendente' ? 'warning' : 'success' }} rounded-pill">
                                                     {{ $item->status }}
                                                 </span>
                                             </div>
@@ -149,10 +141,10 @@
                                             </p>
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div class="btn-group">
-                                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                                    <a href="{{ route('itens.show', $item->id) }}" class="btn btn-sm btn-outline-primary">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    <a href="#" class="btn btn-sm btn-outline-warning">
+                                                    <a href="{{ route('usuario.editar-item', $item->id) }}" class="btn btn-sm btn-outline-warning">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                 </div>
@@ -179,59 +171,13 @@
     </div>
 </div>
 
-<!-- Modal de Notificações -->
-<div class="modal fade" id="notificacoesModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header border-0">
-                <h5 class="modal-title">Notificações</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-0">
-                <div class="list-group list-group-flush">
-                    <a href="#" class="list-group-item list-group-item-action">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">Novo match encontrado</h6>
-                            <small class="text-muted">3h atrás</small>
-                        </div>
-                        <p class="mb-1">Possível correspondência para seu iPhone</p>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal de Mensagens -->
-<div class="modal fade" id="mensagensModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header border-0">
-                <h5 class="modal-title">Mensagens</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-0">
-                <div class="list-group list-group-flush">
-                    <a href="#" class="list-group-item list-group-item-action">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">João Silva</h6>
-                            <small class="text-muted">2h atrás</small>
-                        </div>
-                        <p class="mb-1">Olá, encontrei um item que pode ser seu...</p>
-                    </a>
-                    <a href="{{ url('/chatify') }}" class="list-group-item list-group-item-action bg-light text-center py-3">
-                        <i class="fas fa-comments me-2"></i> Abrir Chat Completo
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <style>
     .card {
         border: none;
         transition: all 0.2s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
     }
     .action-icon {
         width: 50px;
@@ -250,13 +196,9 @@
     .list-group-item:hover {
         background-color: #f8f9fa;
     }
-    .list-group-item.active {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-    }
-    .badge {
-        padding: 0.5em 0.8em;
-        font-weight: 500;
+    .list-group-item i {
+        width: 20px;
+        text-align: center;
     }
     .btn-group .btn {
         border-radius: 0;
@@ -269,25 +211,8 @@
         border-top-right-radius: 0.25rem;
         border-bottom-right-radius: 0.25rem;
     }
-    .notification-btn, .user-menu {
-        transition: all 0.2s ease;
-    }
-    .notification-btn:hover, .user-menu:hover {
-        transform: scale(1.1);
-    }
     .empty-state {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(108, 117, 125, 0.1);
-        border-radius: 50%;
-    }
-    .card-img-top {
-        height: 180px;
-        object-fit: cover;
+        opacity: 0.5;
     }
 </style>
 @endsection

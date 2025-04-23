@@ -3,354 +3,259 @@
 @section('content')
 <div class="container mt-4">
     <div class="row">
+        <!-- Coluna Principal -->
         <div class="col-md-8">
+            <!-- Cabeçalho do Item -->
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Detalhes do Item</h5>
-                    <span class="badge {{ $item->tipo == 'achado' ? 'bg-success' : 'bg-danger' }}">
-                        {{ ucfirst($item->tipo) }}
-                    </span>
-                </div>
                 <div class="card-body">
-                    <div class="row">
-                        <!-- Galeria de Fotos -->
-                        <div class="col-md-6 mb-4">
-                            <div class="item-gallery">
-                                <!-- Foto principal -->
-                                <div class="main-photo" id="main-photo-{{ $item->id }}">
-                                    @if ($item->fotos && $item->fotos->isNotEmpty())
-                                        <img src="{{ asset('storage/' . $item->fotos->where('is_principal', true)->first()->caminho ?? $item->fotos->first()->caminho) }}" alt="Foto do Item" class="img-fluid rounded">
-                                        
-                                        <!-- Navegação da galeria (apenas se houver mais de uma foto) -->
-                                        @if($item->fotos->count() > 1)
-                                            <div class="gallery-nav gallery-prev" onclick="prevPhoto({{ $item->id }})">
-                                                <i class="fas fa-chevron-left"></i>
-                                            </div>
-                                            <div class="gallery-nav gallery-next" onclick="nextPhoto({{ $item->id }})">
-                                                <i class="fas fa-chevron-right"></i>
-                                            </div>
-                                        @endif
-                                    @else
-                                        <div class="d-flex align-items-center justify-content-center h-100 border rounded bg-light">
-                                            <i class="fas fa-image text-muted fa-3x"></i>
-                                        </div>
-                                    @endif
-                                </div>
-                                
-                                <!-- Miniaturas das fotos (apenas se houver mais de uma foto) -->
-                                @if ($item->fotos && $item->fotos->count() > 1)
-                                    <div class="photo-thumbnails mt-2">
-                                        @foreach($item->fotos as $index => $foto)
-                                            <div class="photo-thumbnail {{ $foto->is_principal ? 'active' : '' }}" 
-                                                 onclick="changeMainPhoto({{ $item->id }}, '{{ asset('storage/' . $foto->caminho) }}', this)">
-                                                <img src="{{ asset('storage/' . $foto->caminho) }}" alt="Miniatura">
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                        
-                        <!-- Informações do Item -->
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h2 class="card-title mb-0">{{ $item->titulo }}</h2>
+                        <span class="badge bg-{{ $item->status === 'aprovado' ? 'success' : ($item->status === 'pendente' ? 'warning' : 'danger') }} fs-6">
+                            {{ ucfirst($item->status) }}
+                        </span>
+                    </div>
+
+                    <div class="row mb-4">
                         <div class="col-md-6">
-                            <h4 class="border-bottom pb-2 mb-3">{{ $item->categoria->nome_categoria }}</h4>
-                            
-                            <div class="mb-3">
-                                <h6 class="text-muted">Descrição:</h6>
-                                <p>{{ $item->descricao }}</p>
-                            </div>
-                            
-                            @if($item->tipo == 'perdido' && $item->data_perdido)
-                                <div class="mb-3">
-                                    <h6 class="text-muted">Data em que foi perdido:</h6>
-                                    <p>{{ \Carbon\Carbon::parse($item->data_perdido)->format('d/m/Y') }}</p>
-                                </div>
-                            @elseif($item->tipo == 'achado' && $item->data_encontrado)
-                                <div class="mb-3">
-                                    <h6 class="text-muted">Data em que foi encontrado:</h6>
-                                    <p>{{ \Carbon\Carbon::parse($item->data_encontrado)->format('d/m/Y') }}</p>
-                                </div>
-                            @endif
-                            
-                            <div class="mb-3">
-                                <h6 class="text-muted">Local:</h6>
-                                <p>{{ $item->localizacao->nome_local ?? 'Não informado' }}</p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <h6 class="text-muted">Status:</h6>
-                                <span class="badge {{ $item->status == 'aprovado' ? 'bg-success' : ($item->status == 'pendente' ? 'bg-warning' : 'bg-danger') }}">
-                                    {{ ucfirst($item->status) }}
-                                </span>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <h6 class="text-muted">Registrado por:</h6>
-                                <p>{{ $item->usuario->name }}</p>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <h6 class="text-muted">Data de registro:</h6>
-                                <p>{{ \Carbon\Carbon::parse($item->created_at)->format('d/m/Y H:i') }}</p>
-                            </div>
+                            <p class="mb-1 text-muted">Categoria</p>
+                            <p class="mb-3">
+                                <i class="fas fa-tag me-2"></i>
+                                {{ $item->categoria->nome_categoria }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1 text-muted">Tipo</p>
+                            <p class="mb-3">
+                                <i class="fas fa-{{ $item->tipo === 'achado' ? 'hand-holding' : 'search' }} me-2"></i>
+                                {{ ucfirst($item->tipo) }}
+                            </p>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Sidebar com ações e chat -->
-        <div class="col-md-4">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Ações</h5>
-                </div>
-                <div class="card-body">
-                    @if($item->usuario_id != auth()->id())
-                        <div class="d-grid gap-2 mb-3">
-                            <a href="{{ url('/chatify/'.$item->usuario_id) }}" class="btn btn-success">
-                                <i class="fas fa-comments me-2"></i>Conversar com {{ $item->usuario->name }}
-                            </a>
-                            <button class="btn btn-primary" id="claimItemBtn">
-                                <i class="fas fa-hand-holding me-2"></i>Este é meu item
-                            </button>
-                        </div>
-                    @else
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>Este item foi registrado por você.
-                        </div>
-                        <div class="d-grid gap-2">
-                            <a href="{{ route('usuario.editar-item', $item->id) }}" class="btn btn-primary">
-                                <i class="fas fa-edit me-2"></i>Editar Item
-                            </a>
-                            <form action="{{ route('usuario.deletar-item', $item->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Tem certeza que deseja excluir este item?');">
-                                    <i class="fas fa-trash me-2"></i>Excluir Item
-                                </button>
-                            </form>
-                        </div>
+
+                    <p class="mb-1 text-muted">Descrição</p>
+                    <p class="mb-4">{{ $item->descricao }}</p>
+
+                    <p class="mb-1 text-muted">Localização</p>
+                    <p class="mb-3">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        {{ $item->localizacao->endereco }}
+                    </p>
+
+                    @if($item->parceiro)
+                    <div class="alert alert-info mb-0">
+                        <h6 class="alert-heading mb-2">
+                            <i class="fas fa-store me-2"></i>
+                            Item em Ponto de Coleta
+                        </h6>
+                        <p class="mb-1"><strong>{{ $item->parceiro->nome_estabelecimento }}</strong></p>
+                        <p class="mb-0 small">{{ $item->parceiro->localizacao->endereco }}</p>
+                    </div>
+                    @endif
+
+                    @if($item->status === 'aprovado' && !$item->parceiro_id)
+                    <div class="mt-4">
+                        <button type="button" 
+                                class="btn btn-primary" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#enviarParaParceiroModal">
+                            <i class="fas fa-store me-2"></i>Enviar para Ponto de Coleta
+                        </button>
+                    </div>
                     @endif
                 </div>
             </div>
-            
-            <!-- Box de informações sobre chat -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Como funciona</h5>
+
+            <!-- Fotos do Item -->
+            @if($item->fotos->count() > 0)
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-images me-2"></i>Fotos do Item
+                    </h5>
                 </div>
                 <div class="card-body">
-                    <p>Utilize nosso sistema de chat para:</p>
-                    <ul>
-                        <li>Conversar diretamente com o usuário que registrou o item</li>
-                        <li>Combinar detalhes para devolução ou retirada do item</li>
-                        <li>Fornecer informações adicionais que comprovem a propriedade</li>
-                    </ul>
-                    <div class="alert alert-warning">
-                        <small><i class="fas fa-exclamation-triangle me-1"></i> Por segurança, recomendamos combinar encontros em locais públicos e movimentados.</small>
+                    <div class="row g-3">
+                        @foreach($item->fotos as $foto)
+                        <div class="col-md-4">
+                            <img src="{{ asset('storage/' . $foto->caminho) }}" 
+                                 alt="Foto do item" 
+                                 class="img-fluid rounded">
+                        </div>
+                        @endforeach
                     </div>
+                </div>
+            </div>
+            @endif
+        </div>
+
+        <!-- Coluna Lateral -->
+        <div class="col-md-4">
+            <!-- Informações de Registro -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar me-2"></i>Informações de Registro
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1 text-muted">Data de Registro</p>
+                    <p class="mb-3">{{ $item->created_at->format('d/m/Y H:i') }}</p>
+
+                    @if($item->data_perdido)
+                    <p class="mb-1 text-muted">Data em que foi perdido</p>
+                    <p class="mb-3">{{ \Carbon\Carbon::parse($item->data_perdido)->format('d/m/Y') }}</p>
+                    @endif
+
+                    @if($item->data_encontrado)
+                    <p class="mb-1 text-muted">Data em que foi encontrado</p>
+                    <p class="mb-0">{{ \Carbon\Carbon::parse($item->data_encontrado)->format('d/m/Y') }}</p>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Informações do Registrante -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>Registrado por
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1">{{ $item->usuario->name }}</p>
+                    <p class="mb-0 text-muted small">{{ $item->usuario->email }}</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal para reclamar item -->
-<div class="modal fade" id="claimItemModal" tabindex="-1">
-    <div class="modal-dialog">
+<!-- Modal para Enviar para Parceiro -->
+@if($item->status === 'aprovado' && !$item->parceiro_id)
+<div class="modal fade" id="enviarParaParceiroModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Reclamar Item</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <h5 class="modal-title">Enviar Item para Ponto de Coleta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <p>Para reclamar este item, informe detalhes que apenas o proprietário saberia:</p>
-                <form id="claimItemForm">
-                    <div class="mb-3">
-                        <label for="itemDetails" class="form-label">Detalhes do item</label>
-                        <textarea class="form-control" id="itemDetails" rows="3" placeholder="Descreva detalhes específicos do item que comprovem que é seu..."></textarea>
+            <form action="{{ route('item.enviar-para-parceiro', $item) }}" method="POST" id="enviarParaParceiroForm">
+                @csrf
+                <div class="modal-body">
+                    <!-- Mapa para selecionar parceiro -->
+                    <div class="mb-4">
+                        <label class="form-label">Localizar Pontos de Coleta no Mapa</label>
+                        <div id="mapaParceiros" style="height: 300px;" class="mb-3"></div>
                     </div>
+
+                    <!-- Select para escolher o parceiro -->
                     <div class="mb-3">
-                        <label for="contactInfo" class="form-label">Informações de contato</label>
-                        <input type="text" class="form-control" id="contactInfo" placeholder="Seu telefone ou e-mail para contato">
+                        <label class="form-label">Selecione o Ponto de Coleta</label>
+                        <select name="parceiro_id" class="form-select" required>
+                            <option value="">Selecione...</option>
+                            @foreach($parceiros as $parceiro)
+                                <option value="{{ $parceiro->id }}" 
+                                        data-lat="{{ $parceiro->localizacao->latitude }}"
+                                        data-lng="{{ $parceiro->localizacao->longitude }}">
+                                    {{ $parceiro->nome_estabelecimento }} - 
+                                    {{ $parceiro->localizacao->endereco }}
+                                    ({{ $parceiro->horario_funcionamento }})
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <a href="{{ url('/chatify/'.$item->usuario_id) }}" class="btn btn-primary">Prosseguir para o Chat</a>
-            </div>
+
+                    <!-- Campo para observações -->
+                    <div class="mb-3">
+                        <label class="form-label">Observações (opcional)</label>
+                        <textarea name="observacoes" 
+                                  class="form-control" 
+                                  rows="3" 
+                                  placeholder="Adicione informações relevantes sobre a entrega..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        Confirmar Envio
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<style>
-    .item-gallery {
-        position: relative;
-    }
-    
-    .main-photo {
-        height: 300px;
-        background-color: #e9ecef;
-        overflow: hidden;
-        position: relative;
-    }
-    
-    .main-photo img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    
-    .photo-thumbnails {
-        display: flex;
-        padding: 5px;
-        background-color: rgba(0,0,0,0.03);
-        overflow-x: auto;
-    }
-    
-    .photo-thumbnail {
-        width: 60px;
-        height: 60px;
-        margin-right: 5px;
-        border: 2px solid #fff;
-        border-radius: 4px;
-        cursor: pointer;
-        overflow: hidden;
-        flex-shrink: 0;
-    }
-    
-    .photo-thumbnail img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s;
-    }
-    
-    .photo-thumbnail:hover img {
-        transform: scale(1.1);
-    }
-    
-    .photo-thumbnail.active {
-        border-color: #4e73df;
-    }
-    
-    /* Ícones de navegação da galeria */
-    .gallery-nav {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba(255,255,255,0.7);
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        z-index: 10;
-        color: #333;
-        transition: all 0.2s;
-    }
-    
-    .gallery-nav:hover {
-        background: rgba(255,255,255,0.9);
-    }
-    
-    .gallery-prev {
-        left: 10px;
-    }
-    
-    .gallery-next {
-        right: 10px;
-    }
-</style>
-
+@push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Array para armazenar as fotos do item
-        const itemGalleries = {};
-        
-        @if($item->fotos && $item->fotos->count() > 1)
-            itemGalleries[{{ $item->id }}] = [
-                @foreach($item->fotos as $foto)
-                    "{{ asset('storage/' . $foto->caminho) }}",
-                @endforeach
-            ];
-        @endif
-        
-        // Função para trocar a foto principal ao clicar em uma miniatura
-        window.changeMainPhoto = function(itemId, photoUrl, thumbnailElement) {
-            // Atualiza a foto principal
-            const mainPhotoContainer = document.getElementById(`main-photo-${itemId}`);
-            const mainPhotoImg = mainPhotoContainer.querySelector('img');
-            if (mainPhotoImg) {
-                mainPhotoImg.src = photoUrl;
-            }
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('enviarParaParceiroModal');
+    const form = document.getElementById('enviarParaParceiroForm');
+    const select = document.querySelector('select[name="parceiro_id"]');
+    
+    if (!modal || !form || !select) return;
+
+    let map = null;
+    const markers = {};
+
+    // Inicializa o mapa quando o modal é aberto
+    modal.addEventListener('shown.bs.modal', function() {
+        if (!map) {
+            map = L.map('mapaParceiros').setView([-20.4697, -54.6201], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             
-            // Atualiza a classe ativa na miniatura
-            const thumbnails = thumbnailElement.parentElement.querySelectorAll('.photo-thumbnail');
-            thumbnails.forEach(thumb => thumb.classList.remove('active'));
-            thumbnailElement.classList.add('active');
-        }
-        
-        // Função para navegar para a foto anterior
-        window.prevPhoto = function(itemId) {
-            if (!itemGalleries[itemId] || itemGalleries[itemId].length <= 1) return;
-            
-            const mainPhotoContainer = document.getElementById(`main-photo-${itemId}`);
-            const mainPhotoImg = mainPhotoContainer.querySelector('img');
-            if (!mainPhotoImg) return;
-            
-            // Encontra o índice atual da foto
-            const currentPhotoUrl = mainPhotoImg.src;
-            const currentIndex = itemGalleries[itemId].findIndex(url => url === currentPhotoUrl);
-            
-            // Calcula o índice anterior (com loop circular)
-            const prevIndex = (currentIndex - 1 + itemGalleries[itemId].length) % itemGalleries[itemId].length;
-            
-            // Atualiza a foto principal
-            mainPhotoImg.src = itemGalleries[itemId][prevIndex];
-            
-            // Atualiza a classe ativa na miniatura
-            const thumbnails = mainPhotoContainer.parentElement.querySelector('.photo-thumbnails').querySelectorAll('.photo-thumbnail');
-            thumbnails.forEach(thumb => thumb.classList.remove('active'));
-            thumbnails[prevIndex].classList.add('active');
-        }
-        
-        // Função para navegar para a próxima foto
-        window.nextPhoto = function(itemId) {
-            if (!itemGalleries[itemId] || itemGalleries[itemId].length <= 1) return;
-            
-            const mainPhotoContainer = document.getElementById(`main-photo-${itemId}`);
-            const mainPhotoImg = mainPhotoContainer.querySelector('img');
-            if (!mainPhotoImg) return;
-            
-            // Encontra o índice atual da foto
-            const currentPhotoUrl = mainPhotoImg.src;
-            const currentIndex = itemGalleries[itemId].findIndex(url => url === currentPhotoUrl);
-            
-            // Calcula o próximo índice (com loop circular)
-            const nextIndex = (currentIndex + 1) % itemGalleries[itemId].length;
-            
-            // Atualiza a foto principal
-            mainPhotoImg.src = itemGalleries[itemId][nextIndex];
-            
-            // Atualiza a classe ativa na miniatura
-            const thumbnails = mainPhotoContainer.parentElement.querySelector('.photo-thumbnails').querySelectorAll('.photo-thumbnail');
-            thumbnails.forEach(thumb => thumb.classList.remove('active'));
-            thumbnails[nextIndex].classList.add('active');
-        }
-        
-        // Modal para reclamar item
-        const claimItemBtn = document.getElementById('claimItemBtn');
-        if (claimItemBtn) {
-            claimItemBtn.addEventListener('click', function() {
-                const claimItemModal = new bootstrap.Modal(document.getElementById('claimItemModal'));
-                claimItemModal.show();
+            // Adicionar marcadores para cada parceiro
+            const parceiros = @json($parceiros);
+            parceiros.forEach(parceiro => {
+                const marker = L.marker([
+                    parceiro.localizacao.latitude, 
+                    parceiro.localizacao.longitude
+                ]).addTo(map);
+                
+                marker.bindPopup(`
+                    <strong>${parceiro.nome_estabelecimento}</strong><br>
+                    ${parceiro.localizacao.endereco}<br>
+                    <small>${parceiro.horario_funcionamento}</small>
+                `);
+                
+                markers[parceiro.id] = marker;
             });
         }
     });
+
+    // Atualiza o mapa quando selecionar um parceiro
+    select.addEventListener('change', function() {
+        if (!map) return;
+        
+        const option = this.options[this.selectedIndex];
+        if (option.value) {
+            const lat = option.dataset.lat;
+            const lng = option.dataset.lng;
+            map.setView([lat, lng], 15);
+            markers[option.value].openPopup();
+        }
+    });
+
+    // Manipula o envio do formulário
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const parceiroId = select.value;
+        const observacoes = form.querySelector('[name="observacoes"]').value;
+        
+        if (!parceiroId) {
+            alert('Por favor, selecione um ponto de coleta');
+            return;
+        }
+
+        console.log('Enviando formulário:', {
+            parceiro_id: parceiroId,
+            observacoes: observacoes
+        });
+
+        // Envia o formulário
+        this.submit();
+    });
+});
 </script>
+@endpush
+@endif
 @endsection 

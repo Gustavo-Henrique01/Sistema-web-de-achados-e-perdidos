@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Parceiro extends Model
 {
+    use HasFactory;
+
     protected $table = 'parceiros';
     
     protected $fillable = [
@@ -18,13 +21,25 @@ class Parceiro extends Model
         'logo',
         'tipo_parceiro',
         'data_inicio_parceria',
-        'ativo'
+        'ativo',
+        'status',
+        'motivo_reprovacao',
+        'data_aprovacao',
+        'aprovado_por_id',
+        'cnpj'
     ];
     
     protected $casts = [
         'data_inicio_parceria' => 'date',
-        'ativo' => 'boolean'
+        'ativo' => 'boolean',
+        'data_aprovacao' => 'datetime',
+        'data_reprovacao' => 'datetime'
     ];
+    
+    // Status possíveis
+    const STATUS_PENDENTE = 'pendente';
+    const STATUS_APROVADO = 'aprovado';
+    const STATUS_REPROVADO = 'reprovado';
     
     /**
      * Obtém o usuário associado ao parceiro.
@@ -51,6 +66,22 @@ class Parceiro extends Model
     }
     
     /**
+     * Obtém os itens que foram transferidos para este parceiro.
+     */
+    public function transferencias()
+    {
+        return $this->hasMany(ItemTransferencia::class, 'parceiro_id');
+    }
+    
+    /**
+     * Obtém o administrador que aprovou o parceiro.
+     */
+    public function aprovadoPor()
+    {
+        return $this->belongsTo(User::class, 'aprovado_por_id');
+    }
+    
+    /**
      * Verifica se o parceiro é um ponto de coleta.
      */
     public function isPontoColeta()
@@ -64,6 +95,30 @@ class Parceiro extends Model
     public function isEvento()
     {
         return $this->tipo_parceiro === 'evento' || $this->tipo_parceiro === 'ambos';
+    }
+    
+    /**
+     * Verifica se o parceiro está pendente de aprovação.
+     */
+    public function isPendente()
+    {
+        return $this->status === self::STATUS_PENDENTE;
+    }
+    
+    /**
+     * Verifica se o parceiro foi aprovado.
+     */
+    public function isAprovado()
+    {
+        return $this->status === self::STATUS_APROVADO;
+    }
+    
+    /**
+     * Verifica se o parceiro foi reprovado.
+     */
+    public function isReprovado()
+    {
+        return $this->status === self::STATUS_REPROVADO;
     }
     
     /**
@@ -84,5 +139,29 @@ class Parceiro extends Model
         }
         
         return $query->where('tipo_parceiro', $tipo);
+    }
+    
+    /**
+     * Escopo para filtrar por status.
+     */
+    public function scopeStatus($query, $status)
+    {
+        return $query->where('status', $status);
+    }
+    
+    /**
+     * Escopo para filtrar parceiros pendentes.
+     */
+    public function scopePendente($query)
+    {
+        return $query->where('status', self::STATUS_PENDENTE);
+    }
+    
+    /**
+     * Escopo para filtrar parceiros aprovados.
+     */
+    public function scopeAprovado($query)
+    {
+        return $query->where('status', self::STATUS_APROVADO);
     }
 } 

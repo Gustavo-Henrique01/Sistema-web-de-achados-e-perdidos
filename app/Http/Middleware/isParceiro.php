@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\User;
+use App\Models\Parceiro;
 
 class isParceiro
 {
@@ -17,6 +18,13 @@ class isParceiro
     public function handle(Request $request, Closure $next): Response
     {
         if(auth()->check() && auth()->user()->isParceiro()){
+            // Verifica se o parceiro está aprovado
+            $parceiro = auth()->user()->parceiro;
+            
+            if (!$parceiro || $parceiro->status !== Parceiro::STATUS_APROVADO) {
+                return redirect()->route('parceiro.aguardando-aprovacao');
+            }
+            
             return $next($request);
         } 
 

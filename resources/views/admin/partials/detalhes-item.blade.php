@@ -260,9 +260,14 @@
                 <div class="card">
                     <div class="card-header bg-light d-flex justify-content-between align-items-center">
                         <h6 class="mb-0"><i class="fas fa-user me-2"></i>Informações do Usuário</h6>
-                        <a href="{{ route('admin.perfilUser', $item->usuario->id) }}" class="btn btn-sm btn-outline-primary" title="Ver itens do usuário">
-                            <i class="fas fa-list me-1"></i>Ver Itens
-                        </a>
+                        <div class="d-flex gap-2">
+                            <a href="/{{ config('chatify.routes.prefix') }}/{{ $item->usuario->id }}" class="btn btn-sm btn-outline-success" title="Conversar com o usuário" target="_blank">
+                                <i class="fas fa-comments me-1"></i>Chat
+                            </a>
+                            <a href="{{ route('admin.perfilUser', $item->usuario->id) }}" class="btn btn-sm btn-outline-primary" title="Ver itens do usuário">
+                                <i class="fas fa-list me-1"></i>Ver Itens
+                            </a>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-3">

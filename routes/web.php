@@ -11,6 +11,8 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\ParceiroController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PusherAuthController;
 
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('form.login');
@@ -18,7 +20,13 @@ Route::post('/', [LoginController::class, 'login'])->name('login');;
 
  Route::post('/logout', [LoginController::class, 'sair'])->name('logout');
 
- Route::get('/', [IndexController::class, 'paginaInicial'])->name('paginaInicial');
+// Rotas para redefinição de senha
+Route::get('/forgot-password', [LoginController::class, 'showForgotPasswordForm'])->name('password.request');
+Route::post('/forgot-password', [LoginController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{token}', [LoginController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [LoginController::class, 'resetPassword'])->name('password.update');
+
+Route::get('/', [IndexController::class, 'paginaInicial'])->name('paginaInicial');
     
 
 
@@ -40,7 +48,7 @@ Route::get('/form-item', [ItemController::class, 'index'])->name("cadastro-item"
 
 
 Route::get('/itens', [ItemController::class, 'listarItens'])->name('itens.index');
-Route::get('/itens/{item}', [ItemController::class, 'show'])->name('itens.show');
+Route::get('/itens/mapa', [ItemController::class, 'mapaItens'])->name('itens.mapa');
 
 
 Route::get('/mapa', [MapController::class, 'mostrarMapa'])->name('mapa');
@@ -51,10 +59,16 @@ Route::prefix('user')->middleware(['auth', 'user'])->group(function () {
     Route::post('/item', [ItemController::class, 'registroItem'])->name("registrar-item");
 
     Route::get('/itens', [ItemController::class, 'listarItens'])->name('listar-todos-itens');
-    Route::get('/meus-perfil', [ItemController::class, 'listarItensUsuario'])->name('perfil-usuario');
+    Route::get('/meus-perfil', [UsuarioController::class, 'perfilUsuario'])->name('perfil-usuario');
     Route::get('/editar/{id}', [UsuarioController::class, 'editarItem'])->name('usuario.editar-item');
     Route::put('/atualizar/{id}', [UsuarioController::class, 'atualizarItem'])->name('usuario.atualizar-item');
     Route::delete('/deletar-item/{id}', [UsuarioController::class, 'excluirItem'])->name('usuario.deletar-item');
+
+    Route::get('/itens/{item}', [ItemController::class, 'show'])->name('itens.show');
+
+    // Rotas para edição de perfil
+    Route::get('/edit-profile', [UsuarioController::class, 'editProfile'])->name('usuario.edit-profile');
+    Route::put('/update-profile', [UsuarioController::class, 'updateProfile'])->name('usuario.update-profile');
 
 });
 
@@ -93,15 +107,6 @@ Route::get('/editar-categoria/{id}', [AdministradorController::class, 'editarCat
 Route::put('/atualizar-categoria/{id}', [AdministradorController::class, 'atualizarCategoria'])->name('atualizar-categoria');
 Route::delete('/deletar-categoria/{id}', [AdministradorController::class, 'excluirCategoria'])->name('categorias.destroy');
 
-// Rotas para gestão de parceiros
-Route::get('/parceiros', [ParceiroController::class, 'index'])->name('admin.parceiros.index');
-Route::get('/parceiros/create', [ParceiroController::class, 'create'])->name('admin.parceiros.create');
-Route::post('/parceiros', [ParceiroController::class, 'store'])->name('admin.parceiros.store');
-Route::get('/parceiros/{parceiro}', [ParceiroController::class, 'show'])->name('admin.parceiros.show');
-Route::get('/parceiros/{parceiro}/edit', [ParceiroController::class, 'edit'])->name('admin.parceiros.edit');
-Route::put('/parceiros/{parceiro}', [ParceiroController::class, 'update'])->name('admin.parceiros.update');
-Route::delete('/parceiros/{parceiro}', [ParceiroController::class, 'destroy'])->name('admin.parceiros.destroy');
-Route::get('/parceiros/{parceiro}/itens', [ParceiroController::class, 'listarItens'])->name('admin.parceiros.itens');
 
 // Rotas do perfil do administrador
 Route::get('/perfil', [AdministradorController::class, 'perfil'])->name('admin.perfil');
@@ -111,22 +116,63 @@ Route::put('/perfil/senha', [AdministradorController::class, 'alterarSenha'])->n
 // Rota para o log de ações
 Route::get('/log-acoes', [AdministradorController::class, 'logAcoes'])->name('admin.log-acoes');
 
+// Rotas para gerenciamento de parceiros
+Route::get('/parceiros', [AdministradorController::class, 'listarParceiros'])->name('admin.parceiros.index');
+Route::get('/parceiros/{parceiro}', [AdministradorController::class, 'verParceiro'])->name('admin.parceiros.show');
+Route::post('/parceiros/{parceiro}/aprovar', [AdministradorController::class, 'aprovarParceiro'])->name('admin.parceiros.aprovar');
+Route::post('/parceiros/{parceiro}/reprovar', [AdministradorController::class, 'reprovarParceiro'])->name('admin.parceiros.reprovar');
+Route::post('/parceiros/{parceiro}/desativar', [AdministradorController::class, 'desativarParceiro'])->name('admin.parceiros.desativar');
+Route::get('/parceiros/{parceiro}/itens', [AdministradorController::class, 'listarItensParceiro'])->name('admin.parceiros.itens');
+
 });
 
 // Rotas para parceiros
-Route::prefix('parceiro')->middleware(['auth', 'parceiro'])->group(function () {
-    Route::get('/home', [ParceiroController::class, 'home'])->name('parceiro.home');
-    Route::get('/itens', function() {
-        $parceiro = auth()->user()->parceiro;
-        return app()->call([ParceiroController::class, 'listarItens'], ['parceiro' => $parceiro]);
-    })->name('parceiro.itens');
-    Route::get('/vincular-item', [ParceiroController::class, 'vincularItemForm'])->name('parceiro.vincular-item.form');
-    Route::post('/vincular-item', [ParceiroController::class, 'vincularItem'])->name('parceiro.vincular-item');
-    Route::post('/desvincular-item/{item}', [ParceiroController::class, 'desvincularItem'])->name('parceiro.desvincular-item');
+Route::prefix('parceiro')->middleware(['auth', 'parceiro'])->name('parceiro.')->group(function () {
+    Route::get('/home', [ParceiroController::class, 'home'])->name('home');
+    Route::get('/itens', [ParceiroController::class, 'listarItens'])->name('itens');
+    Route::get('/itens/{item}', [ItemController::class, 'showParceiro'])->name('itens.show');
+    Route::get('/vincular-item', [ParceiroController::class, 'vincularItemForm'])->name('vincular-item.form');
+    Route::get('/transferencias-pendentes', [ParceiroController::class, 'transferenciasPendentes'])->name('transferencias-pendentes');
+    
+    // Rotas de transferência de itens
+    Route::post('/itens/{item}/confirmar-recebimento', [ParceiroController::class, 'confirmarRecebimento'])
+        ->name('itens.confirmar-recebimento');
+    Route::post('/itens/{item}/rejeitar', [ParceiroController::class, 'rejeitarRecebimento'])
+        ->name('itens.rejeitar');
+    Route::post('/itens/{item}/marcar-devolvido', [ParceiroController::class, 'marcarDevolvido'])
+        ->name('itens.marcar-devolvido');
+    Route::post('/itens/{item}/desvincular', [ParceiroController::class, 'desvincularItem'])
+        ->name('desvincular-item');
 });
+
+// Rota para página de aguardando aprovação (não precisa de middleware parceiro)
+Route::get('/parceiro/aguardando-aprovacao', [ParceiroController::class, 'aguardandoAprovacao'])
+    ->middleware(['auth'])
+    ->name('parceiro.aguardando-aprovacao');
 
 // Rota para visualizar todos os parceiros no mapa (pública)
 Route::get('/parceiros/mapa', [ParceiroController::class, 'mapa'])->name('parceiros.mapa');
+
+// Rota para exibir o formulário de registro do parceiro
+Route::get('/parceiro/registro', [ParceiroController::class, 'create'])->name('parceiro.create');
+Route::post('/parceiro', [ParceiroController::class, 'store'])->name('parceiro.store');
+
+// Rotas para transferência de itens
+Route::middleware(['auth'])->group(function () {
+    // Usuário envia item para parceiro
+    Route::post('/item/{item}/enviar-para-parceiro', [ItemController::class, 'enviarParaParceiro'])
+        ->name('item.enviar-para-parceiro');
+});
+
+// Rotas de notificações
+Route::middleware(['auth'])->group(function () {
+    Route::post('/notificacoes/{id}/marcar-lida', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+    Route::post('/notificacoes/marcar-todas-lidas', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    Route::get('/notificacoes/nao-lidas', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
+    Route::post('/pusher/auth', [PusherAuthController::class, 'authenticate'])->name('pusher.auth');
+});
+
+
 
 
 

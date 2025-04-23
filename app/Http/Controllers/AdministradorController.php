@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User; // Alterado de Usuario para User
+use App\Models\User; 
 use App\Models\Item;
 use App\Models\Categoria;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Models\AdminActionLog;
+use App\Models\Parceiro;
+use App\Notifications\ItemAprovadoNotification;
+use App\Notifications\ItemRejeitadoNotification;
 
 class AdministradorController extends Controller
 {
@@ -35,8 +38,8 @@ class AdministradorController extends Controller
 
         $item = Item::findOrFail($id);
         
-        if ($item->status !== 'pendente') {
-            return redirect()->back()->with('error', 'Este item não está pendente de aprovação.');
+        if ($item->status === 'aprovado') {
+            return redirect()->back()->with('error', 'Este item já está aprovado.');
         }
 
         $statusAnterior = $item->status;
@@ -49,6 +52,9 @@ class AdministradorController extends Controller
             'reprovado_por_id' => null,
             'reprovado_em' => null
         ]);
+
+        // Notifica o usuário que registrou o item
+        $item->usuario->notify(new ItemAprovadoNotification($item));
 
         $this->registrarAcao($item, 'aprovacao', null, $statusAnterior);
 
@@ -79,6 +85,9 @@ class AdministradorController extends Controller
             'aprovado_por_id' => null,
             'aprovado_em' => null
         ]);
+
+        // Notifica o usuário que registrou o item
+        $item->usuario->notify(new ItemRejeitadoNotification($item, $request->justificativa));
 
         $this->registrarAcao($item, 'reprovacao', $request->justificativa, $statusAnterior);
 
@@ -496,5 +505,153 @@ class AdministradorController extends Controller
         $filtroAtual = $request->acao;
 
         return view('admin.log-acoes', compact('logs', 'filtroAtual'));
+    }
+
+    /**
+     * Lista todos os parceiros.
+     */
+    public function listarParceiros(Request $request)
+    {
+        // Obtém o status da requisição (se for nulo ou 'todos', mostra tudo)
+        $status = $request->input('status', 'todos');
+
+        // Cria a query base
+        $query = Parceiro::with(['usuario', 'localizacao']);
+
+        // Aplica o filtro de status
+        if ($status !== 'todos') {
+            $query->where('status', $status);
+        }
+        
+        // Filtro de busca por texto
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nome_estabelecimento', 'like', "%{$search}%")
+                  ->orWhereHas('usuario', function($qu) use ($search) {
+                      $qu->where('name', 'like', "%{$search}%")
+                         ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Ordenação
+        $query->orderBy('created_at', 'desc');
+
+        // Pagina os resultados
+        $parceiros = $query->paginate(10);
+
+        return view('admin.parceiros.index', compact('parceiros', 'status'));
+    }
+
+    /**
+     * Exibe detalhes de um parceiro específico.
+     */
+    public function verParceiro(Parceiro $parceiro)
+    {
+        $parceiro->load(['usuario', 'localizacao', 'aprovadoPor']);
+        return view('admin.parceiros.show', compact('parceiro'));
+    }
+
+    /**
+     * Aprova um parceiro.
+     */
+    public function aprovarParceiro(Parceiro $parceiro)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->back()->with('error', 'Acesso não autorizado.');
+        }
+
+        if ($parceiro->status === Parceiro::STATUS_APROVADO) {
+            return redirect()->back()->with('error', 'Este parceiro já está aprovado.');
+        }
+
+        $parceiro->update([
+            'status' => Parceiro::STATUS_APROVADO,
+            'ativo' => true,
+            'aprovado_por_id' => auth()->id(),
+            'data_aprovacao' => now(),
+            'motivo_reprovacao' => null
+        ]);
+
+        // Enviar notificação por e-mail ao parceiro
+        try {
+            $parceiro->usuario->notify(new \App\Notifications\ParceiroCadastroAprovadoNotification($parceiro));
+        } catch (\Exception $e) {
+            \Log::error('Erro ao enviar notificação: ' . $e->getMessage());
+        }
+
+        return redirect()->route('admin.parceiros.index')
+            ->with('success', 'Parceiro aprovado com sucesso!');
+    }
+
+    /**
+     * Reprova um parceiro.
+     */
+    public function reprovarParceiro(Request $request, Parceiro $parceiro)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->back()->with('error', 'Acesso não autorizado.');
+        }
+
+        $request->validate([
+            'motivo_reprovacao' => 'required|string|min:10|max:1000'
+        ]);
+
+        if ($parceiro->status === Parceiro::STATUS_REPROVADO) {
+            return redirect()->back()->with('error', 'Este parceiro já está reprovado.');
+        }
+
+        $parceiro->update([
+            'status' => Parceiro::STATUS_REPROVADO,
+            'ativo' => false,
+            'motivo_reprovacao' => $request->motivo_reprovacao
+        ]);
+
+        // Enviar notificação por e-mail ao parceiro
+        try {
+            $parceiro->usuario->notify(new \App\Notifications\ParceiroCadastroReprovadoNotification($parceiro));
+        } catch (\Exception $e) {
+            \Log::error('Erro ao enviar notificação: ' . $e->getMessage());
+        }
+
+        return redirect()->route('admin.parceiros.index')
+            ->with('success', 'Parceiro reprovado com sucesso.');
+    }
+
+    /**
+     * Ativa ou desativa um parceiro aprovado.
+     */
+    public function desativarParceiro(Parceiro $parceiro)
+    {
+        if (!auth()->user()->isAdmin()) {
+            return redirect()->back()->with('error', 'Acesso não autorizado.');
+        }
+
+        if ($parceiro->status !== Parceiro::STATUS_APROVADO) {
+            return redirect()->back()->with('error', 'Apenas parceiros aprovados podem ser ativados/desativados.');
+        }
+
+        $parceiro->update([
+            'ativo' => !$parceiro->ativo
+        ]);
+
+        $status = $parceiro->ativo ? 'ativado' : 'desativado';
+
+        return redirect()->route('admin.parceiros.show', $parceiro)
+            ->with('success', "Parceiro {$status} com sucesso.");
+    }
+
+    /**
+     * Lista os itens de um parceiro específico.
+     */
+    public function listarItensParceiro(Parceiro $parceiro)
+    {
+        $itens = Item::where('parceiro_id', $parceiro->id)
+            ->with(['categoria', 'usuario', 'fotos'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('admin.parceiros.itens', compact('parceiro', 'itens'));
     }
 }

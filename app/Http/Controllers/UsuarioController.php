@@ -8,12 +8,28 @@ use App\Models\Item;
 use App\Models\Localizacao;
 use App\Models\Categoria;
 use Illuminate\Support\Facades\Storage;
+use App\Models\ItemFoto;
+use Illuminate\Support\Facades\Hash;
+
 
 class UsuarioController extends Controller
 {
     public function home()
     {
-        return view('usuario.home');
+        $user = Auth::user();
+        $itens = $user->itens()
+            ->with(['categoria', 'localizacao', 'fotos'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('usuario.home', compact('itens'));
+    }
+
+    public function perfilUsuario()
+    {
+        $user = Auth::user();
+        $parceiros = \App\Models\Parceiro::where('ativo', true)->get();
+        return view('usuario.perfil-usuario', compact('user', 'parceiros'));
     }
 
     public function index()
@@ -34,7 +50,7 @@ class UsuarioController extends Controller
             'telefone' => 'required|string|max:15',
             'senha' => 'required|string|min:5', // Campo 'senha'
             'foto' => 'nullable|string',
-            'cpf' => 'required|string|unique:users,cpf|size:11', // Tabela 'users'
+            'cpf' => 'required|string|unique:users,cpf|size:14', // Tabela 'users'
         ]);
 
         $validatedData['role'] = 'usuario';
@@ -45,7 +61,7 @@ class UsuarioController extends Controller
         
       
 
-        return redirect()->route('form.login');
+        return redirect()->route('login')->with('success', 'Cadastro realizado com sucesso! Faça login para continuar.');
     }
 
     public function store(Request $request)
@@ -159,6 +175,52 @@ class UsuarioController extends Controller
         }
         $item->delete();
         return redirect()->route('usuario.home')->with('success', 'Item excluído com sucesso.');
+    }
+
+    public function editProfile()
+    {
+        $user = Auth::user();
+        return view('usuario.edit-profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'telefone' => 'required|string|max:15',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        $user->name = $validatedData['name'];
+        $user->email = $validatedData['email'];
+        $user->telefone = $validatedData['telefone'];
+
+        if ($request->hasFile('foto')) {
+            // Remove a foto antiga se existir
+            if ($user->foto) {
+                Storage::delete('public/' . $user->foto);
+            }
+            if ($user->avatar) {
+                Storage::delete('public/' . $user->avatar);
+            }
+
+            // Salva a nova foto
+            $path = $request->file('foto')->store('avatars', 'public');
+            $user->foto = $path;
+            $user->avatar = $path;
+        }
+
+        if (!empty($validatedData['password'])) {
+            $user->senha = Hash::make($validatedData['password']);
+        }
+
+        $user->save();
+
+        return redirect()->route('perfil-usuario')->with('success', 'Perfil atualizado com sucesso!');
     }
 
     public function destroy(string $id)

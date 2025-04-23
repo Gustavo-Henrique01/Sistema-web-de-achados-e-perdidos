@@ -481,10 +481,10 @@
             <a class="nav-link" href="{{ route('parceiros.mapa') }}">Pontos de Coleta</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('form.login') }}">Entrar</a>
+            <a class="nav-link text-white" href="{{ route('form.login') }}">Entrar</a>
           </li>
-          <li class="nav-item ms-2">
-            <a class="btn btn-primary" href="{{ route('registrar') }}">Cadastrar</a>
+          <li class="nav-item">
+            <a class="nav-link text-primary" href="{{ route('registrar') }}">Cadastrar</a>
           </li>
         </ul>
       </div>
@@ -780,7 +780,7 @@
               </div>
               <h4 class="fw-bold mb-3">Estabelecimentos</h4>
               <p class="text-muted mb-4">Torne seu estabelecimento um ponto oficial de coleta e devolução de itens perdidos.</p>
-              <a href="{{ route('form.login') }}" class="btn btn-outline-primary">
+              <a href="{{ route('parceiro.create') }}" class="btn btn-outline-primary">
                 Cadastrar Estabelecimento
               </a>
             </div>
@@ -795,7 +795,7 @@
               </div>
               <h4 class="fw-bold mb-3">Eventos</h4>
               <p class="text-muted mb-4">Integre o sistema de achados e perdidos ao seu evento e ofereça mais segurança.</p>
-              <a href="{{ route('form.login') }}" class="btn btn-outline-primary">
+              <a href="{{ route('parceiro.create') }}" class="btn btn-outline-primary">
                 Cadastrar Evento
               </a>
             </div>
@@ -810,7 +810,7 @@
               </div>
               <h4 class="fw-bold mb-3">Instituições</h4>
               <p class="text-muted mb-4">Facilite a devolução de itens perdidos em sua instituição de forma organizada.</p>
-              <a href="{{ route('form.login') }}" class="btn btn-outline-primary">
+              <a href="{{ route('parceiro.create') }}" class="btn btn-outline-primary">
                 Cadastrar Instituição
               </a>
             </div>

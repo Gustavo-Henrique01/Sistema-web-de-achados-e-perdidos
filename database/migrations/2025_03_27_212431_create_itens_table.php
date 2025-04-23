@@ -15,7 +15,7 @@ return new class extends Migration
             $table->text('descricao');
             $table->date('data_perdido')->nullable();
             $table->date('data_encontrado')->nullable();
-            $table->enum('status', ['pendente', 'aprovado', 'reprovado'])->default('pendente'); // Corrigido para enum
+            $table->enum('status', ['pendente', 'aprovado', 'reprovado', 'em_transferencia', 'em_estabelecimento', 'devolvido'])->default('pendente');
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('id_localizacao')->constrained('localizacoes');
             $table->boolean('aprovado')->default(false);

@@ -30,7 +30,7 @@ class Item extends Model
         'tipo',
         'data_perdido',
         'data_encontrado',
-        
+        'parceiro_id'
     ];
 
     protected $casts = [
@@ -38,7 +38,16 @@ class Item extends Model
         'aprovado_em' => 'datetime',
         'reprovado_em' => 'datetime',
         'excluido_em' => 'datetime',
+        'status' => 'string'
     ];
+
+    // Status possíveis para o item
+    const STATUS_PENDENTE = 'pendente';
+    const STATUS_APROVADO = 'aprovado';
+    const STATUS_REPROVADO = 'reprovado';
+    const STATUS_EM_TRANSFERENCIA = 'em_transferencia';
+    const STATUS_EM_ESTABELECIMENTO = 'em_estabelecimento';
+    const STATUS_DEVOLVIDO = 'devolvido';
 
     // No model Item.php
         public function fotos()
@@ -48,7 +57,7 @@ class Item extends Model
 
     public function categoria()
     {
-        return $this->belongsTo(Categoria::class, 'id_categoria');
+        return $this->belongsTo(Categoria::class, 'id_categoria','id');
     }
 
     // Relacionamento com a tabela usuarios
@@ -85,6 +94,12 @@ class Item extends Model
         return $this->belongsTo(User::class, 'excluido_por_id');
     }
 
+    // Relacionamento com transferências
+    public function transferencias()
+    {
+        return $this->hasMany(ItemTransferencia::class);
+    }
+
     // Campos que devem ser ocultados nas respostas JSON
     protected $hidden = [
         // Se necessário, adicione campos sensíveis aqui
@@ -93,6 +108,5 @@ class Item extends Model
     // Comportamentos adicionais, como ao salvar, pode usar o método booted
     protected static function booted()
     {
-        // Adicionar comportamentos personalizados ao salvar ou excluir o item
     }
 }

@@ -22,7 +22,7 @@ class User extends Authenticatable
     
     protected $fillable = [
         'name', 'email', 'telefone',  
-        'foto', 'cpf', 'role', 'ativo', 'senha'
+        'foto', 'cpf', 'role', 'ativo', 'senha','avatar'
     ];
 
     protected $hidden = [
@@ -39,6 +39,11 @@ class User extends Authenticatable
     public function getAuthPassword()
     {
         return $this->senha;
+    }
+
+    public function setPasswordAttribute($value)
+    {
+        $this->attributes['senha'] = bcrypt($value);
     }
 
     public function itens()

@@ -40,8 +40,8 @@
                                 <tr>
                                     <td>{{ $item->id }}</td>
                                     <td>{{ $item->titulo }}</td>
-                                    <td>{{ $item->categoria->nome_categoria }}</td>
-                                    <td>{{ $item->user->name }}</td>
+                                    <td>{{ $item->categoria ? $item->categoria->nome_categoria : 'Sem categoria' }}</td>
+                                    <td>{{ $item->usuario->name }}</td>
                                     <td>
                                         <span class="badge bg-{{ $item->status === 'aprovado' ? 'success' : ($item->status === 'reprovado' ? 'danger' : 'warning') }}">
                                             {{ ucfirst($item->status) }}
@@ -53,19 +53,21 @@
                                             <a href="{{ route('admin.itens.detalhes', $item->id) }}" class="btn btn-sm btn-info" title="Ver Detalhes">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            @if($item->status === 'pendente')
+                                            @if($item->status !== 'aprovado')
                                                 <form action="{{ route('admin.itens.aprovar', $item->id) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     <button type="submit" class="btn btn-sm btn-success" title="Aprovar">
                                                         <i class="fas fa-check"></i>
                                                     </button>
                                                 </form>
-                                                <form action="{{ route('admin.itens.rejeitar', $item->id) }}" method="POST" class="d-inline">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-sm btn-danger" title="Rejeitar">
-                                                        <i class="fas fa-times"></i>
-                                                    </button>
-                                                </form>
+                                                @if($item->status === 'pendente')
+                                                    <form action="{{ route('admin.itens.rejeitar', $item->id) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-danger" title="Rejeitar">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </form>
+                                                @endif
                                             @endif
                                             <form action="{{ route('admin.itens.remover', $item->id) }}" method="POST" class="d-inline">
                                                 @csrf
@@ -122,4 +124,4 @@
         border-color: #dee2e6;
     }
 </style>
-@endsection 
+@endsection

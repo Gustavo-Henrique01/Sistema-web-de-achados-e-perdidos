@@ -1,6 +1,18 @@
 @extends('usuario.home')
 
 @section('content')
+@if(session('warning'))
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        {{ session('warning') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+<!-- Adicionar links para o Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
 <style>
     /* Estilos para o perfil do usuário */
     .profile-card {
@@ -359,7 +371,7 @@
                 <!-- Botões de Ação -->
                 <div class="profile-stats">
                     <div class="d-grid gap-2">
-                        <a href="#" class="btn btn-primary">Editar Perfil</a>
+                        <a href="{{ route('usuario.edit-profile') }}" class="btn btn-primary">Editar Perfil</a>
                         <a href="{{ url('/chatify') }}" class="btn btn-success">
                             <i class="fas fa-comments me-2"></i>Mensagens
                         </a>
@@ -410,7 +422,7 @@
             <div class="items-container">
                 <div class="items-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Meus Itens Cadastrados</h4>
-                    <a href="{{ route('registrar-item') }}" class="btn btn-light btn-sm">Cadastrar Novo Item</a>
+                    <a href="{{ route('usuario.cadastrar-item') }}" class="btn btn-light btn-sm">Cadastrar Novo Item</a>
                 </div>
                 
                 <div class="items-body">
@@ -436,7 +448,7 @@
                         <div class="no-items">
                             <i class="fas fa-box-open d-block"></i>
                             <p>Você ainda não cadastrou nenhum item.</p>
-                            <a href="{{ route('registrar-item') }}" class="btn btn-primary">Cadastrar novo item</a>
+                            <a href="{{ route('usuario.cadastrar-item') }}" class="btn btn-primary">Cadastrar novo item</a>
                         </div>
                         @else
                             <div class="row">
@@ -447,18 +459,28 @@
                                             <!-- Foto principal -->
                                             <div class="main-photo" id="main-photo-{{ $item->id }}">
                                                 @if ($item->fotos && $item->fotos->isNotEmpty())
-                                                    <img src="{{ asset('storage/' . $item->fotos->where('is_principal', true)->first()->caminho ?? $item->fotos->first()->caminho) }}" alt="Foto do Item">
-                                                    
-                                                    <!-- Navegação da galeria (apenas se houver mais de uma foto) -->
-                                                    @if($item->fotos->count() > 1)
-                                                        <div class="gallery-nav gallery-prev" onclick="prevPhoto({{ $item->id }})">
-                                                            <i class="fas fa-chevron-left"></i>
-                                                        </div>
-                                                        <div class="gallery-nav gallery-next" onclick="nextPhoto({{ $item->id }})">
-                                                            <i class="fas fa-chevron-right"></i>
+                                                    @php
+                                                        $fotoPrincipal = $item->fotos->where('is_principal', true)->first();
+                                                        $foto = $fotoPrincipal ?? $item->fotos->first();
+                                                    @endphp
+                                                    @if($foto && $foto->caminho)
+                                                        <img src="{{ asset('storage/' . $foto->caminho) }}" alt="Foto do Item">
+                                                        
+                                                        <!-- Navegação da galeria (apenas se houver mais de uma foto) -->
+                                                        @if($item->fotos->count() > 1)
+                                                            <div class="gallery-nav gallery-prev" onclick="prevPhoto({{ $item->id }})">
+                                                                <i class="fas fa-chevron-left"></i>
+                                                            </div>
+                                                            <div class="gallery-nav gallery-next" onclick="nextPhoto({{ $item->id }})">
+                                                                <i class="fas fa-chevron-right"></i>
+                                                            </div>
+                                                        @endif
+                                                    @else
+                                                        <div class="d-flex align-items-center justify-content-center h-100">
+                                                            <i class="fas fa-image text-muted fa-3x"></i>
                                                         </div>
                                                     @endif
-                                            @else
+                                                @else
                                                     <div class="d-flex align-items-center justify-content-center h-100">
                                                         <i class="fas fa-image text-muted fa-3x"></i>
                                                     </div>
@@ -472,11 +494,13 @@
                                             <!-- Miniaturas das fotos (apenas se houver mais de uma foto) -->
                                             @if ($item->fotos && $item->fotos->count() > 1)
                                                 <div class="photo-thumbnails">
-                                                    @foreach($item->fotos as $index => $foto)
-                                                        <div class="photo-thumbnail {{ $foto->is_principal ? 'active' : '' }}" 
-                                                             onclick="changeMainPhoto({{ $item->id }}, '{{ asset('storage/' . $foto->caminho) }}', this)">
-                                                            <img src="{{ asset('storage/' . $foto->caminho) }}" alt="Miniatura">
-                                                        </div>
+                                                    @foreach($item->fotos as $foto)
+                                                        @if($foto->caminho)
+                                                            <div class="photo-thumbnail {{ $foto->is_principal ? 'active' : '' }}" 
+                                                                 onclick="changeMainPhoto({{ $item->id }}, '{{ asset('storage/' . $foto->caminho) }}', this)">
+                                                                <img src="{{ asset('storage/' . $foto->caminho) }}" alt="Miniatura">
+                                                            </div>
+                                                        @endif
                                                     @endforeach
                                                 </div>
                                             @endif
@@ -510,16 +534,25 @@
                                                 <i class="fas fa-edit"></i> Editar
                                             </a>
                                             
-                                                <form action="{{ route('usuario.deletar-item', $item->id) }}" method="POST" class="d-inline">
-                                                    @csrf
-                                                    @method('DELETE')
+                                            @if($item->status === 'aprovado' && !$item->parceiro_id)
+                                            <button type="button" 
+                                                    class="btn btn-success btn-sm" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#enviarParaParceiroModal-{{ $item->id }}">
+                                                <i class="fas fa-store"></i> Enviar para Ponto de Coleta
+                                            </button>
+                                            @endif
+                                            
+                                            <form action="{{ route('usuario.deletar-item', $item->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
                                                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este item?');">
                                                     <i class="fas fa-trash"></i> Excluir
                                                 </button>
-                                                </form>
-                                            </div>
+                                            </form>
                                         </div>
                                     </div>
+                                </div>
                                 @endforeach
                             </div>
                         @endif
@@ -672,4 +705,109 @@
         thumbnails[nextIndex].classList.add('active');
     }
 </script>
+
+@foreach($user->itens as $item)
+    @if($item->status === 'aprovado' && !$item->parceiro_id)
+    <!-- Modal Enviar para Parceiro -->
+    <div class="modal fade" id="enviarParaParceiroModal-{{ $item->id }}" tabindex="-1" aria-labelledby="enviarParaParceiroModalLabel-{{ $item->id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="enviarParaParceiroModalLabel-{{ $item->id }}">Enviar Item para Ponto de Coleta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ route('item.enviar-para-parceiro', ['item' => $item->id]) }}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <div id="map-{{ $item->id }}" style="height: 300px;" class="mb-3"></div>
+                            <label for="parceiro_id-{{ $item->id }}" class="form-label">Selecione o Ponto de Coleta</label>
+                            <select class="form-select" name="parceiro_id" id="parceiro_id-{{ $item->id }}" required>
+                                <option value="">Selecione um ponto de coleta</option>
+                                @foreach($parceiros as $parceiro)
+                                    <option value="{{ $parceiro->id }}" 
+                                            data-lat="{{ $parceiro->localizacao->latitude }}" 
+                                            data-lng="{{ $parceiro->localizacao->longitude }}">
+                                        {{ $parceiro->nome_estabelecimento }} - {{ $parceiro->localizacao->endereco }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="observacoes" class="form-label">Observações (opcional)</label>
+                            <textarea class="form-control" name="observacoes" id="observacoes-{{ $item->id }}" rows="3"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-success">Confirmar Envio</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+@endforeach
+
+@push('scripts')
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_key') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    @foreach($user->itens as $item)
+        @if($item->status === 'aprovado' && !$item->parceiro_id)
+            // Inicializa o mapa para cada item
+            const map{{ $item->id }} = new google.maps.Map(document.getElementById('map-{{ $item->id }}'), {
+                center: { lat: -20.4697, lng: -54.6201 },
+                zoom: 13
+            });
+
+            const markers{{ $item->id }} = {};
+            
+            // Adiciona marcadores para cada parceiro
+            @foreach($parceiros as $parceiro)
+                markers{{ $item->id }}[{{ $parceiro->id }}] = new google.maps.Marker({
+                    position: { 
+                        lat: {{ $parceiro->localizacao->latitude }}, 
+                        lng: {{ $parceiro->localizacao->longitude }}
+                    },
+                    map: map{{ $item->id }},
+                    title: '{{ $parceiro->nome_estabelecimento }}'
+                });
+
+                // Adiciona info window para cada marcador
+                const infoWindow{{ $item->id }}{{ $parceiro->id }} = new google.maps.InfoWindow({
+                    content: `
+                        <strong>{{ $parceiro->nome_estabelecimento }}</strong><br>
+                        {{ $parceiro->localizacao->endereco }}<br>
+                        <small>{{ $parceiro->horario_funcionamento }}</small>
+                    `
+                });
+
+                markers{{ $item->id }}[{{ $parceiro->id }}].addListener('click', () => {
+                    infoWindow{{ $item->id }}{{ $parceiro->id }}.open(map{{ $item->id }}, markers{{ $item->id }}[{{ $parceiro->id }}]);
+                });
+            @endforeach
+
+            // Atualiza o mapa quando um parceiro é selecionado
+            document.getElementById('parceiro_id-{{ $item->id }}').addEventListener('change', function(e) {
+                const selectedOption = e.target.options[e.target.selectedIndex];
+                if (selectedOption.value) {
+                    const lat = parseFloat(selectedOption.dataset.lat);
+                    const lng = parseFloat(selectedOption.dataset.lng);
+                    map{{ $item->id }}.setCenter({ lat, lng });
+                    map{{ $item->id }}.setZoom(15);
+                    markers{{ $item->id }}[selectedOption.value].setAnimation(google.maps.Animation.BOUNCE);
+                    setTimeout(() => {
+                        markers{{ $item->id }}[selectedOption.value].setAnimation(null);
+                    }, 1500);
+                }
+            });
+        @endif
+    @endforeach
+});
+</script>
+@endpush
+
+</body>
+</html>
 @endsection
