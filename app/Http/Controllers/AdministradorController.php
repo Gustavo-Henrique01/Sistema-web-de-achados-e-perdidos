@@ -155,7 +155,7 @@ class AdministradorController extends Controller
         
         // Filtro por categoria
         if ($request->has('categoria') && !empty($request->categoria)) {
-            $query->where('categoria_id', $request->categoria);
+            $query->where('id_categoria', $request->categoria);
         }
         
         // Filtro por data de início
@@ -173,8 +173,9 @@ class AdministradorController extends Controller
 
         // Pagina os resultados
         $itens = $query->paginate(12);
+        $categorias = Categoria::all();
 
-        return view('admin.listar-all-itens', compact('itens', 'status'));
+        return view('admin.listar-all-itens', compact('itens', 'status','categorias'));
     }
 
     /**

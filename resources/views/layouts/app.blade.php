@@ -16,9 +16,44 @@
             height: 100%;
             position: relative;
         }
-    </style>
-    <!-- Custom CSS -->
-    <style>
+  
+    
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Garante que o body ocupe toda a altura da tela */
+            margin: 0;
+            background-color: #f8f9fa;
+        }
+
+        .main-content {
+            flex: 1; /* Faz o conteúdo principal ocupar o espaço restante */
+        }
+
+        footer {
+            background-color: white;
+            padding: 1rem 0;
+            margin-top: auto; /* Empurra o footer para baixo */
+        }
+        .notification-btn {
+            position: relative;
+        }
+
+        .notification-count {
+            position: absolute;        
+            top: -5px;        
+            right: -5px;                        
+            background-color: red;        
+            color: white;        
+            border-radius: 50%;        
+            width: 18px;        
+            height: 18px;        
+            display: flex;        
+            justify-content: center;        
+            align-items: center;    
+        }
+
+
         body {
             background-color: #f8f9fa;
         }
@@ -45,6 +80,7 @@
         .badge {
             font-weight: 500;
         }
+        
     </style>
 </head>
 <body>
@@ -113,7 +149,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white py-4 mt-5">
+    <footer class="bg-white py-4 ">
         <div class="container">
             <div class="row">
                 <div class="col-md-6">

@@ -404,7 +404,7 @@
         map = new google.maps.Map(mapElement, {
             zoom: 13,
             center: center,
-            mapId: "mapa_achados_perdidos", // ID único para o mapa
+            mapId: "mapa_achados_perdidos",
             mapTypeControl: true,
             streetViewControl: true,
             fullscreenControl: true,
@@ -439,6 +439,14 @@
                 gmpClickable: true,
                 content: createMarkerContent(icon)
             });
+
+            // Adicionar atributos personalizados ao marcador para os filtros
+            marker.itemData = {
+                tipo: item.tipo,
+                status: item.status,
+                categoria: item.id_categoria,
+                data: item.tipo === 'achado' ? item.data_encontrado : item.data_perdido
+            };
             
             // Conteúdo do infoWindow
             const contentString = `
@@ -459,8 +467,10 @@
                 maxWidth: 300
             });
             
-            // Evento de clique no marcador usando gmp-click
+            // Evento de clique no marcador
             marker.addListener("gmp-click", () => {
+                // Fechar todas as outras janelas de info
+                infoWindows.forEach(iw => iw.close());
                 infoWindow.open(map, marker);
             });
             
@@ -470,30 +480,37 @@
         });
 
         // Adicionar marcadores para estabelecimentos parceiros
-        const estabelecimentos = @json($estabelecimentos ?? []);
-        estabelecimentos.forEach(estabelecimento => {
-            if (!estabelecimento.latitude || !estabelecimento.longitude) {
+        const parceiros = @json($parceiros);
+        parceiros.forEach(parceiro => {
+            if (!parceiro.localizacao || !parceiro.localizacao.latitude || !parceiro.localizacao.longitude) {
                 return;
             }
 
             const marker = new google.maps.marker.AdvancedMarkerElement({
                 position: {
-                    lat: parseFloat(estabelecimento.latitude),
-                    lng: parseFloat(estabelecimento.longitude)
+                    lat: parseFloat(parceiro.localizacao.latitude),
+                    lng: parseFloat(parceiro.localizacao.longitude)
                 },
                 map: map,
-                title: estabelecimento.nome,
+                title: parceiro.nome,
                 gmpDraggable: false,
                 gmpClickable: true,
                 content: createMarkerContent('https://maps.google.com/mapfiles/ms/icons/blue-dot.png')
             });
 
+            // Adicionar atributos para filtro
+            marker.itemData = {
+                tipo: 'parceiro',
+                status: 'em_estabelecimento',
+                categoria: null,
+                data: null
+            };
+
             const contentString = `
                 <div class="info-window">
-                    <h6 class="mb-2">${estabelecimento.nome}</h6>
-                    <p class="mb-1"><strong>Endereço:</strong> ${estabelecimento.endereco}</p>
-                    <p class="mb-1"><strong>Horário:</strong> ${estabelecimento.horario_funcionamento}</p>
-                    <p class="mb-1"><strong>Contato:</strong> ${estabelecimento.telefone}</p>
+                    <h6 class="mb-2">${parceiro.nome}</h6>
+                    <p class="mb-1"><strong>Endereço:</strong> ${parceiro.localizacao.endereco}</p>
+                    <p class="mb-2"><strong>Telefone:</strong> ${parceiro.telefone || 'Não informado'}</p>
                 </div>
             `;
 
@@ -503,6 +520,7 @@
             });
 
             marker.addListener("gmp-click", () => {
+                infoWindows.forEach(iw => iw.close());
                 infoWindow.open(map, marker);
             });
 
@@ -543,7 +561,7 @@
         return div;
     }
     
-    // Feedback visual ao aplicar filtros
+    // Função para aplicar os filtros
     function aplicarFiltros(isMobile = false) {
         const mapDiv = document.getElementById('map');
         mapDiv.classList.add('fade-out');
@@ -565,24 +583,43 @@
             document.getElementById('data_mobile').value : 
             document.getElementById('data').value;
         
+        // Fechar todas as janelas de info
+        infoWindows.forEach(iw => iw.close());
+        
         // Aplicar filtros aos marcadores
         let visibleCount = 0;
         
         markers.forEach(marker => {
             let visible = true;
+            const itemData = marker.itemData;
             
             // Filtro de tipo
-            if (tipo && marker.type !== tipo) {
-                visible = false;
+            if (tipo && tipo !== '') {
+                if (tipo === 'achado' && itemData.tipo !== 'achado') visible = false;
+                if (tipo === 'perdido' && itemData.tipo !== 'perdido') visible = false;
             }
             
             // Filtro de status
-            if (status && marker.status !== status) {
+            if (status && status !== '') {
+                if (status === 'aprovado' && itemData.status !== 'aprovado') visible = false;
+                if (status === 'em_estabelecimento' && itemData.tipo !== 'parceiro') visible = false;
+            }
+            
+            // Filtro de categoria
+            if (categoria && categoria !== '' && itemData.categoria != categoria) {
                 visible = false;
             }
             
+            // Filtro de data
+            if (data && data !== '' && itemData.data) {
+                const itemDate = new Date(itemData.data).toISOString().split('T')[0];
+                if (itemDate !== data) {
+                    visible = false;
+                }
+            }
+            
             // Atualizar visibilidade do marcador
-            marker.setVisible(visible);
+            marker.map = visible ? map : null;
             
             if (visible) visibleCount++;
         });
@@ -613,17 +650,31 @@
         }
         
         // Mostrar todos os marcadores
-        markers.forEach(marker => marker.setVisible(true));
+        markers.forEach(marker => {
+            marker.map = map;
+        });
         
         // Atualizar contador
         document.getElementById('item-count').textContent = markers.length;
+        
+        // Fechar todas as janelas de info
+        infoWindows.forEach(iw => iw.close());
     }
     
     // Ajuste para painel de filtros responsivo
     document.querySelectorAll('.toggle-panel').forEach(btn => {
         btn.addEventListener('click', function() {
             const target = document.getElementById(this.dataset.target);
-            if(target) target.classList.toggle('d-none');
+            if(target) {
+                const isVisible = !target.classList.contains('d-none');
+                target.classList.toggle('d-none');
+                
+                // Atualizar o ícone do botão
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.className = isVisible ? 'fas fa-chevron-down' : 'fas fa-chevron-up';
+                }
+            }
         });
     });
     

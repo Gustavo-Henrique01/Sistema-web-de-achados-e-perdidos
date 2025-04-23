@@ -2,85 +2,102 @@
 
 @section('content')
 <div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-clipboard-list me-2"></i>Gerenciamento de Itens</h2>
-        <div class="d-flex">
-            <form method="GET" action="{{ route('admin.listar-itens') }}" class="d-flex" id="filterForm">
-                <div class="input-group">
-                    <input type="text" name="search" class="form-control" placeholder="Buscar item..." value="{{ request('search') }}">
-                    <button class="btn btn-outline-secondary" type="submit">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-            </form>
+    <div class="bg-white shadow-sm rounded-3 p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-2">
+            <div class="mb-3 mb-md-0">
+                <h2 class="fw-bold mb-0"><i class="fas fa-clipboard-list me-2 text-primary"></i>Gerenciamento de Itens</h2>
+                <p class="text-muted mb-0">Visualize, aprove, rejeite e gerencie todos os itens do sistema</p>
+            </div>
+            <div class="d-flex">
+                <form method="GET" action="{{ route('admin.listar-itens') }}" class="d-flex" id="filterForm">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control border" placeholder="Buscar item..." value="{{ request('search') }}">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
     
     <!-- Dashboard de Status -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-sm-6">
             <a href="{{ route('admin.listar-itens', ['status' => 'todos']) }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100 {{ $status == 'todos' ? 'bg-primary text-white' : '' }}">
-                    <div class="card-body">
+                <div class="card border-0 shadow-sm h-100 rounded-3 overflow-hidden {{ $status == 'todos' ? 'border-primary border-start border-5' : '' }}">
+                    <div class="card-body p-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="card-title mb-0">Todos os Itens</h6>
-                                <h2 class="mt-2 mb-0">{{ App\Models\Item::count() }}</h2>
+                                <p class="text-muted small text-uppercase mb-1">Todos os Itens</p>
+                                <h3 class="fw-bold mb-0">{{ App\Models\Item::count() }}</h3>
                             </div>
-                            <div class="stat-icon">
-                                <i class="fas fa-boxes fa-2x"></i>
+                            <div class="stat-icon rounded-circle bg-primary bg-opacity-10 p-3">
+                                <i class="fas fa-boxes fa-lg text-primary"></i>
                             </div>
+                        </div>
+                        <div class="progress mt-3" style="height: 5px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>
             </a>
         </div>
-        <div class="col-md-3 mb-3">
+        <div class="col-md-3 col-sm-6">
             <a href="{{ route('admin.listar-itens', ['status' => 'pendente']) }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100 {{ $status == 'pendente' ? 'bg-warning text-dark' : '' }}">
-                    <div class="card-body">
+                <div class="card border-0 shadow-sm h-100 rounded-3 overflow-hidden {{ $status == 'pendente' ? 'border-warning border-start border-5' : '' }}">
+                    <div class="card-body p-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="card-title mb-0">Pendentes</h6>
-                                <h2 class="mt-2 mb-0">{{ App\Models\Item::where('status', 'pendente')->count() }}</h2>
+                                <p class="text-muted small text-uppercase mb-1">Pendentes</p>
+                                <h3 class="fw-bold mb-0">{{ App\Models\Item::where('status', 'pendente')->count() }}</h3>
                             </div>
-                            <div class="stat-icon">
-                                <i class="fas fa-clock fa-2x"></i>
+                            <div class="stat-icon rounded-circle bg-warning bg-opacity-10 p-3">
+                                <i class="fas fa-clock fa-lg text-warning"></i>
                             </div>
+                        </div>
+                        <div class="progress mt-3" style="height: 5px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>
             </a>
         </div>
-        <div class="col-md-3 mb-3">
+        <div class="col-md-3 col-sm-6">
             <a href="{{ route('admin.listar-itens', ['status' => 'aprovado']) }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100 {{ $status == 'aprovado' ? 'bg-success text-white' : '' }}">
-                    <div class="card-body">
+                <div class="card border-0 shadow-sm h-100 rounded-3 overflow-hidden {{ $status == 'aprovado' ? 'border-success border-start border-5' : '' }}">
+                    <div class="card-body p-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="card-title mb-0">Aprovados</h6>
-                                <h2 class="mt-2 mb-0">{{ App\Models\Item::where('status', 'aprovado')->count() }}</h2>
+                                <p class="text-muted small text-uppercase mb-1">Aprovados</p>
+                                <h3 class="fw-bold mb-0">{{ App\Models\Item::where('status', 'aprovado')->count() }}</h3>
                             </div>
-                            <div class="stat-icon">
-                                <i class="fas fa-check-circle fa-2x"></i>
+                            <div class="stat-icon rounded-circle bg-success bg-opacity-10 p-3">
+                                <i class="fas fa-check-circle fa-lg text-success"></i>
                             </div>
+                        </div>
+                        <div class="progress mt-3" style="height: 5px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>
             </a>
         </div>
-        <div class="col-md-3 mb-3">
+        <div class="col-md-3 col-sm-6">
             <a href="{{ route('admin.listar-itens', ['status' => 'reprovado']) }}" class="text-decoration-none">
-                <div class="card border-0 shadow-sm h-100 {{ $status == 'reprovado' ? 'bg-danger text-white' : '' }}">
-                    <div class="card-body">
+                <div class="card border-0 shadow-sm h-100 rounded-3 overflow-hidden {{ $status == 'reprovado' ? 'border-danger border-start border-5' : '' }}">
+                    <div class="card-body p-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="card-title mb-0">Reprovados</h6>
-                                <h2 class="mt-2 mb-0">{{ App\Models\Item::where('status', 'reprovado')->count() }}</h2>
+                                <p class="text-muted small text-uppercase mb-1">Reprovados</p>
+                                <h3 class="fw-bold mb-0">{{ App\Models\Item::where('status', 'reprovado')->count() }}</h3>
                             </div>
-                            <div class="stat-icon">
-                                <i class="fas fa-times-circle fa-2x"></i>
+                            <div class="stat-icon rounded-circle bg-danger bg-opacity-10 p-3">
+                                <i class="fas fa-times-circle fa-lg text-danger"></i>
                             </div>
+                        </div>
+                        <div class="progress mt-3" style="height: 5px;">
+                            <div class="progress-bar bg-danger" role="progressbar" style="width: 100%" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>
@@ -89,50 +106,64 @@
     </div>
     
     <!-- Filtros Adicionais -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-light">
-            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros</h5>
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4">
+        <div class="card-header bg-white border-bottom">
+            <h5 class="fw-bold mb-0"><i class="fas fa-filter me-2 text-primary"></i>Filtros Avançados</h5>
         </div>
-        <div class="card-body">
-            <form method="GET" action="{{ route('admin.listar-itens') }}" class="row" id="advancedFilterForm">
+        <div class="card-body p-4">
+            <form method="GET" action="{{ route('admin.listar-itens') }}" class="row g-3" id="advancedFilterForm">
                 <input type="hidden" name="status" value="{{ $status }}">
                 
-                <div class="col-md-3 mb-3">
-                    <label for="tipo" class="form-label">Tipo</label>
-                    <select name="tipo" id="tipo" class="form-select">
-                        <option value="">Todos</option>
-                        <option value="achado" {{ request('tipo') == 'achado' ? 'selected' : '' }}>Achados</option>
-                        <option value="perdido" {{ request('tipo') == 'perdido' ? 'selected' : '' }}>Perdidos</option>
-                    </select>
+                <div class="col-lg-3 col-md-6">
+                    <label for="categoria" class="form-label small text-uppercase fw-bold text-secondary">Categoria</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-tag text-primary"></i></span>
+                        <select name="categoria" id="categoria" class="form-select border-start-0">
+                            <option value="">Todas as categorias</option>
+                            @foreach($categorias as $categoria)
+                                <option value="{{ $categoria->id }}" {{ request('categoria') == $categoria->id ? 'selected' : '' }}>
+                                    {{ $categoria->nome_categoria }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
                 
-                <div class="col-md-3 mb-3">
-                    <label for="categoria" class="form-label">Categoria</label>
-                    <select name="categoria" id="categoria" class="form-select">
-                        <option value="">Todas</option>
-                        @foreach(App\Models\Categoria::all() as $categoria)
-                            <option value="{{ $categoria->id }}" {{ request('categoria') == $categoria->id ? 'selected' : '' }}>
-                                {{ $categoria->nome_categoria }}
-                            </option>
-                        @endforeach
-                    </select>
+                <div class="col-lg-3 col-md-6">
+                    <label for="tipo" class="form-label small text-uppercase fw-bold text-secondary">Tipo</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-primary"></i></span>
+                        <select name="tipo" id="tipo" class="form-select border-start-0">
+                            <option value="">Todos</option>
+                            <option value="achado" {{ request('tipo') == 'achado' ? 'selected' : '' }}>Achados</option>
+                            <option value="perdido" {{ request('tipo') == 'perdido' ? 'selected' : '' }}>Perdidos</option>
+                        </select>
+                    </div>
                 </div>
                 
-                <div class="col-md-3 mb-3">
-                    <label for="data_inicio" class="form-label">Data Início</label>
-                    <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ request('data_inicio') }}">
+              
+                
+                <div class="col-lg-3 col-md-6">
+                    <label for="data_inicio" class="form-label small text-uppercase fw-bold text-secondary">Data Início</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-calendar-alt text-primary"></i></span>
+                        <input type="date" class="form-control border-start-0" id="data_inicio" name="data_inicio" value="{{ request('data_inicio') }}">
+                    </div>
                 </div>
                 
-                <div class="col-md-3 mb-3">
-                    <label for="data_fim" class="form-label">Data Fim</label>
-                    <input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ request('data_fim') }}">
+                <div class="col-lg-3 col-md-6">
+                    <label for="data_fim" class="form-label small text-uppercase fw-bold text-secondary">Data Fim</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fas fa-calendar-alt text-primary"></i></span>
+                        <input type="date" class="form-control border-start-0" id="data_fim" name="data_fim" value="{{ request('data_fim') }}">
+                    </div>
                 </div>
                 
-                <div class="col-12 text-end">
-                    <a href="{{ route('admin.listar-itens') }}" class="btn btn-outline-secondary me-2">
+                <div class="col-12 d-flex justify-content-end mt-2">
+                    <a href="{{ route('admin.listar-itens') }}" class="btn btn-light me-2">
                         <i class="fas fa-undo-alt me-1"></i>Limpar Filtros
                     </a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary px-4">
                         <i class="fas fa-search me-1"></i>Aplicar Filtros
                     </button>
                 </div>
@@ -141,10 +172,10 @@
     </div>
 
     <!-- Exibição dos Itens -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Lista de Itens</h5>
-            <span class="badge bg-primary">{{ $itens->total() }} itens encontrados</span>
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3">
+            <h5 class="fw-bold mb-0"><i class="fas fa-list me-2 text-primary"></i>Lista de Itens</h5>
+            <span class="badge bg-primary rounded-pill px-3 py-2">{{ $itens->total() }} itens encontrados</span>
         </div>
         
         <div class="card-body">
@@ -154,10 +185,10 @@
                     <p class="text-muted mb-0">Nenhum item encontrado com os filtros atuais.</p>
                 </div>
             @else
-                <div class="row">
+                <div class="row g-4">
                     @foreach ($itens as $item)
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100 shadow-sm border-0 item-card">
+                        <div class="col-xl-4 col-md-6">
+                            <div class="card h-100 shadow-sm border-0 item-card rounded-3 overflow-hidden">
                                 <div class="position-relative">
                                     <div class="item-image">
                                         @if ($item->fotos && $item->fotos->isNotEmpty())
@@ -169,41 +200,48 @@
                                         @endif
                                         
                                         <div class="badge-container">
-                                            <span class="badge rounded-pill bg-{{ $item->tipo == 'achado' ? 'success' : 'danger' }} position-absolute top-0 start-0 m-2">
-                                                {{ ucfirst($item->tipo) }}
+                                            <span class="badge rounded-pill bg-{{ $item->tipo == 'achado' ? 'success' : 'danger' }} position-absolute top-0 start-0 m-3 px-3 py-2 shadow-sm">
+                                                <i class="fas {{ $item->tipo == 'achado' ? 'fa-hand-holding' : 'fa-search' }} me-1"></i> {{ ucfirst($item->tipo) }}
                                             </span>
-                                            <span class="badge rounded-pill position-absolute top-0 end-0 m-2 bg-{{ $item->status == 'aprovado' ? 'success' : ($item->status == 'pendente' ? 'warning' : 'danger') }}">
-                                                {{ ucfirst($item->status) }}
+                                            <span class="badge rounded-pill position-absolute top-0 end-0 m-3 px-3 py-2 shadow-sm bg-{{ $item->status == 'aprovado' ? 'success' : ($item->status == 'pendente' ? 'warning' : 'danger') }}">
+                                                <i class="fas {{ $item->status == 'aprovado' ? 'fa-check-circle' : ($item->status == 'pendente' ? 'fa-clock' : 'fa-times-circle') }} me-1"></i> {{ ucfirst($item->status) }}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div class="card-body">
-                                    <h5 class="card-title text-truncate">
-                                        <i class="fas fa-tag me-1 text-muted"></i>
-                                        {{ $item->categoria ? $item->categoria->nome_categoria : 'Sem Categoria' }}
-                                    </h5>
-                                    
-                                    <p class="card-text description-text">
-                                        <strong>Descrição:</strong> {{ Str::limit($item->descricao, 100) }}
-                                    </p>
-                                    
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <small class="text-muted">
-                                            <i class="fas fa-calendar-alt me-1"></i>
-                                            {{ \Carbon\Carbon::parse($item->created_at)->format('d/m/Y H:i') }}
-                                        </small>
-                                        
-                                        <small class="text-muted">
-                                            ID: #{{ $item->id }}
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="card-title mb-0 fw-bold">
+                                            <span class="badge bg-light text-primary rounded-pill px-3 py-2 me-2">
+                                                <i class="fas fa-tag me-1"></i>
+                                                {{ $item->categoria ? $item->categoria->nome_categoria : 'Sem Categoria' }}
+                                            </span>
+                                        </h5>
+                                        <small class="text-muted badge bg-light rounded-pill px-2 py-1">
+                                            #{{ $item->id }}
                                         </small>
                                     </div>
                                     
-                                    <div class="user-info mt-2">
+                                    <div class="bg-light p-3 rounded-3 mb-3">
+                                        <p class="card-text description-text mb-0">
+                                            <i class="fas fa-quote-left text-primary opacity-50 me-1"></i>
+                                            {{ Str::limit($item->descricao, 100) }}
+                                            <i class="fas fa-quote-right text-primary opacity-50 ms-1"></i>
+                                        </p>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="badge bg-light text-dark rounded-pill px-3 py-2">
+                                            <i class="fas fa-calendar-alt me-1 text-primary"></i>
+                                            {{ \Carbon\Carbon::parse($item->created_at)->format('d/m/Y H:i') }}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="user-info p-2 bg-light rounded-3">
                                         <a href="{{ route('admin.perfilUser', $item->user_id) }}" class="text-decoration-none text-reset">
                                             <div class="d-flex align-items-center">
-                                                <div class="user-avatar me-2">
+                                                <div class="user-avatar me-2 border border-2 border-white shadow-sm">
                                                     @if($item->usuario && $item->usuario->foto)
                                                         <img src="{{ asset('storage/'.$item->usuario->foto) }}" alt="Avatar">
                                                     @else
@@ -213,27 +251,28 @@
                                                     @endif
                                                 </div>
                                                 <div>
-                                                    <strong>{{ $item->usuario->name ?? 'Usuário não encontrado' }}</strong>
+                                                    <p class="mb-0 fw-medium">{{ $item->usuario->name ?? 'Usuário não encontrado' }}</p>
+                                                    <small class="text-muted">Registrado por</small>
                                                 </div>
                                             </div>
                                         </a>
                                     </div>
                                 </div>
                                 
-                                <div class="card-footer bg-light">
+                                <div class="card-footer bg-white border-top-0 p-4 pt-0">
                                     <div class="d-grid gap-2">
-                                        <div class="btn-group" role="group">
+                                        <div class="d-flex flex-wrap gap-2 mb-2">
                                             @if($item->status != 'aprovado')
                                                 <form action="{{ route('admin.itens-aprovar', $item->id) }}" method="POST" class="d-inline flex-fill">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-success btn-sm w-100">
+                                                    <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill">
                                                         <i class="fas fa-check-circle me-1"></i> Aprovar
                                                     </button>
                                                 </form>
                                             @endif
                                             
                                             @if($item->status != 'reprovado')
-                                                <button type="button" class="btn btn-warning btn-sm w-100" 
+                                                <button type="button" class="btn btn-warning btn-sm w-100 rounded-pill" 
                                                         onclick="showRejectModal('{{ route('admin.itens-rejeitar', $item->id) }}')">
                                                     <i class="fas fa-times-circle me-1"></i> Rejeitar
                                                 </button>
@@ -242,13 +281,13 @@
                                             <form action="{{ route('admin.DeletarItem', $item->id) }}" method="POST" class="d-inline flex-fill">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm w-100" onclick="return confirm('Tem certeza que deseja excluir este item?');">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm w-100 rounded-pill" onclick="return confirm('Tem certeza que deseja excluir este item?');">
                                                     <i class="fas fa-trash-alt me-1"></i> Excluir
                                                 </button>
                                             </form>
                                         </div>
                                         
-                                        <button type="button" class="btn btn-primary btn-sm item-details-btn" data-item-id="{{ $item->id }}">
+                                        <button type="button" class="btn btn-primary btn-sm rounded-pill item-details-btn shadow-sm" data-item-id="{{ $item->id }}">
                                             <i class="fas fa-eye me-1"></i> Ver Detalhes
                                         </button>
                                     </div>
@@ -269,18 +308,22 @@
 
 <!-- Modal para detalhes do item -->
 <div class="modal fade" id="itemDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Detalhes do Item</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-title fw-bold"><i class="fas fa-info-circle me-2"></i>Detalhes do Item</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
             </div>
-            <div class="modal-body" id="itemDetailsContent">
-                <div class="text-center">
+            <div class="modal-body p-0" id="itemDetailsContent">
+                <div class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Carregando...</span>
                     </div>
+                    <p class="mt-3 text-muted">Carregando detalhes do item...</p>
                 </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Fechar</button>
             </div>
         </div>
     </div>

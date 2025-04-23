@@ -276,4 +276,22 @@ class UsuarioController extends Controller
     {
         //
     }
+    
+    public function desativarConta()
+    {
+        $user = Auth::user();
+        $user->ativo = false;
+        $user->save();
+        
+        return redirect()->route('perfil-usuario')->with('warning', 'Sua conta foi desativada e será excluída em 30 dias. Você pode cancelar a exclusão a qualquer momento.');
+    }
+    
+    public function reativarConta()
+    {
+        $user = Auth::user();
+        $user->ativo = true;
+        $user->save();
+        
+        return redirect()->route('perfil-usuario')->with('success', 'Sua conta foi reativada com sucesso!');
+    }
 }

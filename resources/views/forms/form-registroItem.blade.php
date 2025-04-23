@@ -188,6 +188,16 @@
     }
 </style>
 
+@if(!auth()->user()->ativo)
+    <div class="container mt-5">
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Conta Inativa</h4>
+            <p>Sua conta está atualmente inativa. Você não pode cadastrar novos itens até que sua conta seja reativada.</p>
+            <hr>
+            <p class="mb-0">Entre em contato com a administração para mais informações.</p>
+        </div>
+    </div>
+@else
 <div class="container mt-5">
     <h1 class="mb-4 text-dark">{{ isset($item) ? 'Editar Item' : 'Registrar Item' }}</h1>
 
@@ -516,7 +526,7 @@
         // Executar contagem inicial
         contadorCaracteres.textContent = descricaoTextarea.value.length;
 
-        // Lógica para adicionar fotos uma por vez
+c        // Lógica para adicionar fotos uma por vez
         const fotoTemporaria = document.getElementById('foto_temporaria');
         const adicionarFoto = document.getElementById('adicionar_foto');
         const fotosContainer = document.getElementById('preview-container');
@@ -777,4 +787,5 @@
         });
     });
 </script>
+@endif
 @endsection

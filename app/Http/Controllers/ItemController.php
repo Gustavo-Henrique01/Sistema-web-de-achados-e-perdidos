@@ -60,6 +60,11 @@ class ItemController extends Controller
  
     public function registroItem(Request $request)
     {
+        // Verificar se o usuário está ativo
+        if (!auth()->user()->ativo) {
+            return redirect()->route('usuario.home')->with('error', 'Sua conta está inativa. Não é possível cadastrar itens.');
+        }
+
         // Validação da localização
         $validatedLocalizacao = $request->validate([
             'nome_local' => 'required|string|max:255',
@@ -149,8 +154,11 @@ class ItemController extends Controller
 
     public function listarItens()
     {
-        $itens = Item::with(['categoria', 'localizacao', 'fotos'])
+        $itens = Item::with(['categoria', 'localizacao', 'fotos', 'usuario'])
             ->where('status', 'aprovado')
+            ->whereHas('usuario', function($query) {
+                $query->where('ativo', true);
+            })
             ->orderBy('created_at', 'desc')
             ->get();
             
@@ -164,6 +172,9 @@ class ItemController extends Controller
         $parceiros = Parceiro::all();
         $itens = Item::with(['categoria', 'localizacao', 'fotos'])
             ->where('status', 'aprovado')
+            ->whereHas('usuario', function($query) {
+                $query->where('ativo', true);
+            })
             ->get();
             
         $categorias = Categoria::all();

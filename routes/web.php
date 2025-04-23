@@ -69,6 +69,8 @@ Route::prefix('user')->middleware(['auth', 'user'])->group(function () {
     // Rotas para edição de perfil
     Route::get('/edit-profile', [UsuarioController::class, 'editProfile'])->name('usuario.edit-profile');
     Route::put('/update-profile', [UsuarioController::class, 'updateProfile'])->name('usuario.update-profile');
+    Route::post('/desativar-conta', [UsuarioController::class, 'desativarConta'])->name('usuario.desativar-conta');
+    Route::post('/reativar-conta', [UsuarioController::class, 'reativarConta'])->name('usuario.reativar-conta');
 
 });
 

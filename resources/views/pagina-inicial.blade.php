@@ -453,6 +453,29 @@
         font-size: 1rem;
       }
     }
+
+    .footer {
+  background-color: #f8f9fa;
+  padding: 2rem 0;
+  margin-top: auto;
+  border-top: 1px solid #e9ecef;
+}
+
+.footer h5 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+.footer-link {
+  color: #6c757d;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+  color: var(--primary-color);
+}
   </style>
 </head>
 <body>

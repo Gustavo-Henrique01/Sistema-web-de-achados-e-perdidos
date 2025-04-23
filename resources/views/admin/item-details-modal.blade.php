@@ -1,29 +1,32 @@
 @if($item)
-    <div class="row">
+    <div class="row g-4 p-4">
         <!-- Coluna Principal -->
         <div class="col-md-8">
             <!-- Status e Ações -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-1">{{ $item->titulo }}</h5>
-                            <span class="badge bg-{{ $item->status === 'aprovado' ? 'success' : ($item->status === 'reprovado' ? 'danger' : 'warning') }}">
-                                {{ ucfirst($item->status) }}
-                            </span>
+            <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <div class="mb-2 mb-md-0">
+                            <h4 class="fw-bold mb-2">{{ $item->titulo }}</h4>
+                            <div>
+                                <span class="badge rounded-pill fs-6 px-3 py-2 bg-{{ $item->status === 'aprovado' ? 'success' : ($item->status === 'reprovado' ? 'danger' : ($item->status === 'em_transferencia' ? 'info' : ($item->status === 'em_estabelecimento' ? 'primary' : ($item->status === 'devolvido' ? 'dark' : 'warning')))) }}">
+                                    <i class="fas {{ $item->status === 'aprovado' ? 'fa-check-circle' : ($item->status === 'reprovado' ? 'fa-times-circle' : ($item->status === 'em_transferencia' ? 'fa-exchange-alt' : ($item->status === 'em_estabelecimento' ? 'fa-store' : ($item->status === 'devolvido' ? 'fa-handshake' : 'fa-clock')))) }} me-1"></i>
+                                    {{ ucfirst(str_replace('_', ' ', $item->status)) }}
+                                </span>
+                            </div>
                         </div>
                         @if($item->status !== 'reprovado' && !$item->excluido_por)
-                            <div class="d-flex gap-2">
+                            <div class="d-flex gap-2 flex-wrap">
                                 @if($item->status === 'pendente')
                                     <form action="{{ route('admin.itens-aprovar', $item->id) }}" method="POST" class="d-inline">
                                         @csrf
-                                        <button type="submit" class="btn btn-success">
+                                        <button type="submit" class="btn btn-success btn-sm rounded-pill px-3">
                                             <i class="fas fa-check me-1"></i> Aprovar
                                         </button>
                                     </form>
                                     <form action="{{ route('admin.itens-rejeitar', $item->id) }}" method="POST" class="d-inline">
                                         @csrf
-                                        <button type="submit" class="btn btn-danger">
+                                        <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">
                                             <i class="fas fa-times me-1"></i> Rejeitar
                                         </button>
                                     </form>
@@ -31,7 +34,7 @@
                                 <form action="{{ route('admin.DeletarItem', $item->id) }}" method="POST">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Tem certeza que deseja excluir este item?')">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="return confirm('Tem certeza que deseja excluir este item?')">
                                         <i class="fas fa-trash me-1"></i> Excluir
                                     </button>
                                 </form>
@@ -43,18 +46,23 @@
 
             <!-- Fotos do Item -->
             @if($item->fotos->count() > 0)
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0"><i class="fas fa-images me-2"></i>Fotos do Item</h5>
+                <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
+                    <div class="card-header bg-primary text-white py-3">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-images me-2"></i>Fotos do Item</h5>
                     </div>
-                    <div class="card-body">
-                        <div class="row g-3">
+                    <div class="card-body p-4">
+                        <div class="row g-4">
                             @foreach($item->fotos as $foto)
                                 <div class="col-md-4">
-                                    <div class="item-photo">
-                                        <img src="{{ asset('storage/' . $foto->caminho) }}" alt="Foto do item" class="img-fluid rounded">
-                                        <div class="photo-info">
-                                            <small class="text-muted">
+                                    <div class="item-photo position-relative rounded-3 overflow-hidden shadow-sm h-100">
+                                        <a href="{{ asset('storage/' . $foto->caminho) }}" data-lightbox="item-photos" data-title="Foto do item">
+                                            <img src="{{ asset('storage/' . $foto->caminho) }}" alt="Foto do item" class="img-fluid w-100 h-100" style="object-fit: cover; aspect-ratio: 1/1;">
+                                            <div class="photo-overlay position-absolute top-0 left-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-search-plus text-white fs-4"></i>
+                                            </div>
+                                        </a>
+                                        <div class="photo-info position-absolute bottom-0 start-0 w-100 p-2 bg-dark bg-opacity-75 text-white">
+                                            <small>
                                                 <i class="far fa-clock me-1"></i>
                                                 {{ $foto->created_at->format('d/m/Y H:i') }}
                                             </small>
@@ -68,60 +76,95 @@
             @endif
 
             <!-- Informações do Item -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Informações do Item</h5>
+            <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-clipboard-list me-2"></i>Informações do Item</h5>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-muted">Categoria</label>
-                            <p class="mb-0 fw-bold">{{ $item->categoria->nome_categoria }}</p>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="form-label text-dark small text-uppercase fw-bold">Categoria</label>
+                                <p class="mb-0 fs-5 fw-medium text-primary">{{ $item->categoria->nome_categoria }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="form-label text-dark small text-uppercase fw-bold">Status</label>
+                                <p class="mb-0 fs-5 fw-medium">{{ ucfirst(str_replace('_', ' ', $item->status)) }}</p>
+                            </div>
                         </div>
                         @if($item->localizacao)
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label text-muted">Localização</label>
-                                <p class="mb-0 fw-bold">{{ $item->localizacao->nome }}</p>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="form-label text-dark small text-uppercase fw-bold">Localização</label>
+                                <p class="mb-0 fw-medium"><i class="fas fa-map-marker-alt me-2 text-primary"></i>{{ $item->localizacao->nome }}</p>
                             </div>
+                        </div>
                         @endif
                         @if($item->parceiro)
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label text-muted">Parceiro</label>
-                                <p class="mb-0 fw-bold">{{ $item->parceiro->nome }}</p>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="form-label text-dark small text-uppercase fw-bold">Parceiro</label>
+                                <p class="mb-0 fw-medium"><i class="fas fa-store me-2 text-primary"></i>{{ $item->parceiro->nome }}</p>
                             </div>
+                        </div>
                         @endif
-                        <div class="col-12 mb-3">
-                            <label class="form-label text-muted">Descrição</label>
-                            <p class="mb-0">{{ $item->descricao }}</p>
+                        <div class="col-md-12">
+                            <div class="info-group">
+                                <label class="form-label text-dark small text-uppercase fw-bold">Descrição</label>
+                                <p class="mb-0 p-3 bg-light rounded-3 border">{{ $item->descricao }}</p>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-muted">Data de Registro</label>
-                            <p class="mb-0">{{ $item->created_at->format('d/m/Y H:i') }}</p>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="form-label text-dark small text-uppercase fw-bold">Registrado por</label>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-small me-2 bg-light">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <p class="mb-0 fw-medium">{{ $item->user->name }}</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label text-muted">Última Atualização</label>
-                            <p class="mb-0">{{ $item->updated_at->format('d/m/Y H:i') }}</p>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="form-label text-dark small text-uppercase fw-bold">Data de Registro</label>
+                                <p class="mb-0"><i class="far fa-calendar-alt me-2 text-primary"></i>{{ $item->created_at->format('d/m/Y H:i') }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-group">
+                                <label class="form-label text-dark small text-uppercase fw-bold">Última Atualização</label>
+                                <p class="mb-0"><i class="far fa-clock me-2 text-primary"></i>{{ $item->updated_at->format('d/m/Y H:i') }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Histórico de Ações -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Histórico de Ações</h5>
+            <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-history me-2"></i>Histórico de Ações</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <div class="timeline">
                         @if($item->aprovado_por)
                             <div class="timeline-item success">
-                                <div class="timeline-icon">
-                                    <i class="fas fa-check"></i>
+                                <div class="timeline-icon bg-success shadow-sm">
+                                    <i class="fas fa-check-circle"></i>
                                 </div>
-                                <div class="timeline-content">
-                                    <h6 class="mb-1">Item Aprovado</h6>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div class="avatar-small me-2">
+                                <div class="timeline-content bg-white border-0 shadow-sm rounded-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="fw-bold text-success mb-0"><i class="fas fa-check-circle me-2"></i>Item Aprovado</h6>
+                                        <span class="badge bg-light text-dark rounded-pill px-3">
+                                            <i class="far fa-clock me-1"></i>
+                                            {{ $item->aprovado_em->format('d/m/Y H:i') }}
+                                        </span>
+                                    </div>
+                                    <div class="d-flex align-items-center p-2 bg-light rounded-3 mt-2">
+                                        <div class="avatar-small me-2 border border-2 border-white shadow-sm">
                                             @if($item->aprovadoPor->avatar || $item->aprovadoPor->foto)
                                                 <img src="{{ asset('storage/'.($item->aprovadoPor->avatar ?? $item->aprovadoPor->foto)) }}" alt="Avatar">
                                             @else
@@ -129,27 +172,29 @@
                                             @endif
                                         </div>
                                         <div>
-                                            <p class="mb-0 fw-bold">{{ $item->aprovadoPor->name }}</p>
+                                            <p class="mb-0 fw-medium">{{ $item->aprovadoPor->name }}</p>
                                             <small class="text-muted">{{ $item->aprovadoPor->email }}</small>
                                         </div>
                                     </div>
-                                    <p class="mb-0 text-muted">
-                                        <i class="far fa-clock me-1"></i>
-                                        {{ $item->aprovado_em->format('d/m/Y H:i') }}
-                                    </p>
                                 </div>
                             </div>
                         @endif
 
                         @if($item->reprovado_por)
                             <div class="timeline-item danger">
-                                <div class="timeline-icon">
-                                    <i class="fas fa-times"></i>
+                                <div class="timeline-icon bg-danger shadow-sm">
+                                    <i class="fas fa-times-circle"></i>
                                 </div>
-                                <div class="timeline-content">
-                                    <h6 class="mb-1">Item Reprovado</h6>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div class="avatar-small me-2">
+                                <div class="timeline-content bg-white border-0 shadow-sm rounded-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="fw-bold text-danger mb-0"><i class="fas fa-times-circle me-2"></i>Item Reprovado</h6>
+                                        <span class="badge bg-light text-dark rounded-pill px-3">
+                                            <i class="far fa-clock me-1"></i>
+                                            {{ $item->reprovado_em->format('d/m/Y H:i') }}
+                                        </span>
+                                    </div>
+                                    <div class="d-flex align-items-center p-2 bg-light rounded-3 mt-2">
+                                        <div class="avatar-small me-2 border border-2 border-white shadow-sm">
                                             @if($item->reprovadoPor->avatar || $item->reprovadoPor->foto)
                                                 <img src="{{ asset('storage/'.($item->reprovadoPor->avatar ?? $item->reprovadoPor->foto)) }}" alt="Avatar">
                                             @else
@@ -157,14 +202,15 @@
                                             @endif
                                         </div>
                                         <div>
-                                            <p class="mb-0 fw-bold">{{ $item->reprovadoPor->name }}</p>
+                                            <p class="mb-0 fw-medium">{{ $item->reprovadoPor->name }}</p>
                                             <small class="text-muted">{{ $item->reprovadoPor->email }}</small>
                                         </div>
                                     </div>
-                                    <p class="mb-0 text-muted">
-                                        <i class="far fa-clock me-1"></i>
-                                        {{ $item->reprovado_em->format('d/m/Y H:i') }}
-                                    </p>
+                                    @if($item->motivo_reprovacao)
+                                        <div class="mt-3 p-2 border border-danger border-opacity-25 rounded-3 bg-danger bg-opacity-10">
+                                            <p class="mb-0 small"><i class="fas fa-info-circle me-2 text-danger"></i><strong>Motivo:</strong> {{ $item->motivo_reprovacao }}</p>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         @endif
