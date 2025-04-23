@@ -191,6 +191,15 @@
 <div class="container mt-5">
     <h1 class="mb-4 text-dark">{{ isset($item) ? 'Editar Item' : 'Registrar Item' }}</h1>
 
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <h5 class="alert-heading"><i class="fas fa-check-circle me-2"></i>Item cadastrado com sucesso!</h5>
+            <p>Seu item foi registrado e está aguardando aprovação. O processo de avaliação pode levar até <strong>5 dias</strong> úteis.</p>
+            <p class="mb-0">Você receberá uma notificação assim que seu item for aprovado.</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     @if ($errors->any())
         <div class="alert alert-danger">
             <ul>
@@ -201,7 +210,7 @@
         </div>
     @endif
 
-    <form action="{{ isset($item) ? route('usuario.atualizar-item', $item->id) : route('registrar-item') }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+    <form action="{{ isset($item) ? route('usuario.atualizar-item', $item->id) : route('registrar-item') }}" method="POST" enctype="multipart/form-data" class="needs-validation" id="item-form" novalidate>
         @csrf
         @if (isset($item))
             @method('PUT') <!-- Método HTTP para atualização -->
@@ -214,7 +223,7 @@
             <!-- Categoria -->
             <div class="mb-3">
                 <label for="id_categoria" class="form-label">Categoria</label>
-                <select name="id_categoria" id="id_categoria" class="form-select" required>
+                <select name="id_categoria" id="id_categoria" class="form-select @error('id_categoria') is-invalid @enderror" required>
                     <option value="" disabled selected>Selecione uma categoria</option>
                     @foreach ($categorias as $categoria)
                         <option value="{{ $categoria->id }}" {{ old('id_categoria', $item->id_categoria ?? '') == $categoria->id ? 'selected' : '' }}>
@@ -222,6 +231,12 @@
                         </option>
                     @endforeach
                 </select>
+                <div class="invalid-feedback" id="categoria-feedback">
+                    Por favor, selecione uma categoria.
+                </div>
+                @error('id_categoria')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <!-- Tipo -->
@@ -229,30 +244,59 @@
                 <label class="form-label">Tipo</label>
                 <div>
                     <div class="form-check form-check-inline">
-                        <input type="radio" id="tipoAchado" name="tipo" value="achado" class="form-check-input" required {{ old('tipo', $item->tipo ?? '') == 'achado' ? 'checked' : '' }}>
+                        <input type="radio" id="tipoAchado" name="tipo" value="achado" class="form-check-input @error('tipo') is-invalid @enderror" required {{ old('tipo', $item->tipo ?? '') == 'achado' ? 'checked' : '' }}>
                         <label for="tipoAchado" class="form-check-label">Achado</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input type="radio" id="tipoPerdido" name="tipo" value="perdido" class="form-check-input" required {{ old('tipo', $item->tipo ?? '') == 'perdido' ? 'checked' : '' }}>
+                        <input type="radio" id="tipoPerdido" name="tipo" value="perdido" class="form-check-input @error('tipo') is-invalid @enderror" required {{ old('tipo', $item->tipo ?? '') == 'perdido' ? 'checked' : '' }}>
                         <label for="tipoPerdido" class="form-check-label">Perdido</label>
                     </div>
+                    <div class="invalid-feedback d-block" id="tipo-feedback" style="display: none !important;">
+                        Por favor, selecione se o item foi achado ou perdido.
+                    </div>
+                    @error('tipo')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
 
             <!-- Data de Perdido ou Encontrado -->
             <div class="mb-3" id="campo_data_perdido" style="display: {{ old('tipo', $item->tipo ?? '') == 'perdido' ? 'block' : 'none' }};">
                 <label for="data_perdido" class="form-label">Data em que o item foi perdido</label>
-                <input type="date" name="data_perdido" id="data_perdido" class="form-control" value="{{ old('data_perdido', $item->data_perdido ?? '') }}">
+                <input type="date" name="data_perdido" id="data_perdido" class="form-control @error('data_perdido') is-invalid @enderror" max="{{ date('Y-m-d') }}" value="{{ old('data_perdido', $item->data_perdido ?? '') }}">
+                <div class="invalid-feedback" id="data-perdido-feedback">
+                    Por favor, selecione uma data válida (não pode ser futura).
+                </div>
+                @error('data_perdido')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
             <div class="mb-3" id="campo_data_encontrado" style="display: {{ old('tipo', $item->tipo ?? '') == 'achado' ? 'block' : 'none' }};">
                 <label for="data_encontrado" class="form-label">Data em que o item foi encontrado</label>
-                <input type="date" name="data_encontrado" id="data_encontrado" class="form-control" value="{{ old('data_encontrado', $item->data_encontrado ?? '') }}">
+                <input type="date" name="data_encontrado" id="data_encontrado" class="form-control @error('data_encontrado') is-invalid @enderror" max="{{ date('Y-m-d') }}" value="{{ old('data_encontrado', $item->data_encontrado ?? '') }}">
+                <div class="invalid-feedback" id="data-encontrado-feedback">
+                    Por favor, selecione uma data válida (não pode ser futura).
+                </div>
+                @error('data_encontrado')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <!-- Descrição -->
             <div class="mb-3">
                 <label for="descricao" class="form-label">Descrição</label>
-                <textarea name="descricao" id="descricao" class="form-control" rows="4" placeholder="Descreva o item (cor, características, etc.)" required>{{ old('descricao', $item->descricao ?? '') }}</textarea>
+                <textarea name="descricao" id="descricao" class="form-control @error('descricao') is-invalid @enderror" 
+                    rows="4" placeholder="Ex: descreva as informações sobre o item, como cor, marca, modelo, estado, e como encontrou ou perdeu o item etc .." 
+                    required minlength="10" maxlength="500">{{ old('descricao', $item->descricao ?? '') }}</textarea>
+                <div class="invalid-feedback" id="descricao-feedback">
+                    A descrição deve ter entre 10 e 500 caracteres.
+                </div>
+                <small class="text-muted">
+                    Mínimo de 10 caracteres, máximo de 500. <span id="contador-caracteres">0</span>/500
+                </small>
+                @error('descricao')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
         </div>
 
@@ -260,7 +304,7 @@
         <div class="section-container">
             <h4 class="section-title">Fotos do item</h4>
             
-            <label for="fotos" class="form-label">Fotos (Máximo 3)</label>
+            <label for="fotos" class="form-label">Fotos (Recomendado: ajuda na identificação, máximo 3)</label>
             
             @if(session('error'))
                 <div class="alert alert-danger">
@@ -286,9 +330,13 @@
             
             <!-- Campos para upload de novas fotos -->
             <div class="mb-3 p-3 bg-light rounded border border-1 border-secondary-subtle">
-                <input type="file" name="foto_temporaria" id="foto_temporaria" class="form-control" accept="image/jpeg, image/png, image/gif">
+                <input type="file" name="foto_temporaria" id="foto_temporaria" class="form-control @error('fotos') is-invalid @enderror" accept="image/jpeg, image/png, image/webp">
                 <button type="button" id="adicionar_foto" class="btn btn-secondary mt-2">Adicionar Foto</button>
-                <small class="text-muted d-block mt-2">Você pode enviar até 3 fotos. Tamanho máximo por foto: 2MB.</small>
+                <small class="text-muted d-block mt-2">Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo por foto: 2MB.</small>
+                <small class="text-primary d-block mt-1"><i class="fas fa-info-circle"></i> Incluir fotos facilita muito a identificação do item!</small>
+                @error('fotos')
+                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
             </div>
             <div id="fotos_selecionadas"></div>
             
@@ -304,8 +352,19 @@
             <!-- Campo de endereço com autocomplete do Google Maps -->
             <div class="mb-3">
                 <label for="endereco" class="form-label">Endereço</label>
-                <input type="text" id="endereco" class="form-control" placeholder="Digite o endereço" value="{{ old('endereco', $item->localizacao->endereco ?? '') }}">
+                <input type="text" id="endereco" class="form-control @error('endereco') is-invalid @enderror" 
+                       placeholder="Digite o endereço completo (Rua, Número, Bairro)" 
+                       value="{{ old('endereco', $item->localizacao->endereco ?? '') }}" required>
                 <input type="hidden" name="endereco" id="endereco_input" value="{{ old('endereco', $item->localizacao->endereco ?? '') }}">
+                <div class="invalid-feedback" id="endereco-feedback">
+                    Por favor, informe um endereço válido.
+                </div>
+                <div id="enderecoError" class="invalid-feedback" style="display: none;">
+                    O endereço deve estar localizado em Campo Grande, MS.
+                </div>
+                @error('endereco')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
             
             <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude', $item->localizacao->latitude ?? '') }}">
@@ -314,13 +373,29 @@
             <!-- Campo para nome do local -->
             <div class="mb-3">
                 <label for="nome_local" class="form-label">Nome do Local</label>
-                <input type="text" name="nome_local" id="nome_local" class="form-control" placeholder="Ex: Shopping Campo Grande" required value="{{ old('nome_local', $item->localizacao->nome_local ?? '') }}">
+                <input type="text" name="nome_local" id="nome_local" class="form-control @error('nome_local') is-invalid @enderror" 
+                       placeholder="Ex: Shopping Campo Grande, Terminal Rodoviário, etc." 
+                       required value="{{ old('nome_local', $item->localizacao->nome_local ?? '') }}">
+                <div class="invalid-feedback" id="nome-local-feedback">
+                    Por favor, informe o nome do local.
+                </div>
+                @error('nome_local')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <!-- Campo para referência -->
             <div class="mb-3">
                 <label for="referencia" class="form-label">Ponto de Referência</label>
-                <input type="text" name="referencia" id="referencia" class="form-control" placeholder="Ex: Próximo ao Banco do Brasil" required value="{{ old('referencia', $item->localizacao->referencia ?? '') }}">
+                <input type="text" name="referencia" id="referencia" class="form-control @error('referencia') is-invalid @enderror" 
+                       placeholder="Ex: Próximo ao Banco do Brasil, Na praça de alimentação, etc." 
+                       required value="{{ old('referencia', $item->localizacao->referencia ?? '') }}">
+                <div class="invalid-feedback" id="referencia-feedback">
+                    Por favor, informe um ponto de referência.
+                </div>
+                @error('referencia')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
         </div>
 
@@ -339,7 +414,7 @@
 
 <!-- Google Maps API -->
 <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places"></script>
-<!-- Script para o autocompletar de endereços do Google Maps -->
+<!-- Script para o autocompletar de endereços do Google Maps e validações -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Inicializa o autocomplete do Google Maps
@@ -360,14 +435,28 @@
                 document.getElementById('endereco').value = place.formatted_address || '';
                 document.getElementById('endereco_input').value = place.formatted_address || '';
 
-                // Verifica se o endereço está em Campo Grande, MS
-                const cidade = place.address_components.find(component => component.types.includes('locality'))?.long_name || '';
-                const estado = place.address_components.find(component => component.types.includes('administrative_area_level_1'))?.short_name || '';
-
-                if (cidade === 'Campo Grande' && estado === 'MS') {
+                // Verifica se o endereço está em Campo Grande, MS (apenas informativo, não bloqueia)
+                const cidade = place.address_components.find(component => 
+                    component.types.includes('locality') || 
+                    component.types.includes('administrative_area_level_2'))?.long_name || '';
+                
+                const estado = place.address_components.find(component => 
+                    component.types.includes('administrative_area_level_1'))?.short_name || '';
+                
+                // Se o endereço contém Campo Grande ou está no MS, consideramos válido
+                const enderecoCampoGrande = cidade.includes('Campo Grande') || 
+                                            place.formatted_address.includes('Campo Grande') || 
+                                            (estado === 'MS' && place.formatted_address.includes('MS'));
+                
+                if (enderecoCampoGrande) {
                     document.getElementById('enderecoError').style.display = 'none';
                 } else {
+                    // Apenas avisa, mas não impede o envio
                     document.getElementById('enderecoError').style.display = 'block';
+                    document.getElementById('enderecoError').innerHTML = 
+                        '<i class="fas fa-info-circle"></i> O endereço parece não estar em Campo Grande, MS. Se estiver correto, pode continuar.';
+                    document.getElementById('enderecoError').classList.remove('invalid-feedback');
+                    document.getElementById('enderecoError').classList.add('text-warning');
                 }
             }
         });
@@ -391,12 +480,41 @@
         tipoAchado.addEventListener('change', function() {
             campoDataAchado.style.display = 'block';
             campoDataPerdido.style.display = 'none';
+            document.getElementById('data_encontrado').setAttribute('required', 'required');
+            document.getElementById('data_perdido').removeAttribute('required');
         });
 
         tipoPerdido.addEventListener('change', function() {
             campoDataPerdido.style.display = 'block';
             campoDataAchado.style.display = 'none';
+            document.getElementById('data_perdido').setAttribute('required', 'required');
+            document.getElementById('data_encontrado').removeAttribute('required');
         });
+
+        // Validação de data não futura
+        const dataHoje = new Date().toISOString().split('T')[0];
+        document.getElementById('data_perdido').setAttribute('max', dataHoje);
+        document.getElementById('data_encontrado').setAttribute('max', dataHoje);
+
+        // Contador de caracteres para descrição
+        const descricaoTextarea = document.getElementById('descricao');
+        const contadorCaracteres = document.getElementById('contador-caracteres');
+
+        descricaoTextarea.addEventListener('input', function() {
+            const count = this.value.length;
+            contadorCaracteres.textContent = count;
+            
+            if (count < 10 || count > 500) {
+                this.classList.add('is-invalid');
+                document.getElementById('descricao-feedback').style.display = 'block';
+            } else {
+                this.classList.remove('is-invalid');
+                document.getElementById('descricao-feedback').style.display = 'none';
+            }
+        });
+
+        // Executar contagem inicial
+        contadorCaracteres.textContent = descricaoTextarea.value.length;
 
         // Lógica para adicionar fotos uma por vez
         const fotoTemporaria = document.getElementById('foto_temporaria');
@@ -423,8 +541,14 @@
             const file = fotoTemporaria.files[0];
             
             // Verificar se é uma imagem
-            if (!file.type.startsWith('image/')) {
-                alert('Por favor, selecione apenas arquivos de imagem.');
+            if (!file.type.match('image/(jpeg|jpg|png|webp)')) {
+                alert('Por favor, selecione apenas arquivos nos formatos: JPG, PNG ou WEBP.');
+                return;
+            }
+            
+            // Verificar tamanho máximo (2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('O tamanho máximo permitido por imagem é 2MB.');
                 return;
             }
             
@@ -538,6 +662,119 @@
                 button.parentNode.style.display = 'none';
             }
         };
+
+        // Validação do formulário antes do envio
+        const form = document.getElementById('item-form');
+        form.addEventListener('submit', function(event) {
+            let isValid = true;
+            
+            // Validar categoria
+            const categoria = document.getElementById('id_categoria');
+            if (categoria.value === '') {
+                categoria.classList.add('is-invalid');
+                document.getElementById('categoria-feedback').style.display = 'block';
+                isValid = false;
+            } else {
+                categoria.classList.remove('is-invalid');
+                document.getElementById('categoria-feedback').style.display = 'none';
+            }
+            
+            // Validar tipo (achado/perdido)
+            if (!tipoAchado.checked && !tipoPerdido.checked) {
+                document.getElementById('tipo-feedback').style.display = 'block !important';
+                isValid = false;
+            } else {
+                document.getElementById('tipo-feedback').style.display = 'none !important';
+            }
+            
+            // Validar data conforme o tipo selecionado
+            if (tipoAchado.checked) {
+                const dataEncontrado = document.getElementById('data_encontrado');
+                if (!dataEncontrado.value) {
+                    dataEncontrado.classList.add('is-invalid');
+                    document.getElementById('data-encontrado-feedback').style.display = 'block';
+                    isValid = false;
+                } else {
+                    dataEncontrado.classList.remove('is-invalid');
+                    document.getElementById('data-encontrado-feedback').style.display = 'none';
+                }
+            } else if (tipoPerdido.checked) {
+                const dataPerdido = document.getElementById('data_perdido');
+                if (!dataPerdido.value) {
+                    dataPerdido.classList.add('is-invalid');
+                    document.getElementById('data-perdido-feedback').style.display = 'block';
+                    isValid = false;
+                } else {
+                    dataPerdido.classList.remove('is-invalid');
+                    document.getElementById('data-perdido-feedback').style.display = 'none';
+                }
+            }
+            
+            // Validar descrição
+            const descricao = document.getElementById('descricao');
+            if (descricao.value.length < 10 || descricao.value.length > 500) {
+                descricao.classList.add('is-invalid');
+                document.getElementById('descricao-feedback').style.display = 'block';
+                isValid = false;
+            } else {
+                descricao.classList.remove('is-invalid');
+                document.getElementById('descricao-feedback').style.display = 'none';
+            }
+            
+            // Validar fotos (não obrigatório, apenas verifica se há fotos selecionadas para feedback)
+            const temFotosExistentes = document.querySelectorAll('input[name="foto_principal"]').length > 0;
+            if (fotosArray.length === 0 && !temFotosExistentes) {
+                // Não marca como inválido, apenas mostra um aviso
+                document.getElementById('foto_temporaria').classList.remove('is-invalid');
+                
+                // Se não existir feedback de foto, não precisa fazer nada
+                if (document.getElementById('foto-feedback')) {
+                    document.getElementById('foto-feedback').style.display = 'none';
+                }
+            }
+            
+            // Validar campos de localização
+            const endereco = document.getElementById('endereco');
+            if (!endereco.value) {
+                endereco.classList.add('is-invalid');
+                document.getElementById('endereco-feedback').style.display = 'block';
+                isValid = false;
+            } else {
+                endereco.classList.remove('is-invalid');
+                document.getElementById('endereco-feedback').style.display = 'none';
+            }
+            
+            const nomeLocal = document.getElementById('nome_local');
+            if (!nomeLocal.value) {
+                nomeLocal.classList.add('is-invalid');
+                document.getElementById('nome-local-feedback').style.display = 'block';
+                isValid = false;
+            } else {
+                nomeLocal.classList.remove('is-invalid');
+                document.getElementById('nome-local-feedback').style.display = 'none';
+            }
+            
+            const referencia = document.getElementById('referencia');
+            if (!referencia.value) {
+                referencia.classList.add('is-invalid');
+                document.getElementById('referencia-feedback').style.display = 'block';
+                isValid = false;
+            } else {
+                referencia.classList.remove('is-invalid');
+                document.getElementById('referencia-feedback').style.display = 'none';
+            }
+            
+            // Se o formulário não for válido, impede o envio
+            if (!isValid) {
+                event.preventDefault();
+                event.stopPropagation();
+                // Rola para o primeiro elemento com erro
+                const firstError = form.querySelector('.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
     });
 </script>
 @endsection

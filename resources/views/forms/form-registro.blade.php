@@ -85,6 +85,12 @@
         .logo-upload label:hover {
             background: #e9ecef;
         }
+        .feedback-error {
+            color: #dc3545;
+            font-size: 80%;
+            margin-top: 0.25rem;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -109,24 +115,28 @@
                 </div>
             @endif
 
-            <form action="{{ route('criar-usuario') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('criar-usuario') }}" method="POST" enctype="multipart/form-data" id="cadastroForm" novalidate>
                 @csrf
 
                 <div class="text-center mb-4">
                     <img id="foto-preview" src="{{ asset('images/default-avatar.png') }}" class="logo-preview">
                     <div class="logo-upload">
-                        <input type="file" id="foto" name="foto" accept="image/*" onchange="previewFoto(this)">
+                        <input type="file" id="foto" name="foto" accept="image/jpeg, image/png, image/jpg, image/gif" onchange="previewFoto(this)">
                         <label for="foto">
                             <i class="fas fa-camera me-2"></i>Upload Foto
                         </label>
                     </div>
+                    <small class="text-muted d-block">Formatos aceitos: JPG, JPEG, PNG, GIF (máx. 2MB)</small>
+                    <div class="feedback-error mt-2" id="foto-error">Selecione uma imagem válida nos formatos: JPG, JPEG, PNG ou GIF (máx. 2MB).</div>
                 </div>
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="name" class="form-label">Nome</label>
                         <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                               id="nome" name="name" value="{{ old('name') }}" required>
+                               id="nome" name="name" value="{{ old('name') }}" required
+                               minlength="3">
+                        <div class="feedback-error" id="nome-error">O nome deve ter no mínimo 3 caracteres.</div>
                         @error('name')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -136,6 +146,7 @@
                         <label for="email" class="form-label">E-mail</label>
                         <input type="email" class="form-control @error('email') is-invalid @enderror" 
                                id="email" name="email" value="{{ old('email') }}" required>
+                        <div class="feedback-error" id="email-error">Digite um endereço de e-mail válido.</div>
                         @error('email')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -146,7 +157,9 @@
                     <div class="col-md-6 mb-3">
                         <label for="telefone" class="form-label">Telefone</label>
                         <input type="text" class="form-control @error('telefone') is-invalid @enderror" 
-                               id="telefone" name="telefone" value="{{ old('telefone') }}" required>
+                               id="telefone" name="telefone" value="{{ old('telefone') }}" required
+                               minlength="14" maxlength="15">
+                        <div class="feedback-error" id="telefone-error">O telefone deve estar no formato (99) 99999-9999.</div>
                         @error('telefone')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -155,7 +168,9 @@
                     <div class="col-md-6 mb-3">
                         <label for="cpf" class="form-label">CPF</label>
                         <input type="text" class="form-control @error('cpf') is-invalid @enderror" 
-                               id="cpf" name="cpf" value="{{ old('cpf') }}" required>
+                               id="cpf" name="cpf" value="{{ old('cpf') }}" required
+                               minlength="14" maxlength="14">
+                        <div class="feedback-error" id="cpf-error">O CPF deve estar no formato 999.999.999-99.</div>
                         @error('cpf')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -166,7 +181,8 @@
                     <div class="col-md-6 mb-3">
                         <label for="senha" class="form-label">Senha</label>
                         <input type="password" class="form-control @error('senha') is-invalid @enderror" 
-                               id="senha" name="senha" required>
+                               id="senha" name="senha" required minlength="5">
+                        <div class="feedback-error" id="senha-error">A senha deve ter no mínimo 5 caracteres.</div>
                         @error('senha')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -175,7 +191,8 @@
                     <div class="col-md-6 mb-3">
                         <label for="senha_confirmation" class="form-label">Confirmar Senha</label>
                         <input type="password" class="form-control" 
-                               id="senha_confirmation" name="senha_confirmation" required>
+                               id="senha_confirmation" name="senha_confirmation" required minlength="5">
+                        <div class="feedback-error" id="senha-confirmation-error">As senhas não coincidem.</div>
                     </div>
                 </div>
 
@@ -198,11 +215,34 @@
     <script>
         function previewFoto(input) {
             if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const fotoError = document.getElementById('foto-error');
+                
+                // Verifica o tipo do arquivo
+                const fileType = file.type;
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                
+                // Verifica o tamanho (máximo 2MB = 2 * 1024 * 1024 bytes)
+                const maxSize = 2 * 1024 * 1024;
+                
+                if (!validTypes.includes(fileType)) {
+                    showError(input, fotoError);
+                    return;
+                }
+                
+                if (file.size > maxSize) {
+                    fotoError.textContent = "A imagem deve ter no máximo 2MB.";
+                    showError(input, fotoError);
+                    return;
+                }
+                
+                hideError(input, fotoError);
+                
                 var reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('foto-preview').src = e.target.result;
                 }
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             }
         }
 
@@ -223,25 +263,144 @@
                 }
                 
                 e.target.value = value;
+                validateCPF();
             });
 
             // Máscara para telefone
             const telefoneInput = document.getElementById('telefone');
             telefoneInput.addEventListener('input', function(e) {
                 let value = e.target.value.replace(/\D/g, '');
-                if (value.length > 11) value = value.slice(0, 11);
+                if (value.length > 10) value = value.slice(0, 10);
                 
-                if (value.length > 10) {
-                    value = value.replace(/^(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-                } else if (value.length > 6) {
-                    value = value.replace(/^(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                if (value.length > 6) {
+                    value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
                 } else if (value.length > 2) {
-                    value = value.replace(/^(\d{2})(\d{4})/, '($1) $2');
+                    value = value.replace(/^(\d{2})(\d{0,4})/, '($1) $2');
                 } else if (value.length > 0) {
-                    value = value.replace(/^(\d{2})/, '($1)');
+                    value = value.replace(/^(\d{0,2})/, '($1');
                 }
                 
                 e.target.value = value;
+                validateTelefone();
+            });
+
+            // Validações
+            const form = document.getElementById('cadastroForm');
+            const nome = document.getElementById('nome');
+            const email = document.getElementById('email');
+            const cpf = document.getElementById('cpf');
+            const telefone = document.getElementById('telefone');
+            const senha = document.getElementById('senha');
+            const senhaConfirmation = document.getElementById('senha_confirmation');
+
+            // Exibir mensagens de erro
+            function showError(input, errorDiv) {
+                errorDiv.style.display = 'block';
+                input.classList.add('is-invalid');
+            }
+
+            // Ocultar mensagens de erro
+            function hideError(input, errorDiv) {
+                errorDiv.style.display = 'none';
+                input.classList.remove('is-invalid');
+            }
+
+            // Validar nome
+            function validateNome() {
+                const nomeError = document.getElementById('nome-error');
+                if (nome.value.length < 3) {
+                    showError(nome, nomeError);
+                    return false;
+                } else {
+                    hideError(nome, nomeError);
+                    return true;
+                }
+            }
+
+            // Validar email
+            function validateEmail() {
+                const emailError = document.getElementById('email-error');
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email.value)) {
+                    showError(email, emailError);
+                    return false;
+                } else {
+                    hideError(email, emailError);
+                    return true;
+                }
+            }
+
+            // Validar CPF
+            function validateCPF() {
+                const cpfError = document.getElementById('cpf-error');
+                if (cpf.value.length !== 14) {
+                    showError(cpf, cpfError);
+                    return false;
+                } else {
+                    hideError(cpf, cpfError);
+                    return true;
+                }
+            }
+
+            // Validar telefone
+            function validateTelefone() {
+                const telefoneError = document.getElementById('telefone-error');
+                if (telefone.value.length !== 14) {
+                    showError(telefone, telefoneError);
+                    return false;
+                } else {
+                    hideError(telefone, telefoneError);
+                    return true;
+                }
+            }
+
+            // Validar senha
+            function validateSenha() {
+                const senhaError = document.getElementById('senha-error');
+                if (senha.value.length < 5) {
+                    showError(senha, senhaError);
+                    return false;
+                } else {
+                    hideError(senha, senhaError);
+                    return true;
+                }
+            }
+
+            // Validar confirmação de senha
+            function validateSenhaConfirmation() {
+                const senhaConfirmationError = document.getElementById('senha-confirmation-error');
+                if (senha.value !== senhaConfirmation.value) {
+                    showError(senhaConfirmation, senhaConfirmationError);
+                    return false;
+                } else {
+                    hideError(senhaConfirmation, senhaConfirmationError);
+                    return true;
+                }
+            }
+
+            // Adicionar eventos de validação a cada campo
+            nome.addEventListener('input', validateNome);
+            email.addEventListener('input', validateEmail);
+            cpf.addEventListener('input', validateCPF);
+            telefone.addEventListener('input', validateTelefone);
+            senha.addEventListener('input', validateSenha);
+            senhaConfirmation.addEventListener('input', validateSenhaConfirmation);
+            senha.addEventListener('input', validateSenhaConfirmation);
+
+            // Validar formulário antes de enviar
+            form.addEventListener('submit', function(event) {
+                let isValid = true;
+                
+                if (!validateNome()) isValid = false;
+                if (!validateEmail()) isValid = false;
+                if (!validateCPF()) isValid = false;
+                if (!validateTelefone()) isValid = false;
+                if (!validateSenha()) isValid = false;
+                if (!validateSenhaConfirmation()) isValid = false;
+                
+                if (!isValid) {
+                    event.preventDefault();
+                }
             });
         });
     </script>

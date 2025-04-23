@@ -14,6 +14,37 @@
         </div>
     </div>
 
+    <!-- Mensagens do sistema -->
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                <i class="fas fa-check-circle fa-2x"></i>
+            </div>
+            <div>
+                <h5 class="alert-heading mb-1">Operação realizada com sucesso!</h5>
+                <p class="mb-0">{{ session('success') }}</p>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                <i class="fas fa-exclamation-circle fa-2x"></i>
+            </div>
+            <div>
+                <h5 class="alert-heading mb-1">Ocorreu um erro!</h5>
+                <p class="mb-0">{{ session('error') }}</p>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+
     <div class="row">
         <!-- Menu Lateral -->
         <div class="col-md-3 mb-4">

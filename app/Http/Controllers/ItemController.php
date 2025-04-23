@@ -141,7 +141,7 @@ class ItemController extends Controller
             \Log::info('Item ID: ' . $item->id . ' - Total de fotos salvas: ' . $totalFotos);
         }
     
-        return redirect()->route('usuario.home')->with('success', 'Item cadastrado com sucesso!');
+        return redirect()->route('usuario.home')->with('success', 'Item cadastrado com sucesso! A aprovação pode levar até 5 dias úteis.');
     }
 
 

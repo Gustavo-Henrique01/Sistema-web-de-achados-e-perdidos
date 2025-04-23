@@ -44,24 +44,52 @@ class UsuarioController extends Controller
 
     public function criarUsuario(Request $request)
     {
+        $messages = [
+            'name.required' => 'O campo nome é obrigatório.',
+            'name.string' => 'O nome deve ser um texto.',
+            'name.min' => 'O nome deve ter no mínimo :min caracteres.',
+            
+            'email.required' => 'O campo e-mail é obrigatório.',
+            'email.email' => 'Digite um endereço de e-mail válido.',
+            'email.unique' => 'Este e-mail já está sendo utilizado.',
+            
+            'telefone.required' => 'O campo telefone é obrigatório.',
+            'telefone.string' => 'O telefone deve ser um texto.',
+            'telefone.size' => 'O telefone deve conter exatamente :size caracteres incluindo formatação.',
+            
+            'senha.required' => 'O campo senha é obrigatório.',
+            'senha.string' => 'A senha deve ser um texto.',
+            'senha.min' => 'A senha deve ter no mínimo :min caracteres.',
+            
+            'cpf.required' => 'O campo CPF é obrigatório.',
+            'cpf.string' => 'O CPF deve ser um texto.',
+            'cpf.unique' => 'Este CPF já está cadastrado.',
+            'cpf.size' => 'O CPF deve conter exatamente :size caracteres incluindo pontos e traço.',
+        ];
+
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email', // Tabela 'users'
-            'telefone' => 'required|string|max:15',
-            'senha' => 'required|string|min:5', // Campo 'senha'
-            'foto' => 'nullable|string',
-            'cpf' => 'required|string|unique:users,cpf|size:14', // Tabela 'users'
-        ]);
+            'name' => 'required|string|min:3',
+            'email' => 'required|email|unique:users,email',
+            'telefone' => 'required|string|size:14',
+            'senha' => 'required|string|min:5',
+            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'cpf' => 'required|string|unique:users,cpf|size:14',
+        ], $messages);
 
         $validatedData['role'] = 'usuario';
         $validatedData['ativo'] = true;
 
+        // Processa o upload da foto se existir
+        if ($request->hasFile('foto')) {
+            $path = $request->file('foto')->store('avatars', 'public');
+            $validatedData['foto'] = $path;
+            $validatedData['avatar'] = $path;
+        }
+
         // O Eloquent já faz o hash da senha automaticamente (graças ao cast 'hashed' no model)
         $usuario = User::create($validatedData);
         
-      
-
-        return redirect()->route('login')->with('success', 'Cadastro realizado com sucesso! Faça login para continuar.');
+        return redirect()->route('form.login')->with('success', 'Cadastro realizado com sucesso! Faça login para continuar.');
     }
 
     public function store(Request $request)
@@ -187,13 +215,34 @@ class UsuarioController extends Controller
     {
         $user = Auth::user();
 
+        $messages = [
+            'name.required' => 'O campo nome é obrigatório.',
+            'name.string' => 'O nome deve ser um texto.',
+            'name.min' => 'O nome deve ter no mínimo :min caracteres.',
+            
+            'email.required' => 'O campo e-mail é obrigatório.',
+            'email.email' => 'Digite um endereço de e-mail válido.',
+            'email.unique' => 'Este e-mail já está sendo utilizado.',
+            
+            'telefone.required' => 'O campo telefone é obrigatório.',
+            'telefone.string' => 'O telefone deve ser um texto.',
+            'telefone.size' => 'O telefone deve conter exatamente :size caracteres incluindo formatação.',
+            
+            'password.min' => 'A senha deve ter no mínimo :min caracteres.',
+            'password.confirmed' => 'A confirmação da senha não corresponde.',
+            
+            'foto.image' => 'O arquivo deve ser uma imagem.',
+            'foto.mimes' => 'A imagem deve ser do tipo: jpeg, png, jpg ou gif.',
+            'foto.max' => 'A imagem deve ter no máximo :max kilobytes.',
+        ];
+
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|min:3',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'telefone' => 'required|string|max:15',
+            'telefone' => 'required|string|size:14',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'password' => 'nullable|string|min:8|confirmed',
-        ]);
+            'password' => 'nullable|string|min:5|confirmed',
+        ], $messages);
 
         $user->name = $validatedData['name'];
         $user->email = $validatedData['email'];
