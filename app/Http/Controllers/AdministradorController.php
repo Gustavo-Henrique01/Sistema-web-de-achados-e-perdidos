@@ -12,6 +12,8 @@ use App\Models\AdminActionLog;
 use App\Models\Parceiro;
 use App\Notifications\ItemAprovadoNotification;
 use App\Notifications\ItemRejeitadoNotification;
+use App\Models\ChMessage;
+
 
 class AdministradorController extends Controller
 {
@@ -655,4 +657,37 @@ class AdministradorController extends Controller
 
         return view('admin.parceiros.itens', compact('parceiro', 'itens'));
     }
+
+
+
+ 
+
+    public function desativar(Parceiro $parceiro)
+    {
+        $parceiro->ativo = !$parceiro->ativo;
+        $parceiro->save();
+
+        $message = $parceiro->ativo ? 'Parceiro ativado com sucesso!' : 'Parceiro desativado com sucesso!';
+        return redirect()->back()->with('success', $message);
+    }
+
+    public function destroy(Parceiro $parceiro)
+    {
+        // Primeiro excluir todos os itens relacionados
+        $parceiro->itens()->delete();
+        
+        // Excluir todas as mensagens do chat
+        ChMessage::where('from_id', $parceiro->usuario->id)
+                ->orWhere('to_id', $parceiro->usuario->id)
+                ->delete();
+        
+        // Excluir o usuário associado
+        $parceiro->usuario->delete();
+        
+        // Por fim, excluir o parceiro
+        $parceiro->delete();
+
+        return redirect()->route('admin.parceiros.index')->with('success', 'Parceiro excluído com sucesso!');
+    }
+
 }

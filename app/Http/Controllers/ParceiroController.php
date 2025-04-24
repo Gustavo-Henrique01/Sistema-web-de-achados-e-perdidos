@@ -59,9 +59,18 @@ class ParceiroController extends Controller
             'nome_estabelecimento' => 'required|string|max:255',
             'cnpj' => 'required|string|max:18|unique:parceiros,cnpj',
             'tipo_parceiro' => 'required|in:ponto_coleta,evento,ambos',
+            'email' => 'required|email|unique:users,email',
+            'cpf' => 'required|string|unique:users,cpf|regex:/^\d{3}\.\d{3}\.\d{3}-\d{2}$/',
+            'logo' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048'
         ], [
             'cnpj.unique' => 'Este CNPJ já está cadastrado no sistema.',
             'cnpj.max' => 'O CNPJ deve ter no máximo 18 caracteres.',
+            'email.unique' => 'Este e-mail já está cadastrado no sistema.',
+            'cpf.unique' => 'Este CPF já está cadastrado no sistema.',
+            'cpf.regex' => 'O CPF deve estar no formato 000.000.000-00',
+            'logo.image' => 'O arquivo deve ser uma imagem.',
+            'logo.mimes' => 'A imagem deve ser do tipo: jpeg, jpg, png ou gif.',
+            'logo.max' => 'A imagem não pode ser maior que 2MB.'
         ]);
 
         if ($validator->fails()) {
@@ -558,4 +567,4 @@ class ParceiroController extends Controller
         
         return view('parceiro.aguardando-aprovacao', compact('parceiro'));
     }
-} 
+}

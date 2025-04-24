@@ -126,6 +126,10 @@ Route::post('/parceiros/{parceiro}/reprovar', [AdministradorController::class, '
 Route::post('/parceiros/{parceiro}/desativar', [AdministradorController::class, 'desativarParceiro'])->name('admin.parceiros.desativar');
 Route::get('/parceiros/{parceiro}/itens', [AdministradorController::class, 'listarItensParceiro'])->name('admin.parceiros.itens');
 
+Route::post('{parceiro}/desativar', [AdministradorController::class, 'desativar'])->name('parceiros.desativar');
+Route::delete('{parceiro}', [AdministradorController::class, 'destroy'])->name('admin.parceiros.destroy');
+
+
 });
 
 // Rotas para parceiros
@@ -173,6 +177,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/notificacoes/nao-lidas', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
     Route::post('/pusher/auth', [PusherAuthController::class, 'authenticate'])->name('pusher.auth');
 });
+
+// Rotas de Parceiros
 
 
 

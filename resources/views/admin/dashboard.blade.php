@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0">
     <title>Painel Administrativo</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -180,6 +180,17 @@
         </a>
         <a href="{{ route('listar-categorias') }}" class="{{ request()->routeIs('listar-categorias') ? 'active' : '' }}">
             <i class="fas fa-th-list"></i> Listar Categorias
+        </a>
+        <a href="{{ route('chatify') }}" class="{{ request()->routeIs('chatify') ? 'active' : '' }}">
+            <i class="fas fa-comments"></i> Chat
+            @php
+                $unreadCount = App\Models\ChMessage::where('to_id', Auth::id())
+                    ->where('seen', 0)
+                    ->count();
+            @endphp
+            @if($unreadCount > 0)
+                <span class="badge rounded-pill bg-danger ms-auto">{{ $unreadCount }}</span>
+            @endif
         </a>
         <a href="{{ route('admin.perfil') }}" class="{{ request()->routeIs('admin.perfil') ? 'active' : '' }}">
             <i class="fas fa-user-shield"></i>

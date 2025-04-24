@@ -85,6 +85,12 @@
         .logo-upload label:hover {
             background: #e9ecef;
         }
+        .feedback-error {
+            color: #dc3545;
+            font-size: 80%;
+            margin-top: 0.25rem;
+            display: none;
+        }
         .section-title {
             color: #3498db;
             margin-bottom: 20px;
@@ -196,6 +202,8 @@
                             <label for="logo">
                                 <i class="fas fa-camera me-2"></i>Upload Logo
                             </label>
+                            <small class="text-muted d-block">Formatos aceitos: JPG, JPEG, PNG, GIF (máx. 2MB)</small>
+                            <div class="feedback-error mt-2" id="logo-error">Selecione uma imagem válida nos formatos: JPG, JPEG, PNG ou GIF (máx. 2MB).</div>
                         </div>
                     </div>
                     <div class="mb-3">
@@ -464,17 +472,290 @@
             telefoneComercialInput.addEventListener('input', function(e) {
                 e.target.value = formatPhone(e.target.value);
             });
+
+            // Funções de validação
+            function showError(input, errorDiv) {
+                errorDiv.style.display = 'block';
+                input.classList.add('is-invalid');
+            }
+
+            function hideError(input, errorDiv) {
+                errorDiv.style.display = 'none';
+                input.classList.remove('is-invalid');
+            }
+
+            // Adiciona divs de erro para cada campo
+            const fields = [
+                { id: 'name', message: 'O nome deve ter no mínimo 3 caracteres.' },
+                { id: 'email', message: 'Digite um endereço de e-mail válido.' },
+                { id: 'cpf', message: 'Digite um CPF válido no formato 000.000.000-00.' },
+                { id: 'telefone', message: 'Digite um telefone válido no formato (00) 00000-0000.' },
+                { id: 'senha', message: 'A senha deve ter no mínimo 5 caracteres.' },
+                { id: 'senha_confirmation', message: 'As senhas não coincidem.' },
+                { id: 'nome_estabelecimento', message: 'O nome do estabelecimento é obrigatório.' },
+                { id: 'cnpj', message: 'Digite um CNPJ válido no formato 00.000.000/0000-00.' },
+                { id: 'telefone_comercial', message: 'Digite um telefone válido no formato (00) 00000-0000.' },
+                { id: 'tipo_parceiro', message: 'Selecione um tipo de parceiro.' },
+                { id: 'nome_local', message: 'O nome do local é obrigatório.' },
+                { id: 'endereco', message: 'O endereço é obrigatório.' }
+            ];
+
+            // Cria as divs de erro
+            fields.forEach(field => {
+                const input = document.getElementById(field.id);
+                if (input) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.id = `${field.id}-error`;
+                    errorDiv.className = 'feedback-error';
+                    errorDiv.textContent = field.message;
+                    input.parentNode.insertBefore(errorDiv, input.nextSibling);
+                }
+            });
+
+            // Validações específicas
+            function validateName() {
+                const input = document.getElementById('name');
+                const errorDiv = document.getElementById('name-error');
+                if (input.value.length < 3) {
+                    showError(input, errorDiv);
+                    return false;
+                }
+                hideError(input, errorDiv);
+                return true;
+            }
+
+            function validateEmail() {
+                const input = document.getElementById('email');
+                const errorDiv = document.getElementById('email-error');
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(input.value)) {
+                    showError(input, errorDiv);
+                    return false;
+                }
+                hideError(input, errorDiv);
+                return true;
+            }
+
+            function validateCPF() {
+                const input = document.getElementById('cpf');
+                const errorDiv = document.getElementById('cpf-error');
+                const cpf = input.value.replace(/\D/g, '');
+                if (cpf.length !== 11) {
+                    showError(input, errorDiv);
+                    return false;
+                }
+                hideError(input, errorDiv);
+                return true;
+            }
+
+            function validateCNPJ() {
+                const input = document.getElementById('cnpj');
+                const errorDiv = document.getElementById('cnpj-error');
+                const cnpj = input.value.replace(/\D/g, '');
+                if (cnpj.length !== 14) {
+                    showError(input, errorDiv);
+                    return false;
+                }
+                hideError(input, errorDiv);
+                return true;
+            }
+
+            function validatePhone(inputId) {
+                const input = document.getElementById(inputId);
+                const errorDiv = document.getElementById(`${inputId}-error`);
+                const phone = input.value.replace(/\D/g, '');
+                if (phone.length < 10 || phone.length > 11) {
+                    showError(input, errorDiv);
+                    return false;
+                }
+                hideError(input, errorDiv);
+                return true;
+            }
+
+            function validatePassword() {
+                const input = document.getElementById('senha');
+                const errorDiv = document.getElementById('senha-error');
+                if (input.value.length < 5) {
+                    showError(input, errorDiv);
+                    return false;
+                }
+                hideError(input, errorDiv);
+                return true;
+            }
+
+            function validatePasswordConfirmation() {
+                const senha = document.getElementById('senha');
+                const confirmation = document.getElementById('senha_confirmation');
+                const errorDiv = document.getElementById('senha_confirmation-error');
+                if (senha.value !== confirmation.value) {
+                    showError(confirmation, errorDiv);
+                    return false;
+                }
+                hideError(confirmation, errorDiv);
+                return true;
+            }
+
+            function validateRequiredField(fieldId) {
+                const input = document.getElementById(fieldId);
+                const errorDiv = document.getElementById(`${fieldId}-error`);
+                if (!input.value.trim()) {
+                    showError(input, errorDiv);
+                    return false;
+                }
+                hideError(input, errorDiv);
+                return true;
+            }
+
+            // Validar CPF e CNPJ
+            function validateDocument(input, regex, errorDiv) {
+                const value = input.value.replace(/\D/g, '');
+                const isValidFormat = regex.test(input.value);
+                if (!isValidFormat) {
+                    showError(input, errorDiv);
+                    return false;
+                }
+                hideError(input, errorDiv);
+                return true;
+            }
+
+            function validateLogo() {
+                const input = document.getElementById('logo');
+                const errorDiv = document.getElementById('logo-error');
+                if (!input.files || !input.files[0]) {
+                    return true; // Logo é opcional
+                }
+                
+                const file = input.files[0];
+                const fileType = file.type;
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                const maxSize = 2 * 1024 * 1024; // 2MB
+                
+                if (!validTypes.includes(fileType)) {
+                    errorDiv.textContent = 'A imagem deve ser do tipo: jpeg, jpg, png ou gif.';
+                    showError(input, errorDiv);
+                    return false;
+                }
+                
+                if (file.size > maxSize) {
+                    errorDiv.textContent = 'A imagem não pode ser maior que 2MB.';
+                    showError(input, errorDiv);
+                    return false;
+                }
+                
+                hideError(input, errorDiv);
+                return true;
+            }
+
+            // Validação do CPF
+            function validateCPF() {
+                const input = document.getElementById('cpf');
+                const errorDiv = document.getElementById('cpf-error');
+                const regex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
+                return validateDocument(input, regex, errorDiv);
+            }
+
+            // Validação do CNPJ
+            function validateCNPJ() {
+                const input = document.getElementById('cnpj');
+                const errorDiv = document.getElementById('cnpj-error');
+                const regex = /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/;
+                return validateDocument(input, regex, errorDiv);
+            }
+
+            // Adiciona eventos de validação
+            document.getElementById('logo').addEventListener('change', validateLogo);
+            document.getElementById('cpf').addEventListener('input', validateCPF);
+            document.getElementById('cnpj').addEventListener('input', validateCNPJ);
+            document.getElementById('name').addEventListener('input', validateName);
+            document.getElementById('email').addEventListener('input', validateEmail);
+            document.getElementById('cpf').addEventListener('input', validateCPF);
+            document.getElementById('cnpj').addEventListener('input', validateCNPJ);
+            document.getElementById('telefone').addEventListener('input', () => validatePhone('telefone'));
+            document.getElementById('telefone_comercial').addEventListener('input', () => validatePhone('telefone_comercial'));
+            document.getElementById('senha').addEventListener('input', validatePassword);
+            document.getElementById('senha_confirmation').addEventListener('input', validatePasswordConfirmation);
+            document.getElementById('senha').addEventListener('input', validatePasswordConfirmation);
+            document.getElementById('nome_estabelecimento').addEventListener('input', () => validateRequiredField('nome_estabelecimento'));
+            document.getElementById('tipo_parceiro').addEventListener('change', () => validateRequiredField('tipo_parceiro'));
+            document.getElementById('nome_local').addEventListener('input', () => validateRequiredField('nome_local'));
+
+            // Validação do formulário antes do envio
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(event) {
+                let isValid = true;
+
+                // Validar todos os campos obrigatórios
+                if (!validateName()) isValid = false;
+                if (!validateEmail()) isValid = false;
+                if (!validateCPF()) isValid = false;
+                if (!validatePhone('telefone')) isValid = false;
+                if (!validatePassword()) isValid = false;
+                if (!validatePasswordConfirmation()) isValid = false;
+                if (!validateRequiredField('nome_estabelecimento')) isValid = false;
+                if (!validateCNPJ()) isValid = false;
+                if (!validatePhone('telefone_comercial')) isValid = false;
+                if (!validateRequiredField('tipo_parceiro')) isValid = false;
+                if (!validateRequiredField('nome_local')) isValid = false;
+                if (!validateRequiredField('endereco')) isValid = false;
+
+                // Validar localização
+                const latitude = document.getElementById('latitude');
+                const longitude = document.getElementById('longitude');
+                if (!latitude.value || !longitude.value) {
+                    const mapError = document.getElementById('map-error');
+                    mapError.textContent = 'Por favor, selecione um endereço válido no mapa.';
+                    mapError.classList.remove('d-none');
+                    isValid = false;
+                }
+
+                // Novas validações
+                if (!validateCPF()) isValid = false;
+                if (!validateCNPJ()) isValid = false;
+                if (!validateLogo()) isValid = false;
+
+                if (!isValid) {
+                    event.preventDefault();
+                    // Rola até o primeiro erro
+                    const firstError = document.querySelector('.is-invalid');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
         });
 
         function previewLogo(input) {
             if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const logoError = document.getElementById('logo-error');
+                
+                // Verifica o tipo do arquivo
+                const fileType = file.type;
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                
+                // Verifica o tamanho (máximo 2MB = 2 * 1024 * 1024 bytes)
+                const maxSize = 2 * 1024 * 1024;
+                
+                if (!validTypes.includes(fileType)) {
+                    showError(input, logoError);
+                    return;
+                }
+                
+                if (file.size > maxSize) {
+                    logoError.textContent = "A imagem deve ter no máximo 2MB.";
+                    showError(input, logoError);
+                    return;
+                }
+                
+                hideError(input, logoError);
+                
                 var reader = new FileReader();
                 reader.onload = function(e) {
                     document.getElementById('logo-preview').src = e.target.result;
                 }
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             }
         }
     </script>
 </body>
-</html> 
+</html>
