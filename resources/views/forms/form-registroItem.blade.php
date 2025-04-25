@@ -340,16 +340,21 @@
             
             <!-- Campos para upload de novas fotos -->
             <div class="mb-3 p-3 bg-light rounded border border-1 border-secondary-subtle">
-                <input type="file" name="foto_temporaria" id="foto_temporaria" class="form-control @error('fotos') is-invalid @enderror" accept="image/jpeg, image/png, image/webp">
-                <button type="button" id="adicionar_foto" class="btn btn-secondary mt-2">Adicionar Foto</button>
+                <input type="file" name="foto_temporaria" id="foto_temporaria" 
+                       class="form-control @error('fotos') is-invalid @enderror" 
+                       accept="image/jpeg, image/png, image/webp">
+                <button type="button" id="adicionar_foto" class="btn btn-secondary mt-2">
+                    Adicionar Foto
+                </button>
+                <div id="foto-status" class="mt-2"></div>
                 <small class="text-muted d-block mt-2">Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo por foto: 2MB.</small>
                 <small class="text-primary d-block mt-1"><i class="fas fa-info-circle"></i> Incluir fotos facilita muito a identificação do item!</small>
                 @error('fotos')
                     <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
             </div>
-            <div id="fotos_selecionadas"></div>
-            
+            <div id="fotos_selecionadas" class="row"></div>
+
             <!-- Preview das novas fotos selecionadas -->
             <div id="preview-container" class="row mt-3"></div>
         </div>
@@ -526,44 +531,50 @@
         // Executar contagem inicial
         contadorCaracteres.textContent = descricaoTextarea.value.length;
 
-c        // Lógica para adicionar fotos uma por vez
+        // Lógica para adicionar fotos uma por vez
         const fotoTemporaria = document.getElementById('foto_temporaria');
         const adicionarFoto = document.getElementById('adicionar_foto');
         const fotosContainer = document.getElementById('preview-container');
         const fotosHiddenContainer = document.getElementById('fotos_selecionadas');
-        
+        const fotosStatus = document.getElementById('foto-status');
+
         // Array para armazenar os arquivos selecionados
         let fotosArray = [];
-        
+
+        function mostrarStatus(mensagem, tipo = 'info') {
+            fotosStatus.className = `alert alert-${tipo} mt-2`;
+            fotosStatus.textContent = mensagem;
+        }
+
         // Evento para adicionar uma foto
         adicionarFoto.addEventListener('click', function() {
-            if (!fotoTemporaria.files || !fotoTemporaria.files[0]) {
-                alert('Por favor, selecione uma foto primeiro.');
+            const file = fotoTemporaria.files[0];
+            if (!file) {
+                mostrarStatus('Por favor, selecione uma foto primeiro.', 'warning');
                 return;
             }
             
             // Verificar se já atingiu o limite de 3 fotos
             if (fotosArray.length >= 3) {
-                alert('Você já selecionou o máximo de 3 fotos.');
+                mostrarStatus('Você já selecionou o máximo de 3 fotos.', 'warning');
                 return;
             }
             
-            const file = fotoTemporaria.files[0];
-            
             // Verificar se é uma imagem
             if (!file.type.match('image/(jpeg|jpg|png|webp)')) {
-                alert('Por favor, selecione apenas arquivos nos formatos: JPG, PNG ou WEBP.');
+                mostrarStatus('Por favor, selecione apenas arquivos nos formatos: JPG, PNG ou WEBP.', 'danger');
                 return;
             }
             
             // Verificar tamanho máximo (2MB)
             if (file.size > 2 * 1024 * 1024) {
-                alert('O tamanho máximo permitido por imagem é 2MB.');
+                mostrarStatus('O tamanho máximo permitido por imagem é 2MB.', 'danger');
                 return;
             }
             
             // Adicionar o arquivo ao array
             fotosArray.push(file);
+            mostrarStatus(`Foto "${file.name}" adicionada com sucesso! (${(file.size/1024/1024).toFixed(2)}MB)`, 'success');
             
             // Atualizar o preview
             atualizarPreview();
@@ -571,93 +582,72 @@ c        // Lógica para adicionar fotos uma por vez
             // Limpar o campo de seleção para a próxima foto
             fotoTemporaria.value = '';
         });
-        
+
         // Função para atualizar o preview das fotos
         function atualizarPreview() {
-            // Limpar o container de preview
+            // Limpar os containers
             fotosContainer.innerHTML = '';
             fotosHiddenContainer.innerHTML = '';
             
-            // Adicionar um contador de fotos
-            const counterDiv = document.createElement('div');
-            counterDiv.className = 'col-12 mb-3';
-            counterDiv.innerHTML = `<div class="alert alert-success mt-3">
-                <strong>${fotosArray.length} foto(s) selecionada(s)</strong> de 3 permitidas.
-            </div>`;
-            fotosContainer.appendChild(counterDiv);
+            // Adicionar contador de fotos
+            if (fotosArray.length > 0) {
+                const counterDiv = document.createElement('div');
+                counterDiv.className = 'col-12 mb-3';
+                counterDiv.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-camera"></i> <strong>${fotosArray.length}</strong> foto(s) selecionada(s) de 3 permitidas
+                    </div>
+                `;
+                fotosContainer.appendChild(counterDiv);
+            }
             
             // Para cada arquivo no array, criar um preview
             fotosArray.forEach((file, index) => {
-                // Criar um objeto FormData para o arquivo
-                const formData = new FormData();
-                
-                // Criar um objeto URL para o arquivo
                 const imgURL = URL.createObjectURL(file);
                 
-                // Criar os elementos para o preview
                 const colDiv = document.createElement('div');
                 colDiv.className = 'col-md-4 col-sm-6 mb-3';
                 
-                const img = document.createElement('img');
-                img.src = imgURL;
-                img.className = 'img-thumbnail';
-                img.style.maxWidth = '100%';
-                img.style.height = 'auto';
+                colDiv.innerHTML = `
+                    <div class="card">
+                        <img src="${imgURL}" class="card-img-top" alt="Preview" style="object-fit: cover; height: 200px;">
+                        <div class="card-body">
+                            <div class="form-check mb-2">
+                                <input type="radio" name="foto_principal_index" value="${index}" 
+                                       class="form-check-input" ${index === 0 ? 'checked' : ''}>
+                                <label class="form-check-label">Foto Principal</label>
+                            </div>
+                            <button type="button" class="btn btn-danger btn-sm w-100" 
+                                    onclick="removerFotoTemp(${index})">
+                                <i class="fas fa-trash"></i> Remover
+                            </button>
+                        </div>
+                    </div>
+                `;
                 
-                // Botão para remover a foto
-                const removeBtn = document.createElement('button');
-                removeBtn.type = 'button';
-                removeBtn.className = 'btn btn-danger btn-sm mt-2 w-100';
-                removeBtn.innerHTML = 'Remover';
-                removeBtn.onclick = function() {
-                    // Remover do array
-                    fotosArray.splice(index, 1);
-                    // Atualizar o preview
-                    atualizarPreview();
-                };
-                
-                // Opção para marcar como principal
-                const radioDiv = document.createElement('div');
-                radioDiv.className = 'form-check mt-2';
-                
-                const radioInput = document.createElement('input');
-                radioInput.type = 'radio';
-                radioInput.name = 'foto_principal_index';
-                radioInput.value = index;
-                radioInput.className = 'form-check-input';
-                radioInput.checked = index === 0; // Primeira foto é a principal por padrão
-                
-                const radioLabel = document.createElement('label');
-                radioLabel.className = 'form-check-label';
-                radioLabel.innerHTML = 'Principal';
-                
-                radioDiv.appendChild(radioInput);
-                radioDiv.appendChild(radioLabel);
-                
-                // Adicionar elementos ao container
-                colDiv.appendChild(img);
-                colDiv.appendChild(radioDiv);
-                colDiv.appendChild(removeBtn);
                 fotosContainer.appendChild(colDiv);
                 
-                // Criar um blob e anexá-lo ao FormData para envio posterior
-                const blob = new Blob([file], { type: file.type });
+                // Criar input hidden para o arquivo
+                const dt = new DataTransfer();
+                dt.items.add(file);
                 
-                // Criar um input file oculto para cada arquivo
                 const hiddenInput = document.createElement('input');
                 hiddenInput.type = 'file';
                 hiddenInput.name = `fotos[${index}]`;
                 hiddenInput.style.display = 'none';
-                
-                // Usar DataTransfer para anexar o arquivo ao input
-                const dt = new DataTransfer();
-                dt.items.add(file);
                 hiddenInput.files = dt.files;
                 
                 fotosHiddenContainer.appendChild(hiddenInput);
             });
         }
-        
+
+        // Função para remover foto temporária
+        window.removerFotoTemp = function(index) {
+            fotosArray.splice(index, 1);
+            mostrarStatus('Foto removida com sucesso.', 'info');
+            atualizarPreview();
+        };
+
         // Função para remover foto (em caso de edição)
         window.removerFoto = function(button, fotoId) {
             if (confirm('Tem certeza que deseja remover esta foto?')) {
