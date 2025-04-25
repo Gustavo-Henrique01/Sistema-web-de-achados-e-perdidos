@@ -118,8 +118,14 @@
                 <i class="fas fa-arrow-left me-2"></i>Voltar para Login
             </a>
 
-            <h2 class="form-title">Cadastro de Parceiro</h2>
-            <p class="text-center text-muted mb-4">Preencha os dados do estabelecimento para se tornar um parceiro</p>
+            <h2 class="form-title">{{ isset($isEdit) && $isEdit ? 'Editar Cadastro de Parceiro' : 'Cadastro de Parceiro' }}</h2>
+            <p class="text-center text-muted mb-4">
+                @if(isset($isEdit) && $isEdit)
+                    Atualize os dados do estabelecimento conforme solicitado pelo administrador
+                @else
+                    Preencha os dados do estabelecimento para se tornar um parceiro
+                @endif
+            </p>
 
             @if(session('error'))
                 <div class="alert alert-danger">
@@ -134,6 +140,9 @@
             @endif
 
             <form action="{{ route('parceiro.store') }}" method="POST" enctype="multipart/form-data">
+                @if(isset($isEdit) && $isEdit)
+                    <input type="hidden" name="parceiro_id" value="{{ $parceiro->id }}">
+                @endif
                 @csrf
 
                 <!-- Dados do Usuário -->
@@ -143,7 +152,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="name" class="form-label">Nome Completo</label>
                             <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                                   id="name" name="name" value="{{ old('name') }}" required>
+                                   id="name" name="name" value="{{ old('name', isset($usuario) ? $usuario->name : '') }}" required>
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -151,7 +160,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="cpf" class="form-label">CPF</label>
                             <input type="text" class="form-control @error('cpf') is-invalid @enderror" 
-                                   id="cpf" name="cpf" value="{{ old('cpf') }}" required placeholder="000.000.000-00">
+                                   id="cpf" name="cpf" value="{{ old('cpf', isset($usuario) ? $usuario->cpf : '') }}" required placeholder="000.000.000-00">
                             @error('cpf')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -161,7 +170,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="email" class="form-label">E-mail</label>
                             <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                                   id="email" name="email" value="{{ old('email') }}" required>
+                                   id="email" name="email" value="{{ old('email', isset($usuario) ? $usuario->email : '') }}" required>
                             @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -169,7 +178,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="telefone" class="form-label">Telefone</label>
                             <input type="text" class="form-control @error('telefone') is-invalid @enderror" 
-                                   id="telefone" name="telefone" value="{{ old('telefone') }}" required placeholder="(00) 00000-0000">
+                                   id="telefone" name="telefone" value="{{ old('telefone', isset($usuario) ? $usuario->telefone : '') }}" required placeholder="(00) 00000-0000">
                             @error('telefone')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -179,7 +188,10 @@
                         <div class="col-md-6 mb-3">
                             <label for="senha" class="form-label">Senha</label>
                             <input type="password" class="form-control @error('senha') is-invalid @enderror" 
-                                   id="senha" name="senha" required>
+                                   id="senha" name="senha" {{ isset($isEdit) && $isEdit ? '' : 'required' }}>
+                            @if(isset($isEdit) && $isEdit)
+                                <small class="text-muted">Deixe em branco para manter a senha atual</small>
+                            @endif
                             @error('senha')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -187,7 +199,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="senha_confirmation" class="form-label">Confirmar Senha</label>
                             <input type="password" class="form-control" 
-                                   id="senha_confirmation" name="senha_confirmation" required>
+                                   id="senha_confirmation" name="senha_confirmation" {{ isset($isEdit) && $isEdit ? '' : 'required' }}>
                         </div>
                     </div>
                 </div>
@@ -196,7 +208,7 @@
                 <div class="form-section">
                     <h4 class="section-title">Dados do Estabelecimento</h4>
                     <div class="text-center mb-4">
-                        <img id="logo-preview" src="{{ asset('images/default-logo.png') }}" class="logo-preview">
+                        <img id="logo-preview" src="{{ isset($parceiro) && $parceiro->logo ? asset('storage/'.$parceiro->logo) : asset('images/default-logo.png') }}" class="logo-preview">
                         <div class="logo-upload">
                             <input type="file" id="logo" name="logo" accept="image/*" onchange="previewLogo(this)">
                             <label for="logo">
@@ -209,7 +221,7 @@
                     <div class="mb-3">
                         <label for="nome_estabelecimento" class="form-label">Nome do Estabelecimento</label>
                         <input type="text" class="form-control @error('nome_estabelecimento') is-invalid @enderror" 
-                               id="nome_estabelecimento" name="nome_estabelecimento" value="{{ old('nome_estabelecimento') }}" required>
+                               id="nome_estabelecimento" name="nome_estabelecimento" value="{{ old('nome_estabelecimento', isset($parceiro) ? $parceiro->nome_estabelecimento : '') }}" required>
                         @error('nome_estabelecimento')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -217,7 +229,7 @@
                     <div class="mb-3">
                         <label for="cnpj" class="form-label">CNPJ</label>
                         <input type="text" class="form-control @error('cnpj') is-invalid @enderror" 
-                               id="cnpj" name="cnpj" value="{{ old('cnpj') }}" required placeholder="00.000.000/0000-00">
+                               id="cnpj" name="cnpj" value="{{ old('cnpj', isset($parceiro) ? $parceiro->cnpj : '') }}" required placeholder="00.000.000/0000-00">
                         @error('cnpj')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -225,7 +237,7 @@
                     <div class="mb-3">
                         <label for="descricao" class="form-label">Descrição</label>
                         <textarea class="form-control @error('descricao') is-invalid @enderror" 
-                                  id="descricao" name="descricao" rows="3">{{ old('descricao') }}</textarea>
+                                  id="descricao" name="descricao" rows="3">{{ old('descricao', isset($parceiro) ? $parceiro->descricao : '') }}</textarea>
                         @error('descricao')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -234,7 +246,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="horario_funcionamento" class="form-label">Horário de Funcionamento</label>
                             <input type="text" class="form-control @error('horario_funcionamento') is-invalid @enderror" 
-                                   id="horario_funcionamento" name="horario_funcionamento" value="{{ old('horario_funcionamento') }}">
+                                   id="horario_funcionamento" name="horario_funcionamento" value="{{ old('horario_funcionamento', isset($parceiro) ? $parceiro->horario_funcionamento : '') }}">
                             @error('horario_funcionamento')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -242,7 +254,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="telefone_comercial" class="form-label">Telefone Comercial</label>
                             <input type="text" class="form-control @error('telefone_comercial') is-invalid @enderror" 
-                                   id="telefone_comercial" name="telefone_comercial" value="{{ old('telefone_comercial') }}" placeholder="(00) 00000-0000">
+                                   id="telefone_comercial" name="telefone_comercial" value="{{ old('telefone_comercial', isset($parceiro) ? $parceiro->telefone_comercial : '') }}" placeholder="(00) 00000-0000">
                             @error('telefone_comercial')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -253,13 +265,13 @@
                         <select class="form-select @error('tipo_parceiro') is-invalid @enderror" 
                                 id="tipo_parceiro" name="tipo_parceiro" required>
                             <option value="">Selecione...</option>
-                            <option value="ponto_coleta" {{ old('tipo_parceiro') == 'ponto_coleta' ? 'selected' : '' }}>
+                            <option value="ponto_coleta" {{ old('tipo_parceiro', isset($parceiro) ? $parceiro->tipo_parceiro : '') == 'ponto_coleta' ? 'selected' : '' }}>
                                 Ponto de Coleta
                             </option>
-                            <option value="evento" {{ old('tipo_parceiro') == 'evento' ? 'selected' : '' }}>
+                            <option value="evento" {{ old('tipo_parceiro', isset($parceiro) ? $parceiro->tipo_parceiro : '') == 'evento' ? 'selected' : '' }}>
                                 Local de Evento
                             </option>
-                            <option value="ambos" {{ old('tipo_parceiro') == 'ambos' ? 'selected' : '' }}>
+                            <option value="ambos" {{ old('tipo_parceiro', isset($parceiro) ? $parceiro->tipo_parceiro : '') == 'ambos' ? 'selected' : '' }}>
                                 Ambos
                             </option>
                         </select>
@@ -275,7 +287,7 @@
                     <div class="mb-3">
                         <label for="nome_local" class="form-label">Nome do Local</label>
                         <input type="text" class="form-control @error('nome_local') is-invalid @enderror" 
-                               id="nome_local" name="nome_local" value="{{ old('nome_local') }}" required>
+                               id="nome_local" name="nome_local" value="{{ old('nome_local', isset($localizacao) ? $localizacao->nome_local : '') }}" required>
                         @error('nome_local')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -283,7 +295,7 @@
                     <div class="mb-3">
                         <label for="endereco" class="form-label">Endereço</label>
                         <input type="text" class="form-control @error('endereco') is-invalid @enderror" 
-                               id="endereco" name="endereco" value="{{ old('endereco') }}" required>
+                               id="endereco" name="endereco" value="{{ old('endereco', isset($localizacao) ? $localizacao->endereco : '') }}" required>
                         <div id="map-error" class="map-error d-none"></div>
                         @error('endereco')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -293,7 +305,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="latitude" class="form-label">Latitude</label>
                             <input type="number" step="any" class="form-control @error('latitude') is-invalid @enderror" 
-                                   id="latitude" name="latitude" value="{{ old('latitude') }}" required readonly>
+                                   id="latitude" name="latitude" value="{{ old('latitude', isset($localizacao) ? $localizacao->latitude : '') }}" required readonly>
                             @error('latitude')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -301,7 +313,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="longitude" class="form-label">Longitude</label>
                             <input type="number" step="any" class="form-control @error('longitude') is-invalid @enderror" 
-                                   id="longitude" name="longitude" value="{{ old('longitude') }}" required readonly>
+                                   id="longitude" name="longitude" value="{{ old('longitude', isset($localizacao) ? $localizacao->longitude : '') }}" required readonly>
                             @error('longitude')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -310,7 +322,7 @@
                     <div class="mb-3">
                         <label for="referencia" class="form-label">Ponto de Referência</label>
                         <input type="text" class="form-control @error('referencia') is-invalid @enderror" 
-                               id="referencia" name="referencia" value="{{ old('referencia') }}">
+                               id="referencia" name="referencia" value="{{ old('referencia', isset($localizacao) ? $localizacao->referencia : '') }}">
                         @error('referencia')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -319,14 +331,16 @@
 
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-check me-2"></i>Cadastrar Parceiro
+                        <i class="fas fa-check me-2"></i>{{ isset($isEdit) && $isEdit ? 'Atualizar Cadastro' : 'Cadastrar Parceiro' }}
                     </button>
                 </div>
 
                 <div class="text-center mt-3">
-                    <p class="mb-0">Já possui uma conta? 
-                        <a href="{{ route('login') }}" class="text-decoration-none">Faça login</a>
-                    </p>
+                    @if(!isset($isEdit) || !$isEdit)
+                        <p class="mb-0">Já possui uma conta? 
+                            <a href="{{ route('login') }}" class="text-decoration-none">Faça login</a>
+                        </p>
+                    @endif
                 </div>
             </form>
         </div>

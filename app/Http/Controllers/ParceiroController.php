@@ -49,20 +49,70 @@ class ParceiroController extends Controller
     {
         return view('forms.form-parceiro');
     }
+    
+    /**
+     * Exibe formulário para edição de parceiro.
+     */
+    public function editarCadastro(Parceiro $parceiro)
+    {
+        // Verificar se o usuário atual é o dono do parceiro ou um administrador
+        if (Auth::id() !== $parceiro->user_id  ) {
+            abort(403, 'Você não tem permissão para editar este parceiro.');
+        }
+        
+        // Buscar dados do usuário associado ao parceiro
+        $usuario = $parceiro->usuario;
+        
+        // Buscar dados da localização associada ao parceiro
+        $localizacao = $parceiro->localizacao;
+        
+        return view('forms.form-parceiro', [
+            'parceiro' => $parceiro,
+            'usuario' => $usuario,
+            'localizacao' => $localizacao,
+            'isEdit' => true
+        ]);
+    }
 
     /**
-     * Armazena um novo parceiro no banco de dados.
+     * Armazena um novo parceiro no banco de dados ou atualiza um existente.
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Verificar se é uma edição ou criação de parceiro
+        $isEdit = $request->has('parceiro_id');
+        $parceiroId = $request->parceiro_id;
+        
+        // Regras de validação diferentes para edição e criação
+        $validationRules = [
             'nome_estabelecimento' => 'required|string|max:255',
-            'cnpj' => 'required|string|max:18|unique:parceiros,cnpj',
             'tipo_parceiro' => 'required|in:ponto_coleta,evento,ambos',
-            'email' => 'required|email|unique:users,email',
-            'cpf' => 'required|string|unique:users,cpf|regex:/^\d{3}\.\d{3}\.\d{3}-\d{2}$/',
             'logo' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048'
-        ], [
+        ];
+        
+        // Adicionar regras específicas para criação ou edição
+        if ($isEdit) {
+            $parceiro = Parceiro::findOrFail($parceiroId);
+            $usuario = $parceiro->usuario;
+            
+            // Regras para edição - verificar unicidade exceto para o registro atual
+            $validationRules['cnpj'] = 'required|string|max:18|unique:parceiros,cnpj,'.$parceiro->id;
+            $validationRules['email'] = 'required|email|unique:users,email,'.$usuario->id;
+            $validationRules['cpf'] = 'required|string|unique:users,cpf,'.$usuario->id.'|regex:/^\d{3}\.\d{3}\.\d{3}-\d{2}$/';
+            
+            // Senha opcional na edição
+            if ($request->filled('senha')) {
+                $validationRules['senha'] = 'string|min:6|confirmed';
+            }
+        } else {
+            // Regras para criação
+            $validationRules['cnpj'] = 'required|string|max:18|unique:parceiros,cnpj';
+            $validationRules['email'] = 'required|email|unique:users,email';
+            $validationRules['cpf'] = 'required|string|unique:users,cpf|regex:/^\d{3}\.\d{3}\.\d{3}-\d{2}$/';
+            $validationRules['senha'] = 'required|string|min:6|confirmed';
+        }
+        
+        $validator = Validator::make($request->all(), $validationRules, [
             'cnpj.unique' => 'Este CNPJ já está cadastrado no sistema.',
             'cnpj.max' => 'O CNPJ deve ter no máximo 18 caracteres.',
             'email.unique' => 'Este e-mail já está cadastrado no sistema.',
@@ -81,16 +131,32 @@ class ParceiroController extends Controller
 
         try {
             // Log dos dados recebidos
-            \Log::info('Dados recebidos no cadastro de parceiro:', $request->all());
+            \Log::info('Dados recebidos no cadastro/edição de parceiro:', $request->all());
 
-            // Validação dos dados do usuário
-            $validatedUserData = $request->validate([
+            // Validação dos dados do usuário - ajustada para edição/criação
+            $userValidationRules = [
                 'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
                 'telefone' => 'required|string|max:15',
-                'senha' => 'required|string|min:6|confirmed',
-                'cpf' => 'required|string|unique:users,cpf|regex:/^\d{3}\.\d{3}\.\d{3}-\d{2}$/',
-            ]);
+            ];
+            
+            // Adicionar regras específicas para email e CPF
+            if ($isEdit) {
+                $parceiro = Parceiro::findOrFail($parceiroId);
+                $usuario = $parceiro->usuario;
+                $userValidationRules['email'] = 'required|email|unique:users,email,'.$usuario->id;
+                $userValidationRules['cpf'] = 'required|string|unique:users,cpf,'.$usuario->id.'|regex:/^\d{3}\.\d{3}\.\d{3}-\d{2}$/';
+                
+                // Senha opcional na edição
+                if ($request->filled('senha')) {
+                    $userValidationRules['senha'] = 'string|min:6|confirmed';
+                }
+            } else {
+                $userValidationRules['email'] = 'required|email|unique:users,email';
+                $userValidationRules['cpf'] = 'required|string|unique:users,cpf|regex:/^\d{3}\.\d{3}\.\d{3}-\d{2}$/';
+                $userValidationRules['senha'] = 'required|string|min:6|confirmed';
+            }
+            
+            $validatedUserData = $request->validate($userValidationRules);
 
             \Log::info('Dados do usuário validados com sucesso');
 
@@ -125,147 +191,134 @@ class ParceiroController extends Controller
             DB::beginTransaction();
             
             try {
-                \Log::info('Iniciando criação do usuário com os dados:', $validatedUserData);
-                
-                // Criar usuário com papel de parceiro
-                $user = User::create([
-                    'name' => $validatedUserData['name'],
-                    'email' => $validatedUserData['email'],
-                    'telefone' => $validatedUserData['telefone'],
-                    'senha' => Hash::make($validatedUserData['senha']), // Hash explícito da senha
-                    'cpf' => $validatedUserData['cpf'],
-                    'role' => UserRole::PARCEIRO->value,
-                    'ativo' => true, // O usuário está ativo, mas o parceiro não estará até ser aprovado
-                ]);
+                if ($isEdit) {
+                    // Atualizar usuário existente
+                    $parceiro = Parceiro::findOrFail($parceiroId);
+                    $user = $parceiro->usuario;
+                    
+                    \Log::info('Atualizando usuário com os dados:', $validatedUserData);
+                    
+                    $user->name = $validatedUserData['name'];
+                    $user->email = $validatedUserData['email'];
+                    $user->telefone = $validatedUserData['telefone'];
+                    $user->cpf = $validatedUserData['cpf'];
+                    
+                    // Atualizar senha apenas se fornecida
+                    if ($request->filled('senha')) {
+                        $user->senha = Hash::make($request->senha);
+                    }
+                    
+                    $user->save();
+                    
+                    // Se o parceiro estava reprovado, mudar para pendente novamente
+                    if ($parceiro->status === 'reprovado') {
+                        $parceiro->status = 'pendente';
+                        $parceiro->motivo_reprovacao = null;
+                    }
+                } else {
+                    // Criar usuário com papel de parceiro
+                    \Log::info('Iniciando criação do usuário com os dados:', $validatedUserData);
+                    
+                    $user = User::create([
+                        'name' => $validatedUserData['name'],
+                        'email' => $validatedUserData['email'],
+                        'telefone' => $validatedUserData['telefone'],
+                        'senha' => Hash::make($validatedUserData['senha']), // Hash explícito da senha
+                        'cpf' => $validatedUserData['cpf'],
+                        'role' => UserRole::PARCEIRO->value,
+                        'ativo' => true, // O usuário está ativo, mas o parceiro não estará até ser aprovado
+                    ]);
+                }
 
                 \Log::info('Usuário criado com sucesso:', ['user_id' => $user->id]);
 
                 \Log::info('Iniciando criação da localização com os dados:', $validatedLocalizacaoData);
-                
-                // Criar localização
-                $localizacao = Localizacao::create($validatedLocalizacaoData);
+            
+                if ($isEdit) {
+                    // Atualizar localização existente
+                    $localizacao = $parceiro->localizacao;
+                    $localizacao->nome_local = $validatedLocalizacaoData['nome_local'];
+                    $localizacao->endereco = $validatedLocalizacaoData['endereco'];
+                    $localizacao->latitude = $validatedLocalizacaoData['latitude'];
+                    $localizacao->longitude = $validatedLocalizacaoData['longitude'];
+                    $localizacao->referencia = $validatedLocalizacaoData['referencia'] ?? null;
+                    $localizacao->save();
+                } else {
+                    // Criar localização para o parceiro
+                    $localizacao = Localizacao::create([
+                        'nome_local' => $validatedLocalizacaoData['nome_local'],
+                        'endereco' => $validatedLocalizacaoData['endereco'],
+                        'latitude' => $validatedLocalizacaoData['latitude'],
+                        'longitude' => $validatedLocalizacaoData['longitude'],
+                        'referencia' => $validatedLocalizacaoData['referencia'] ?? null,
+                    ]);
+                }
 
                 \Log::info('Localização criada com sucesso:', ['localizacao_id' => $localizacao->id]);
 
                 \Log::info('Iniciando criação do parceiro com os dados:', $validatedParceiroData);
-                
-                // Criar parceiro - Agora com status pendente e inativo até aprovação
-                $parceiro = Parceiro::create([
-                    'user_id' => $user->id,
-                    'id_localizacao' => $localizacao->id,
-                    'nome_estabelecimento' => $validatedParceiroData['nome_estabelecimento'],
-                    'descricao' => $validatedParceiroData['descricao'],
-                    'horario_funcionamento' => $validatedParceiroData['horario_funcionamento'],
-                    'telefone_comercial' => $validatedParceiroData['telefone_comercial'],
-                    'logo' => $validatedParceiroData['logo'] ?? null,
-                    'tipo_parceiro' => $validatedParceiroData['tipo_parceiro'],
-                    'data_inicio_parceria' => now(),
-                    'ativo' => false, // Inativo até aprovação
-                    'status' => Parceiro::STATUS_PENDENTE, // Status pendente
-                    'cnpj' => $request->cnpj,
-                ]);
+            
+                if ($isEdit) {
+                    // Atualizar parceiro existente
+                    $parceiro->nome_estabelecimento = $validatedParceiroData['nome_estabelecimento'];
+                    $parceiro->cnpj = $request->cnpj;
+                    $parceiro->descricao = $validatedParceiroData['descricao'] ?? null;
+                    $parceiro->horario_funcionamento = $validatedParceiroData['horario_funcionamento'] ?? null;
+                    $parceiro->telefone_comercial = $validatedParceiroData['telefone_comercial'] ?? null;
+                    $parceiro->tipo_parceiro = $validatedParceiroData['tipo_parceiro'];
+                    
+                    // Atualizar logo apenas se fornecida
+                    if ($request->hasFile('logo')) {
+                        // Remover logo antiga se existir
+                        if ($parceiro->logo) {
+                            Storage::disk('public')->delete($parceiro->logo);
+                        }
+                        $parceiro->logo = $validatedParceiroData['logo'];
+                    }
+                    
+                    $parceiro->save();
+                } else {
+                    // Criar parceiro
+                    $parceiro = Parceiro::create([
+                        'nome_estabelecimento' => $validatedParceiroData['nome_estabelecimento'],
+                        'cnpj' => $request->cnpj,
+                        'descricao' => $validatedParceiroData['descricao'] ?? null,
+                        'horario_funcionamento' => $validatedParceiroData['horario_funcionamento'] ?? null,
+                        'telefone_comercial' => $validatedParceiroData['telefone_comercial'] ?? null,
+                        'tipo_parceiro' => $validatedParceiroData['tipo_parceiro'],
+                        'status' => 'pendente',
+                        'logo' => $validatedParceiroData['logo'] ?? null,
+                        'usuario_id' => $user->id,
+                        'localizacao_id' => $localizacao->id,
+                    ]);
+                }
 
                 \Log::info('Parceiro criado com sucesso:', ['parceiro_id' => $parceiro->id]);
 
                 DB::commit();
                 \Log::info('Transação concluída com sucesso');
 
-                return redirect()->route('login')
-                    ->with('success', 'Cadastro de parceiro enviado com sucesso! Nossa equipe irá analisar suas informações em até 3 dias úteis. Fique atento ao seu e-mail para mais informações.');
+                // Mensagem e redirecionamento diferentes para criação e edição
+                if ($isEdit) {
+                    return redirect()->route('parceiro.aguardando-aprovacao')
+                        ->with('success', 'Cadastro atualizado com sucesso! Aguarde a nova análise do administrador.');
+                } else {
+                    // Redirecionar para a página de aguardando aprovação
+                    return redirect()->route('parceiro.aguardando-aprovacao')
+                        ->with('success', 'Cadastro realizado com sucesso! Aguarde a aprovação do administrador.');
+                }
             } catch (\Exception $e) {
                 DB::rollBack();
                 
-                \Log::error('Erro ao criar parceiro:', [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]);
-                
                 // Remover imagem se houve upload
-                if (isset($validatedParceiroData['logo'])) {
+                if (isset($validatedParceiroData['logo']) && $validatedParceiroData['logo'] != $parceiro->getOriginal('logo')) {
                     Storage::disk('public')->delete($validatedParceiroData['logo']);
                 }
 
                 return redirect()->back()
                     ->withInput()
-                    ->withErrors(['error' => 'Erro ao cadastrar parceiro: ' . $e->getMessage()]);
+                    ->withErrors(['error' => 'Erro ao atualizar cadastro: ' . $e->getMessage()]);
             }
-        } catch (\Exception $e) {
-            \Log::error('Erro na validação:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['error' => 'Erro na validação dos dados: ' . $e->getMessage()]);
-        }
-    }
-
-    /**
-     * Exibe detalhes de um parceiro específico.
-     */
-    public function show(Parceiro $parceiro)
-    {
-        $parceiro->load(['usuario', 'localizacao', 'itens']);
-        return view('admin.parceiros.show', compact('parceiro'));
-    }
-
-    /**
-     * Exibe formulário para edição de parceiro.
-     */
-    public function edit(Parceiro $parceiro)
-    {
-        return view('admin.parceiros.edit', compact('parceiro'));
-    }
-
-    /**
-     * Atualiza um parceiro específico.
-     */
-    public function update(Request $request, Parceiro $parceiro)
-    {
-        // Validação dos dados do parceiro
-        $validatedParceiroData = $request->validate([
-            'nome_estabelecimento' => 'required|string|max:255',
-            'descricao' => 'nullable|string',
-            'horario_funcionamento' => 'nullable|string',
-            'telefone_comercial' => 'nullable|string|max:15',
-            'tipo_parceiro' => 'required|string|in:ponto_coleta,evento,ambos',
-            'data_inicio_parceria' => 'required|date',
-            'ativo' => 'boolean',
-        ]);
-
-        // Validação dos dados de localização
-        $validatedLocalizacaoData = $request->validate([
-            'nome_local' => 'required|string|max:255',
-            'endereco' => 'required|string|max:255',
-            'latitude' => 'required|string',
-            'longitude' => 'required|string',
-            'referencia' => 'nullable|string',
-        ]);
-
-        // Upload de logo se fornecido
-        if ($request->hasFile('logo')) {
-            // Remover logo anterior se existir
-            if ($parceiro->logo) {
-                Storage::disk('public')->delete($parceiro->logo);
-            }
-            
-            $validatedParceiroData['logo'] = $request->file('logo')->store('logos', 'public');
-        }
-
-        DB::beginTransaction();
-        
-        try {
-            // Atualizar parceiro
-            $parceiro->update($validatedParceiroData);
-
-            // Atualizar localização
-            $parceiro->localizacao()->update($validatedLocalizacaoData);
-            
-            DB::commit();
-
-            return redirect()->route('admin.parceiros.index')
-                ->with('success', 'Parceiro atualizado com sucesso!');
         } catch (\Exception $e) {
             DB::rollBack();
             
@@ -276,7 +329,7 @@ class ParceiroController extends Controller
 
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => 'Erro ao atualizar parceiro: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Erro ao atualizar cadastro: ' . $e->getMessage()]);
         }
     }
 
@@ -566,5 +619,23 @@ class ParceiroController extends Controller
         }
         
         return view('parceiro.aguardando-aprovacao', compact('parceiro'));
+    }
+
+    /**
+     * Exibe a mensagem de parceiro inativo.
+     */
+    public function inativo()
+    {
+        $parceiro = auth()->user()->parceiro;
+        
+        if (!$parceiro) {
+            return redirect()->route('parceiro.cadastro');
+        }
+        
+        if ($parceiro->ativo) {
+            return redirect()->route('parceiro.home');
+        }
+        
+        return view('parceiro.mensagem-parceiro-inativo');
     }
 }

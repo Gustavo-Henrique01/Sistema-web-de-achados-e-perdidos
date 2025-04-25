@@ -25,7 +25,7 @@
     <p class="mb-0">Olá <strong>{{ auth()->user()->name }}</strong>,</p>
     @if($parceiro->status === 'reprovado')
         <p>Infelizmente seu cadastro <strong>{{ $parceiro->nome_estabelecimento }}</strong> não foi aprovado.</p>
-        <p>Por favor, verifique o motivo da reprovação abaixo e entre em contato com nosso suporte caso tenha dúvidas.</p>
+        <p>Por favor, verifique o motivo da reprovação abaixo. Você pode editar suas informações e enviar novamente para análise.</p>
     @else
         <p>Agradecemos por se cadastrar como parceiro do nosso sistema de Achados e Perdidos!</p>
         <p>Seu cadastro <strong>{{ $parceiro->nome_estabelecimento }}</strong> está sendo analisado por nossa equipe e será processado em até 3 dias úteis.</p>
@@ -34,8 +34,11 @@
 </div>
 
 <div class="card mt-4">
-    <div class="card-header bg-light">
+    <div class="card-header bg-light d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Informações do Cadastro</h5>
+        <a href="{{ route('parceiro.editar', $parceiro) }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-edit me-1"></i> Editar Informações
+        </a>
     </div>
     <div class="card-body">
         <div class="row mb-3">
@@ -91,4 +94,4 @@
         </button>
     </form>
 </div>
-@endsection 
+@endsection

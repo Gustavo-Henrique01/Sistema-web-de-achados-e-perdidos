@@ -133,7 +133,20 @@ Route::delete('{parceiro}', [AdministradorController::class, 'destroy'])->name('
 });
 
 // Rotas para parceiros
-Route::prefix('parceiro')->middleware(['auth', 'parceiro'])->name('parceiro.')->group(function () {
+Route::middleware(['auth'])->prefix('parceiro')->name('parceiro.')->group(function () {
+    // Rotas que não precisam do middleware 'parceiro'
+    Route::get('/aguardando-aprovacao', [ParceiroController::class, 'aguardandoAprovacao'])
+        ->name('aguardando-aprovacao');
+    Route::get('/inativo', [ParceiroController::class, 'inativo'])
+        ->name('inativo');
+ 
+    
+});
+Route::get('/editar/{parceiro}', [ParceiroController::class, 'editarCadastro'])
+->name('parceiro.editar');
+
+// Rotas que precisam do middleware 'parceiro'
+Route::middleware(['auth', 'parceiro'])->prefix('parceiro')->name('parceiro.')->group(function () {
     Route::get('/home', [ParceiroController::class, 'home'])->name('home');
     Route::get('/itens', [ParceiroController::class, 'listarItens'])->name('itens');
     Route::get('/itens/{item}', [ItemController::class, 'showParceiro'])->name('itens.show');

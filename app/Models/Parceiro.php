@@ -21,12 +21,13 @@ class Parceiro extends Model
         'logo',
         'tipo_parceiro',
         'data_inicio_parceria',
-        'ativo',
         'status',
+        'ativo',
         'motivo_reprovacao',
-        'data_aprovacao',
+        'motivo_inativacao',
         'aprovado_por_id',
-        'cnpj'
+        'data_aprovacao',
+        'cnpj',
     ];
     
     protected $casts = [
@@ -164,4 +165,4 @@ class Parceiro extends Model
     {
         return $query->where('status', self::STATUS_APROVADO);
     }
-} 
+}

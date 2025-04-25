@@ -18,11 +18,16 @@ class isParceiro
     public function handle(Request $request, Closure $next): Response
     {
         if(auth()->check() && auth()->user()->isParceiro()){
-            // Verifica se o parceiro está aprovado
+            // Verifica se o parceiro existe e está aprovado
             $parceiro = auth()->user()->parceiro;
             
             if (!$parceiro || $parceiro->status !== Parceiro::STATUS_APROVADO) {
                 return redirect()->route('parceiro.aguardando-aprovacao');
+            }
+
+            // Verifica se o parceiro está ativo
+            if (!$parceiro->ativo) {
+                return redirect()->route('parceiro.inativo');
             }
             
             return $next($request);
@@ -30,4 +35,4 @@ class isParceiro
 
         abort(403, 'Acesso negado. Apenas parceiros podem acessar esta área.');
     }
-} 
+}

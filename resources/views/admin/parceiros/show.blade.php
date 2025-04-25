@@ -240,23 +240,19 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="d-flex flex-wrap gap-2">
-                                        @if($parceiro->status == 'pendente')
+                                        @if($parceiro->status != 'aprovado')
                                             <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
                                                 <i class="fas fa-check me-1"></i> Aprovar Parceiro
                                             </button>
+                                        @else
                                             <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
                                                 <i class="fas fa-times me-1"></i> Reprovar Parceiro
                                             </button>
-                                        @endif
 
-                                        @if($parceiro->status == 'aprovado')
-                                            <form action="{{ route('admin.parceiros.desativar', $parceiro) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit" class="btn {{ $parceiro->ativo ? 'btn-warning' : 'btn-success' }}">
-                                                    <i class="fas {{ $parceiro->ativo ? 'fa-ban' : 'fa-check-circle' }} me-1"></i> 
-                                                    {{ $parceiro->ativo ? 'Desativar' : 'Ativar' }} Parceiro
-                                                </button>
-                                            </form>
+                                            <button type="button" class="btn {{ $parceiro->ativo ? 'btn-warning' : 'btn-success' }}" data-bs-toggle="modal" data-bs-target="#deactivateModal">
+                                                <i class="fas {{ $parceiro->ativo ? 'fa-ban' : 'fa-check-circle' }} me-1"></i> 
+                                                {{ $parceiro->ativo ? 'Desativar' : 'Ativar' }} Parceiro
+                                            </button>
                                         @endif
 
                                         <a href="{{ route('admin.parceiros.itens', $parceiro) }}" class="btn btn-info">
@@ -363,6 +359,44 @@
                     </button>
                 </form>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Desativação -->
+<div class="modal fade" id="deactivateModal" tabindex="-1" aria-labelledby="deactivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deactivateModalLabel">{{ $parceiro->ativo ? 'Desativar' : 'Ativar' }} Parceiro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('admin.parceiros.desativar', $parceiro) }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    @if($parceiro->ativo)
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span>Ao desativar este parceiro, ele não poderá receber novos itens e o acesso ao sistema será suspenso.</span>
+                        </div>
+                        <div class="mb-3">
+                            <label for="motivo_inativacao" class="form-label">Motivo da Desativação:</label>
+                            <textarea class="form-control" id="motivo_inativacao" name="motivo_inativacao" rows="3" required></textarea>
+                            <div class="form-text">Forneça um motivo para a desativação. Esta informação será exibida para o parceiro.</div>
+                        </div>
+                    @else
+                        <p>Tem certeza que deseja reativar o parceiro <strong>{{ $parceiro->nome_estabelecimento }}</strong>?</p>
+                        <p>Após a reativação, o parceiro poderá voltar a receber itens e acessar o sistema normalmente.</p>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn {{ $parceiro->ativo ? 'btn-warning' : 'btn-success' }}">
+                        <i class="fas {{ $parceiro->ativo ? 'fa-ban' : 'fa-check-circle' }} me-2"></i>
+                        {{ $parceiro->ativo ? 'Desativar' : 'Ativar' }}
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

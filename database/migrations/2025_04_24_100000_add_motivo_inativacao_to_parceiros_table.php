@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('jobs', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('parceiros', function (Blueprint $table) {
+            $table->text('motivo_inativacao')->nullable()->after('ativo');
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('jobs');
+        Schema::table('parceiros', function (Blueprint $table) {
+            $table->dropColumn('motivo_inativacao');
+        });
     }
 };

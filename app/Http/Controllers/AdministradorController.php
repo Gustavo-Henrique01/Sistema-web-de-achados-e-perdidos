@@ -625,7 +625,7 @@ class AdministradorController extends Controller
     /**
      * Ativa ou desativa um parceiro aprovado.
      */
-    public function desativarParceiro(Parceiro $parceiro)
+    public function desativarParceiro(Request $request, Parceiro $parceiro)
     {
         if (!auth()->user()->isAdmin()) {
             return redirect()->back()->with('error', 'Acesso não autorizado.');
@@ -635,11 +635,25 @@ class AdministradorController extends Controller
             return redirect()->back()->with('error', 'Apenas parceiros aprovados podem ser ativados/desativados.');
         }
 
-        $parceiro->update([
-            'ativo' => !$parceiro->ativo
-        ]);
+        // Se estiver ativando, apenas muda o status
+        if (!$parceiro->ativo) {
+            $parceiro->update([
+                'ativo' => true,
+                'motivo_inativacao' => null
+            ]);
+            $status = 'ativado';
+        } else {
+            // Se estiver desativando, requer motivo
+            $request->validate([
+                'motivo_inativacao' => 'required|string|min:10|max:500'
+            ]);
 
-        $status = $parceiro->ativo ? 'ativado' : 'desativado';
+            $parceiro->update([
+                'ativo' => false,
+                'motivo_inativacao' => $request->motivo_inativacao
+            ]);
+            $status = 'desativado';
+        }
 
         return redirect()->route('admin.parceiros.show', $parceiro)
             ->with('success', "Parceiro {$status} com sucesso.");
