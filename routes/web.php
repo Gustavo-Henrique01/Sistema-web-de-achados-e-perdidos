@@ -27,10 +27,28 @@ Route::get('/reset-password/{token}', [LoginController::class, 'showResetForm'])
 Route::post('/reset-password', [LoginController::class, 'resetPassword'])->name('password.update');
 
 Route::get('/', [IndexController::class, 'paginaInicial'])->name('paginaInicial');
+
+// Rotas para transferência de itens
+Route::middleware(['auth'])->group(function () {
+    Route::post('/item/{item}/enviar-para-parceiro', [ItemController::class, 'enviarParaParceiro'])->name('item.enviar-para-parceiro');
+    Route::get('/item/{item}/enviar-para-parceiro', [ItemController::class, 'enviarParaParceiroForm'])->name('item.enviar-para-parceiro-form');
     
-
-
-
+    // Rota simplificada para devolução de item
+    Route::post('/item/{item}/marcar-como-devolvido', [ItemController::class, 'marcarComoDevolvido'])
+        ->name('item.marcar-como-devolvido');
+    
+    // Rota para busca de usuários por email (autocomplete)
+    Route::get('/usuarios/search', [UsuarioController::class, 'searchByEmail'])->name('usuarios.search');
+    
+    // Rotas para notificações
+    Route::prefix('notificacoes')->group(function () {
+        Route::post('/{id}/marcar-lida', [NotificationController::class, 'markAsRead'])->name('notificacoes.marcar-lida');
+        Route::post('/marcar-todas-lidas', [NotificationController::class, 'markAllAsRead'])->name('notificacoes.marcar-todas-lidas');
+        Route::get('/contagem', [NotificationController::class, 'getUnreadCount'])->name('notificacoes.contagem');
+        Route::get('/recentes', [NotificationController::class, 'getRecentNotifications'])->name('notificacoes.recentes');
+        Route::post('/{id}', [NotificationController::class, 'deleteNotification'])->name('notificacoes.excluir');
+    });
+});
 
 // Rota para exibir o formulário de registro do usuário
 Route::get('/usuario', [UsuarioController::class, 'index'])->name('registrar');
@@ -188,15 +206,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/notificacoes/{id}/marcar-lida', [NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
     Route::post('/notificacoes/marcar-todas-lidas', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
     Route::get('/notificacoes/nao-lidas', [NotificationController::class, 'getUnreadCount'])->name('notifications.unread-count');
+    Route::get('/notificacoes/recentes', [NotificationController::class, 'getRecentNotifications'])->name('notifications.recent');
+    Route::delete('/notificacoes/{id}', [NotificationController::class, 'deleteNotification'])->name('notifications.delete');
     Route::post('/pusher/auth', [PusherAuthController::class, 'authenticate'])->name('pusher.auth');
 });
 
 // Rotas de Parceiros
-
-
-
-
-
-
-
-

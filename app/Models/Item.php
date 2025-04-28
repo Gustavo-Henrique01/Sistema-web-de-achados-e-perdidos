@@ -30,7 +30,14 @@ class Item extends Model
         'tipo',
         'data_perdido',
         'data_encontrado',
-        'parceiro_id'
+        'parceiro_id',
+        'data_devolucao',
+        'observacoes_devolucao',
+        'usuario_devolucao_id',
+        'parceiro_devolucao_id',
+        'email_usuario_devolucao',
+        'devolucao_confirmada',
+        'data_confirmacao_devolucao'
     ];
 
     protected $casts = [
@@ -38,6 +45,9 @@ class Item extends Model
         'aprovado_em' => 'datetime',
         'reprovado_em' => 'datetime',
         'excluido_em' => 'datetime',
+        'data_devolucao' => 'datetime',
+        'data_confirmacao_devolucao' => 'datetime',
+        'devolucao_confirmada' => 'boolean',
         'status' => 'string'
     ];
 
@@ -99,6 +109,18 @@ class Item extends Model
     {
         return $this->hasMany(ItemTransferencia::class);
     }
+    
+    // Relacionamento com o usuário que devolveu o item
+    public function usuarioDevolucao()
+    {
+        return $this->belongsTo(User::class, 'usuario_devolucao_id');
+    }
+    
+    // Relacionamento com o parceiro que devolveu o item
+    public function parceiroDevolucao()
+    {
+        return $this->belongsTo(Parceiro::class, 'parceiro_devolucao_id');
+    }
 
     // Campos que devem ser ocultados nas respostas JSON
     protected $hidden = [
@@ -108,5 +130,23 @@ class Item extends Model
     // Comportamentos adicionais, como ao salvar, pode usar o método booted
     protected static function booted()
     {
+    }
+    
+    /**
+     * Confirma a devolução do item
+     *
+     * @param User $usuarioConfirmador Usuário que está confirmando a devolução
+     * @return bool
+     */
+    public function confirmarDevolucao($usuarioConfirmador = null)
+    {
+        $this->devolucao_confirmada = true;
+        $this->data_confirmacao_devolucao = now();
+        
+        if ($usuarioConfirmador && $this->usuario_devolucao_id === null) {
+            $this->usuario_devolucao_id = $usuarioConfirmador->id;
+        }
+        
+        return $this->save();
     }
 }

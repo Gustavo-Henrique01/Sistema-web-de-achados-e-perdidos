@@ -514,6 +514,7 @@
         // Contador de caracteres para descrição
         const descricaoTextarea = document.getElementById('descricao');
         const contadorCaracteres = document.getElementById('contador-caracteres');
+        
 
         descricaoTextarea.addEventListener('input', function() {
             const count = this.value.length;

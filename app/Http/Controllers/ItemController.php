@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use App\Events\ItemRejeitado;
 use App\Events\ItemDevolvido;
 use App\Events\ItemParceiroStatusChanged;
+use App\Notifications\ItemConfirmacaoDevolucaoNotification;
 
 class ItemController extends Controller
 {
@@ -352,30 +353,168 @@ class ItemController extends Controller
         return view('usuario.enviar-para-parceiro', compact('item', 'parceiros'));
     }
 
-    public function rejeitarItem(Item $item, Request $request)
+    /**
+     * Exibe a página de confirmação de devolução
+     */
+    public function showConfirmacaoDevolucao(Item $item)
     {
-        // ... existing code ...
+        // Verifica permissão: apenas quem devolveu ou admin
+        $user = auth()->user();
+        if ($item->usuario_devolucao_id !== $user->id && $user->role !== 'admin') {
+            return redirect()->route('usuario.home')->with('error', 'Você não tem permissão para confirmar esta devolução.');
+        }
+        // Verifica status
+        if ($item->status !== 'devolvido' || $item->devolucao_confirmada) {
+            return redirect()->route('usuario.home')->with('info', 'Não há devolução pendente para este item.');
+        }
         
-        event(new ItemRejeitado($item, $item->user, $request->motivo));
+        // Carrega o usuário que devolveu o item
+        $usuarioDevolucao = User::find($item->usuario_devolucao_id);
+        if (!$usuarioDevolucao) {
+            return redirect()->route('usuario.home')->with('error', 'Usuário que devolveu o item não encontrado.');
+        }
         
-        // ... existing code ...
+        // Regenera a sessão para evitar expiração do token CSRF
+        session()->regenerate();
+        
+        return view('items.confirmacao-devolucao', compact('item', 'usuarioDevolucao'));
     }
 
-    public function devolverItem(Item $item)
+    /**
+     * Marca um item como devolvido
+     */
+    public function marcarComoDevolvido(Request $request, Item $item)
     {
-        // ... existing code ...
-        
-        event(new ItemDevolvido($item, $item->user));
-        
-        // ... existing code ...
-    }
+        // Verifica se o usuário é o dono do item
+        if ($item->user_id !== auth()->id()) {
+            return redirect()->back()->with('error', 'Você não tem permissão para marcar este item como devolvido.');
+        }
 
-    public function vincularParceiro(Item $item, Parceiro $parceiro, Request $request)
+        // Verifica se o item está em um status que permite devolução
+        if (!in_array($item->status, ['aprovado', 'em_estabelecimento'])) {
+            return redirect()->back()->with('error', 'Este item não pode ser marcado como devolvido no momento.');
+        }
+
+        // Valida os dados do formulário
+        $validated = $request->validate([
+            'tipo_devolucao' => 'required|in:usuario,proprio,parceiro',
+            'usuario_email' => 'required_if:tipo_devolucao,usuario|nullable|email',
+            'usuario_devolucao_id' => 'required_if:tipo_devolucao,usuario|nullable|exists:users,id',
+            'parceiro_devolucao_id' => 'required_if:tipo_devolucao,parceiro|nullable|exists:parceiros,id',
+            'observacoes' => 'nullable|string|max:500'
+        ]);
+
+        // Inicia a transação
+        DB::beginTransaction();
+        try {
+            // Atualiza o item com as informações de devolução
+            $item->status = 'devolvido';
+            $item->data_devolucao = now();
+            $item->observacoes_devolucao = $validated['observacoes'];
+            $item->metodo_devolucao = $validated['tipo_devolucao'];
+            
+            // Processa de acordo com o tipo de devolução
+            switch ($validated['tipo_devolucao']) {
+                case 'usuario':
+                    // Devolução por outro usuário - requer confirmação
+                    $item->usuario_devolucao_id = $validated['usuario_devolucao_id'];
+                    $item->email_usuario_devolucao = $validated['usuario_email'];
+                    $item->devolucao_confirmada = false;
+                    break;
+                    
+                case 'parceiro':
+                    // Devolução via parceiro - confirmação automática
+                    $item->parceiro_devolucao_id = $validated['parceiro_devolucao_id'];
+                    $item->devolucao_confirmada = true;
+                    $item->data_confirmacao_devolucao = now();
+                    break;
+                    
+                case 'proprio':
+                    // Devolução pelo próprio usuário - confirmação automática
+                    $item->devolucao_confirmada = true;
+                    $item->data_confirmacao_devolucao = now();
+                    break;
+            }
+            
+            $item->save();
+            
+            // Se for devolução por outro usuário, envia notificação para confirmação
+            if ($validated['tipo_devolucao'] === 'usuario') {
+                $usuarioDevolucao = User::find($validated['usuario_devolucao_id']);
+                $usuarioDevolucao->notify(new ItemConfirmacaoDevolucaoNotification($item));
+            } else {
+                // Para os outros tipos, dispara o evento de devolução
+                event(new ItemDevolvido($item, auth()->user()));
+            }
+            
+            DB::commit();
+            
+            return redirect()->back()->with('success', 'Item marcado como devolvido com sucesso!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Ocorreu um erro ao marcar o item como devolvido: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Confirma a devolução de um item
+     */
+    public function confirmarDevolucao(Request $request, Item $item)
     {
-        // ... existing code ...
+        // Verifica permissão: apenas quem devolveu ou admin
+        $user = auth()->user();
+        if ($item->usuario_devolucao_id !== $user->id && $user->role !== 'admin') {
+            return redirect()->route('usuario.home')->with('error', 'Você não tem permissão para confirmar esta devolução.');
+        }
         
-        event(new ItemParceiroStatusChanged($item, $parceiro, $item->user, $request->status));
+        // Verifica status
+        if ($item->status !== 'devolvido' || $item->devolucao_confirmada) {
+            return redirect()->route('usuario.home')->with('info', 'Não há devolução pendente para este item.');
+        }
         
-        // ... existing code ...
+        // Atualiza o item
+        $item->update([
+            'devolucao_confirmada' => true,
+            'data_confirmacao_devolucao' => now()
+        ]);
+        
+        // Notifica o dono do item
+        $donoDevolucao = User::find($item->user_id);
+        event(new ItemDevolvido($item, $donoDevolucao));
+        
+        return redirect()->route('usuario.home')->with('success', 'Devolução confirmada com sucesso!');
+    }
+    
+    /**
+     * Recusa a devolução de um item
+     */
+    public function recusarDevolucao(Request $request, Item $item)
+    {
+        // Verifica permissão: apenas quem devolveu ou admin
+        $user = auth()->user();
+        if ($item->usuario_devolucao_id !== $user->id && $user->role !== 'admin') {
+            return redirect()->route('usuario.home')->with('error', 'Você não tem permissão para recusar esta devolução.');
+        }
+        
+        // Verifica status
+        if ($item->status !== 'devolvido' || $item->devolucao_confirmada) {
+            return redirect()->route('usuario.home')->with('info', 'Não há devolução pendente para este item.');
+        }
+        
+        // Reverte o status do item
+        $item->update([
+            'status' => 'aprovado',
+            'usuario_devolucao_id' => null,
+            'email_usuario_devolucao' => null,
+            'data_devolucao' => null,
+            'observacoes_devolucao' => null,
+            'metodo_devolucao' => null
+        ]);
+        
+        // Notifica o dono do item
+        $donoDevolucao = User::find($item->user_id);
+        $donoDevolucao->notify(new \App\Notifications\ItemDevolucaoRecusadaNotification($item));
+        
+        return redirect()->route('usuario.home')->with('success', 'Devolução recusada com sucesso!');
     }
 }

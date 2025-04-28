@@ -9,7 +9,7 @@
             <div class="modal-body p-0">
                 <div class="list-group list-group-flush" id="notificationsList">
                     @forelse($notifications as $notification)
-                        <div class="list-group-item list-group-item-action notification-item {{ $notification->read_at ? 'read' : '' }}"
+                        <div class="list-group-item notification-item {{ $notification->read_at ? 'read' : '' }}"
                              data-notification-id="{{ $notification->id }}">
                             <div class="d-flex align-items-start">
                                 @if(isset($notification->data['item_image']))
@@ -22,6 +22,11 @@
                                          alt="Imagem do remetente" 
                                          class="me-3 rounded" 
                                          style="width: 50px; height: 50px; object-fit: cover;">
+                                @else
+                                    <div class="me-3 rounded d-flex align-items-center justify-content-center bg-light" 
+                                         style="width: 50px; height: 50px;">
+                                        <i class="fas fa-bell text-primary"></i>
+                                    </div>
                                 @endif
                                 <div class="flex-grow-1">
                                     <div class="d-flex w-100 justify-content-between">
@@ -39,13 +44,42 @@
                                     @if(isset($notification->data['sender_name']))
                                         <p class="mb-1">De: {{ $notification->data['sender_name'] }}</p>
                                     @endif
-                                    @if(!$notification->read_at)
-                                        <button class="btn btn-sm btn-link mark-as-read" 
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <div>
+                                            @if(isset($notification->data['requires_confirmation']) && $notification->data['requires_confirmation'])
+                                                <div class="d-flex gap-2">
+                                                    @if(isset($notification->data['item_id']))
+                                                        <!-- Botões com JavaScript puro -->
+                                                        <button type="button" class="btn btn-sm btn-primary" 
+                                                                onclick="goToUrl('/item/{{ $notification->data['item_id'] }}/confirmar-devolucao'); $('#notificationsModal').modal('hide');">
+                                                            <i class="fas fa-eye me-1"></i>Ver Detalhes
+                                                        </button>
+                                                        
+                                                        <button type="button" class="btn btn-sm btn-success" 
+                                                                onclick="goToUrl('/item/{{ $notification->data['item_id'] }}/confirmar-devolucao/confirm'); $('#notificationsModal').modal('hide');">
+                                                            <i class="fas fa-check me-1"></i>Confirmar
+                                                        </button>
+                                                        
+                                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                                onclick="goToUrl('/item/{{ $notification->data['item_id'] }}/recusar-devolucao/reject'); $('#notificationsModal').modal('hide');">
+                                                            <i class="fas fa-times me-1"></i>Recusar
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            @elseif(!$notification->read_at)
+                                                <button class="btn btn-sm btn-outline-primary mark-as-read" 
+                                                        data-notification-id="{{ $notification->id }}"
+                                                        onclick="markAsRead({{ $notification->id }})">
+                                                    <i class="fas fa-check me-1"></i>Marcar como lida
+                                                </button>
+                                            @endif
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-danger delete-notification" 
                                                 data-notification-id="{{ $notification->id }}"
-                                                onclick="markAsRead({{ $notification->id }})">
-                                            Marcar como lida
+                                                onclick="event.stopPropagation(); deleteNotification('{{ $notification->id }}')">
+                                            <i class="fas fa-trash-alt"></i> Excluir
                                         </button>
-                                    @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -110,5 +144,4 @@
             }
         });
     }
-</script> 
 </script> 

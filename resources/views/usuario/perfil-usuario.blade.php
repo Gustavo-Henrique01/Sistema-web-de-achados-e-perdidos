@@ -14,6 +14,35 @@
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
 <style>
+    /* Estilos para o autocomplete */
+    .ui-autocomplete {
+        position: absolute;
+        z-index: 9999 !important;
+        max-height: 200px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        padding: 5px 0;
+    }
+    
+    .ui-menu-item {
+        padding: 5px 10px;
+        cursor: pointer;
+        list-style: none;
+    }
+    
+    .ui-menu-item:hover,
+    .ui-state-active {
+        background-color: #f0f0f0;
+    }
+    
+    .ui-helper-hidden-accessible {
+        display: none;
+    }
+    
     /* Estilos para o perfil do usuário */
     .profile-card {
         border-radius: 15px;
@@ -543,26 +572,44 @@
                                         </div>
                                         
                                         <div class="item-footer">
-                                            <a href="{{ route('usuario.editar-item', $item->id) }}" class="btn btn-primary btn-sm">
-                                                <i class="fas fa-edit"></i> Editar
-                                            </a>
-                                            
-                                            @if($item->status === 'aprovado' && !$item->parceiro_id)
-                                            <button type="button" 
-                                                    class="btn btn-success btn-sm" 
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#enviarParaParceiroModal-{{ $item->id }}">
-                                                <i class="fas fa-store"></i> Enviar para Ponto de Coleta
-                                            </button>
-                                            @endif
-                                            
-                                            <form action="{{ route('usuario.deletar-item', $item->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este item?');">
-                                                    <i class="fas fa-trash"></i> Excluir
-                                                </button>
-                                            </form>
+                                            <div class="d-flex flex-wrap gap-1 justify-content-between w-100">
+                                                <div>
+                                                    <a href="{{ route('usuario.editar-item', $item->id) }}" class="btn btn-primary btn-sm">
+                                                        <i class="fas fa-edit"></i> Editar
+                                                    </a>
+                                                </div>
+                                                <div>
+                                                    @if($item->status === 'aprovado' && !$item->parceiro_id)
+                                                    <button type="button" 
+                                                            class="btn btn-success btn-sm" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#enviarParaParceiroModal-{{ $item->id }}">
+                                                        <i class="fas fa-store"></i> Enviar para Ponto de Coleta
+                                                    </button>
+                                                    @endif
+                                                    
+                                                    @if($item->status === 'aprovado' || $item->status === 'em_estabelecimento')
+                                                    <button type="button" 
+                                                            class="btn btn-info btn-sm" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#marcarDevolvidoModal-{{ $item->id }}">
+                                                        <i class="fas fa-handshake"></i> Marcar como Devolvido
+                                                    </button>
+                                                    @elseif($item->status === 'devolvido')
+                                                    <span class="badge bg-success p-2">
+                                                        <i class="fas fa-check-circle me-1"></i> Item Devolvido
+                                                    </span>
+                                                    @endif
+                                                    
+                                                    <form action="{{ route('usuario.deletar-item', $item->id) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este item?');">
+                                                            <i class="fas fa-trash"></i> Excluir
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -575,8 +622,93 @@
         </div>
     </div>
 
+<!-- Modais para marcar itens como devolvidos -->
+@foreach($user->itens as $item)
+    @if($item->status === 'aprovado' || $item->status === 'em_estabelecimento')
+    <!-- Modal de Devolução para o item {{ $item->id }} -->
+    <div class="modal fade" id="marcarDevolvidoModal-{{ $item->id }}" tabindex="-1" aria-labelledby="marcarDevolvidoModalLabel-{{ $item->id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="marcarDevolvidoModalLabel-{{ $item->id }}">
+                        <i class="fas fa-handshake me-2"></i>Marcar Item como Devolvido
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <form action="{{ route('item.marcar-como-devolvido', $item->id) }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <p class="mb-3">Como este item foi devolvido?</p>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="tipo_devolucao" id="tipo_usuario-{{ $item->id }}" value="usuario" checked>
+                            <label class="form-check-label" for="tipo_usuario-{{ $item->id }}">
+                                <i class="fas fa-user me-2 text-primary"></i>Um usuário do sistema me devolveu
+                            </label>
+                            <div class="mt-2 ps-4 usuario-devolucao-container-{{ $item->id }}">
+                                <input type="text" class="form-control usuario-autocomplete" 
+                                       id="usuario_devolucao-{{ $item->id }}" 
+                                       name="usuario_email" 
+                                       placeholder="Digite o email ou nome do usuário" 
+                                       required>
+                                <input type="hidden" id="usuario_devolucao_id-{{ $item->id }}" name="usuario_devolucao_id">
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="tipo_devolucao" id="tipo_proprio-{{ $item->id }}" value="proprio">
+                            <label class="form-check-label" for="tipo_proprio-{{ $item->id }}">
+                                <i class="fas fa-search me-2 text-success"></i>Eu mesmo encontrei o item
+                            </label>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="radio" name="tipo_devolucao" id="tipo_parceiro-{{ $item->id }}" value="parceiro">
+                            <label class="form-check-label" for="tipo_parceiro-{{ $item->id }}">
+                                <i class="fas fa-store me-2 text-info"></i>Peguei no parceiro
+                            </label>
+                            <div class="mt-2 ps-4 parceiro-devolucao-container-{{ $item->id }}" style="display: none;">
+                                <select class="form-select" id="parceiro_devolucao-{{ $item->id }}" name="parceiro_devolucao_id">
+                                    <option value="">Selecione o parceiro</option>
+                                    @foreach($parceiros as $parceiro)
+                                        <option value="{{ $parceiro->id }}">{{ $parceiro->nome }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="observacoes-{{ $item->id }}" class="form-label">Observações (opcional):</label>
+                            <textarea class="form-control" id="observacoes-{{ $item->id }}" name="observacoes" rows="3" placeholder="Adicione informações adicionais sobre a devolução"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check-circle me-2"></i>Confirmar Devolução
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+@endforeach
+
 <!-- Adicionar Font Awesome para ícones -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Adicionar jQuery UI para autocomplete -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+<style>
+    /* Estilos adicionais para garantir que o autocomplete seja visível */
+    .ui-front {
+        z-index: 10000 !important; /* Garante que o dropdown fique acima do modal */
+    }
+</style>
 
 <!-- Scripts para a galeria de fotos -->
 <script>
@@ -597,7 +729,81 @@
         
         // Inicializa os filtros
         initStatusFilter();
+        
+        // Inicializa o autocomplete para usuários
+        initUsuarioAutocomplete();
+        
+        // Inicializa os controles do modal de devolução
+        initDevolucaoControls();
     });
+    
+    // Inicializa o autocomplete para busca de usuários
+    function initUsuarioAutocomplete() {
+        $('.usuario-autocomplete').autocomplete({
+            source: function(request, response) {
+                $.ajax({
+                    url: "{{ route('usuarios.search') }}",
+                    dataType: "json",
+                    data: {
+                        query: request.term
+                    },
+                    success: function(data) {
+                        response($.map(data, function(item) {
+                            return {
+                                label: item.name + ' (' + item.email + ')',
+                                value: item.email,
+                                id: item.id
+                            };
+                        }));
+                    }
+                });
+            },
+            minLength: 2,
+            select: function(event, ui) {
+                // Extrai o ID do item do ID do campo
+                const fieldId = $(this).attr('id');
+                const itemId = fieldId.split('-')[1];
+                
+                // Define o ID do usuário no campo oculto
+                $('#usuario_devolucao_id-' + itemId).val(ui.item.id);
+                return true;
+            }
+        });
+    }
+    
+    // Inicializa os controles do modal de devolução
+    function initDevolucaoControls() {
+        // Para cada item, configura os controles do modal
+        @foreach($user->itens as $item)
+            @if($item->status === 'aprovado' || $item->status === 'em_estabelecimento')
+                // Controla a exibição dos campos com base na opção selecionada
+                $('input[name="tipo_devolucao"]').change(function() {
+                    const itemId = $(this).attr('id').split('-')[1];
+                    const tipoSelecionado = $(this).val();
+                    
+                    // Esconde todos os containers específicos
+                    $('.usuario-devolucao-container-' + itemId).hide();
+                    $('.parceiro-devolucao-container-' + itemId).hide();
+                    
+                    // Remove o atributo required de todos os campos
+                    $('#usuario_devolucao-' + itemId).prop('required', false);
+                    $('#parceiro_devolucao-' + itemId).prop('required', false);
+                    
+                    // Mostra o container específico com base na opção selecionada
+                    if (tipoSelecionado === 'usuario') {
+                        $('.usuario-devolucao-container-' + itemId).show();
+                        $('#usuario_devolucao-' + itemId).prop('required', true);
+                    } else if (tipoSelecionado === 'parceiro') {
+                        $('.parceiro-devolucao-container-' + itemId).show();
+                        $('#parceiro_devolucao-' + itemId).prop('required', true);
+                    }
+                });
+                
+                // Trigger change event para configurar o estado inicial
+                $('#tipo_usuario-{{ $item->id }}').trigger('change');
+            @endif
+        @endforeach
+    }
     
     // Função para filtrar itens por status
     function initStatusFilter() {
@@ -760,12 +966,115 @@
         </div>
     </div>
     @endif
+    
+    @if($item->status === 'aprovado' || $item->status === 'em_estabelecimento')
+    <!-- Modal Marcar como Devolvido -->
+    <div class="modal fade" id="marcarDevolvidoModal-{{ $item->id }}" tabindex="-1" aria-labelledby="marcarDevolvidoModalLabel-{{ $item->id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="marcarDevolvidoModalLabel-{{ $item->id }}"><i class="fas fa-handshake me-2"></i>Marcar Item como Devolvido</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ route('item.marcar-como-devolvido', ['item' => $item->id]) }}" method="POST" id="form-devolvido-{{ $item->id }}">
+                        @csrf
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Importante:</strong> Ao marcar um item como devolvido, ele não aparecerá mais nas buscas públicas.
+                        </div>
+
+                        <div class="mb-4">
+                            <p class="fw-bold mb-2">Como este item foi devolvido?</p>
+                            
+                            <div class="form-check mb-3 p-2 border-start border-3 border-primary rounded-start" style="background-color: #f8f9fa;">
+                                <input class="form-check-input" type="radio" name="metodo_devolucao" id="metodo-contato-direto-{{ $item->id }}" value="contato_direto" checked>
+                                <label class="form-check-label" for="metodo-contato-direto-{{ $item->id }}">
+                                    <strong>Contato direto</strong> - Um usuário entrou em contato comigo via chat e devolveu o item
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3 p-2 border-start border-3 border-primary rounded-start" style="background-color: #f8f9fa;">
+                                <input class="form-check-input" type="radio" name="metodo_devolucao" id="metodo-encontrado-{{ $item->id }}" value="encontrado">
+                                <label class="form-check-label" for="metodo-encontrado-{{ $item->id }}">
+                                    <strong>Item encontrado</strong> - Eu mesmo encontrei ou alguém me devolveu diretamente
+                                </label>
+                            </div>
+                            
+                            <div class="form-check mb-3 p-2 border-start border-3 border-primary rounded-start" style="background-color: #f8f9fa;">
+                                <input class="form-check-input" type="radio" name="metodo_devolucao" id="metodo-parceiro-{{ $item->id }}" value="parceiro">
+                                <label class="form-check-label" for="metodo-parceiro-{{ $item->id }}">
+                                    <strong>Ponto de coleta</strong> - Retirei o item em um ponto de coleta parceiro
+                                </label>
+                            </div>
+                            
+                            <!-- Campos para contato direto -->
+                            <div id="contato-direto-campos-{{ $item->id }}" class="mt-3 p-3 border rounded" style="background-color: #f8f9fa;">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Usuário que devolveu o item</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" class="form-control usuario-autocomplete" 
+                                               id="usuario-busca-{{ $item->id }}" 
+                                               placeholder="Buscar usuário pelo nome ou email...">
+                                        <input type="hidden" name="usuario_id" id="usuario-id-{{ $item->id }}">
+                                        <button class="btn btn-outline-secondary" type="button" id="limpar-usuario-{{ $item->id }}">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">Informe o usuário que devolveu o item para que ele receba uma notificação para confirmar a devolução. Este campo é <strong>obrigatório</strong> para o método de contato direto.</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Campos para parceiro -->
+                            <div id="parceiro-campos-{{ $item->id }}" class="mt-3 p-3 border rounded d-none" style="background-color: #f8f9fa;">
+                                <div class="mb-3">
+                                    <label for="parceiro_id-{{ $item->id }}" class="form-label fw-bold">Ponto de coleta onde retirei</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-store"></i></span>
+                                        <select class="form-select" name="parceiro_id" id="parceiro_id-{{ $item->id }}">
+                                            <option value="">Selecione um ponto de coleta</option>
+                                            @foreach($parceiros as $parceiro)
+                                                <option value="{{ $parceiro->id }}">
+                                                    {{ $parceiro->nome_estabelecimento }} - {{ $parceiro->localizacao->endereco ?? '' }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="detalhes-{{ $item->id }}" class="form-label fw-bold">Detalhes adicionais (opcional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-comment-alt"></i></span>
+                                <textarea class="form-control" name="detalhes" id="detalhes-{{ $item->id }}" rows="3" 
+                                          placeholder="Descreva como ocorreu a devolução, se necessário..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-1"></i>Cancelar
+                            </button>
+                            <button type="submit" class="btn btn-success" id="btn-confirmar-devolucao-{{ $item->id }}">
+                                <i class="fas fa-check me-1"></i>Confirmar Devolução
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 @endforeach
 
 @push('scripts')
 <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_key') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Inicializa os mapas para os modais de parceiros
     @foreach($user->itens as $item)
         @if($item->status === 'aprovado' && !$item->parceiro_id)
             // Inicializa o mapa para cada item
@@ -815,6 +1124,198 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 1500);
                 }
             });
+        @endif
+    @endforeach
+    
+    // Debug para verificar se o jQuery está carregado corretamente
+    console.log('jQuery version:', $.fn.jquery);
+    console.log('jQuery UI version:', $.ui ? $.ui.version : 'not loaded');
+    
+    // Inicializa o autocomplete para os campos de email com debug
+    $('.email-autocomplete').each(function() {
+        console.log('Initializing autocomplete for:', this.id);
+        
+        // Configura o autocomplete
+        var autocompleteWidget = $(this).autocomplete({
+            source: function(request, response) {
+                console.log('Autocomplete search for:', request.term);
+                
+                $.ajax({
+                    url: "{{ route('usuarios.search') }}",
+                    method: 'GET',
+                    dataType: "json",
+                    data: {
+                        query: request.term
+                    },
+                    success: function(data) {
+                        console.log('Autocomplete results:', data);
+                        
+                        if (data.length === 0) {
+                            // Se não houver resultados, mostra uma mensagem
+                            response([{ label: 'Nenhum usuário encontrado', value: '' }]);
+                        } else {
+                            response($.map(data, function(item) {
+                                return {
+                                    label: item.name + ' (' + item.email + ')',
+                                    value: item.email
+                                };
+                            }));
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Autocomplete error:', status, error);
+                        console.log('Response:', xhr.responseText);
+                        response([]);
+                    }
+                });
+            },
+            minLength: 2,
+            delay: 300,
+            position: { my: "left top", at: "left bottom", collision: "flip" },
+            appendTo: $(this).closest('.modal-content'),
+            open: function(event, ui) {
+                console.log('Autocomplete dropdown opened');
+                // Ajusta o z-index do dropdown para garantir que ele fique acima do modal
+                $('.ui-autocomplete').css('z-index', 9999);
+            },
+            select: function(event, ui) {
+                console.log('Selected:', ui.item);
+                if (ui.item.value) { // Verifica se não é o item "Nenhum usuário encontrado"
+                    $(this).val(ui.item.value);
+                }
+                return false;
+            }
+        }).on('focus', function() {
+            // Força a exibição do menu se houver pelo menos 2 caracteres
+            if ($(this).val().length >= 2) {
+                $(this).autocomplete('search');
+            }
+        });
+        
+        // Força o widget a usar o contêiner do modal como referência para posicionamento
+        autocompleteWidget.autocomplete('widget').css('z-index', 10000);
+    });
+    
+    // Inicializa os controles para os modais de devolução
+    @foreach($user->itens as $item)
+        @if($item->status === 'aprovado' || $item->status === 'em_estabelecimento')
+            // Controle de exibição dos campos baseado no método de devolução
+            const metodoContatoDireto{{ $item->id }} = document.getElementById('metodo-contato-direto-{{ $item->id }}');
+            const metodoEncontrado{{ $item->id }} = document.getElementById('metodo-encontrado-{{ $item->id }}');
+            const metodoParceiro{{ $item->id }} = document.getElementById('metodo-parceiro-{{ $item->id }}');
+            
+            const contatoDiretoCampos{{ $item->id }} = document.getElementById('contato-direto-campos-{{ $item->id }}');
+            const parceiroCampos{{ $item->id }} = document.getElementById('parceiro-campos-{{ $item->id }}');
+            const parceiroId{{ $item->id }} = document.getElementById('parceiro_id-{{ $item->id }}');
+            
+            // Inicializa o autocomplete para busca de usuários
+            const usuarioBusca{{ $item->id }} = document.getElementById('usuario-busca-{{ $item->id }}');
+            const usuarioId{{ $item->id }} = document.getElementById('usuario-id-{{ $item->id }}');
+            const limparUsuario{{ $item->id }} = document.getElementById('limpar-usuario-{{ $item->id }}');
+            
+            // Formulário de devolução
+            const formDevolvido{{ $item->id }} = document.getElementById('form-devolvido-{{ $item->id }}');
+            const btnConfirmarDevolucao{{ $item->id }} = document.getElementById('btn-confirmar-devolucao-{{ $item->id }}');
+            
+            if (metodoContatoDireto{{ $item->id }} && metodoEncontrado{{ $item->id }} && metodoParceiro{{ $item->id }}) {
+                // Evento para método contato direto
+                metodoContatoDireto{{ $item->id }}.addEventListener('change', function() {
+                    if (this.checked) {
+                        contatoDiretoCampos{{ $item->id }}.classList.remove('d-none');
+                        parceiroCampos{{ $item->id }}.classList.add('d-none');
+                        parceiroId{{ $item->id }}.removeAttribute('required');
+                    }
+                });
+                
+                // Evento para método item encontrado
+                metodoEncontrado{{ $item->id }}.addEventListener('change', function() {
+                    if (this.checked) {
+                        contatoDiretoCampos{{ $item->id }}.classList.add('d-none');
+                        parceiroCampos{{ $item->id }}.classList.add('d-none');
+                        parceiroId{{ $item->id }}.removeAttribute('required');
+                    }
+                });
+                
+                // Evento para método parceiro
+                metodoParceiro{{ $item->id }}.addEventListener('change', function() {
+                    if (this.checked) {
+                        contatoDiretoCampos{{ $item->id }}.classList.add('d-none');
+                        parceiroCampos{{ $item->id }}.classList.remove('d-none');
+                        parceiroId{{ $item->id }}.setAttribute('required', 'required');
+                    }
+                });
+                
+                // Adiciona evento de submissão ao formulário
+                if (formDevolvido{{ $item->id }}) {
+                    formDevolvido{{ $item->id }}.addEventListener('submit', function(e) {
+                        // Desabilita o botão para evitar múltiplos envios
+                        if (btnConfirmarDevolucao{{ $item->id }}) {
+                            btnConfirmarDevolucao{{ $item->id }}.disabled = true;
+                            btnConfirmarDevolucao{{ $item->id }}.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Processando...';
+                        }
+                    });
+                }
+                
+                // Botão para limpar usuário selecionado
+                if (limparUsuario{{ $item->id }}) {
+                    limparUsuario{{ $item->id }}.addEventListener('click', function() {
+                        usuarioBusca{{ $item->id }}.value = '';
+                        usuarioId{{ $item->id }}.value = '';
+                    });
+                }
+                
+                // Verificar se o usuário foi selecionado antes de enviar o formulário
+                if (formDevolvido{{ $item->id }}) {
+                    formDevolvido{{ $item->id }}.addEventListener('submit', function(e) {
+                        // Se o método selecionado for contato direto, verificar se um usuário foi selecionado
+                        if (metodoContatoDireto{{ $item->id }}.checked && usuarioId{{ $item->id }}.value === '') {
+                            e.preventDefault();
+                            alert('Por favor, selecione o usuário que devolveu o item para que ele possa confirmar a devolução.');
+                            return false;
+                        }
+                    });
+                }
+                
+                // Configurar autocomplete para busca de usuários
+                if (usuarioBusca{{ $item->id }}) {
+                    $(usuarioBusca{{ $item->id }}).autocomplete({
+                        source: function(request, response) {
+                            $.ajax({
+                                url: "{{ route('usuarios.search') }}",
+                                method: 'GET',
+                                dataType: "json",
+                                data: {
+                                    query: request.term
+                                },
+                                success: function(data) {
+                                    if (data.length === 0) {
+                                        response([{ label: 'Nenhum usuário encontrado', value: '' }]);
+                                    } else {
+                                        response($.map(data, function(item) {
+                                            return {
+                                                label: item.name + ' (' + item.email + ')',
+                                                value: item.name,
+                                                id: item.id
+                                            };
+                                        }));
+                                    }
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error('Erro na busca de usuários:', status, error);
+                                    response([]);
+                                }
+                            });
+                        },
+                        minLength: 2,
+                        select: function(event, ui) {
+                            if (ui.item.id) {
+                                usuarioId{{ $item->id }}.value = ui.item.id;
+                            }
+                            return true;
+                        }
+                    });
+                }
+            }
         @endif
     @endforeach
 });

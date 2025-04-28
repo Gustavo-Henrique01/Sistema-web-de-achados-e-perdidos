@@ -294,4 +294,50 @@ class UsuarioController extends Controller
         
         return redirect()->route('perfil-usuario')->with('success', 'Sua conta foi reativada com sucesso!');
     }
+    
+    /**
+     * Busca usuários por email para o autocomplete
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function searchByEmail(Request $request)
+    {
+        try {
+            $query = $request->get('query');
+            
+            if (empty($query)) {
+                return response()->json([]);
+            }
+            
+            // Busca por email ou nome
+            $users = User::where(function($q) use ($query) {
+                        $q->where('email', 'like', "%{$query}%")
+                          ->orWhere('name', 'like', "%{$query}%");
+                    })
+                    ->where('ativo', true)
+                    ->select('id', 'name', 'email')
+                    ->limit(10)
+                    ->get();
+            
+            // Log para debug
+            \Log::info('User search query', [
+                'query' => $query,
+                'results_count' => $users->count(),
+                'results' => $users->toArray()
+            ]);
+            
+            return response()->json($users);
+        } catch (\Exception $e) {
+            \Log::error('Error in user search', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Ocorreu um erro ao buscar usuários',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
