@@ -367,16 +367,7 @@ class ItemController extends Controller
         if ($item->status !== 'devolvido' || $item->devolucao_confirmada) {
             return redirect()->route('usuario.home')->with('info', 'Não há devolução pendente para este item.');
         }
-        
-        // Carrega o usuário que devolveu o item
-        $usuarioDevolucao = User::find($item->usuario_devolucao_id);
-        if (!$usuarioDevolucao) {
-            return redirect()->route('usuario.home')->with('error', 'Usuário que devolveu o item não encontrado.');
-        }
-        
-        // Regenera a sessão para evitar expiração do token CSRF
-        session()->regenerate();
-        
+        $usuarioDevolucao = $item->usuarioDevolucao;
         return view('items.confirmacao-devolucao', compact('item', 'usuarioDevolucao'));
     }
 

@@ -579,7 +579,7 @@
                                                     </a>
                                                 </div>
                                                 <div>
-                                                    @if($item->status === 'aprovado' && !$item->parceiro_id)
+                                                    @if($item->status === 'aprovado' && !$item->parceiro_id && $item->tipo === 'achado')
                                                     <button type="button" 
                                                             class="btn btn-success btn-sm" 
                                                             data-bs-toggle="modal" 
@@ -729,81 +729,7 @@
         
         // Inicializa os filtros
         initStatusFilter();
-        
-        // Inicializa o autocomplete para usuários
-        initUsuarioAutocomplete();
-        
-        // Inicializa os controles do modal de devolução
-        initDevolucaoControls();
     });
-    
-    // Inicializa o autocomplete para busca de usuários
-    function initUsuarioAutocomplete() {
-        $('.usuario-autocomplete').autocomplete({
-            source: function(request, response) {
-                $.ajax({
-                    url: "{{ route('usuarios.search') }}",
-                    dataType: "json",
-                    data: {
-                        query: request.term
-                    },
-                    success: function(data) {
-                        response($.map(data, function(item) {
-                            return {
-                                label: item.name + ' (' + item.email + ')',
-                                value: item.email,
-                                id: item.id
-                            };
-                        }));
-                    }
-                });
-            },
-            minLength: 2,
-            select: function(event, ui) {
-                // Extrai o ID do item do ID do campo
-                const fieldId = $(this).attr('id');
-                const itemId = fieldId.split('-')[1];
-                
-                // Define o ID do usuário no campo oculto
-                $('#usuario_devolucao_id-' + itemId).val(ui.item.id);
-                return true;
-            }
-        });
-    }
-    
-    // Inicializa os controles do modal de devolução
-    function initDevolucaoControls() {
-        // Para cada item, configura os controles do modal
-        @foreach($user->itens as $item)
-            @if($item->status === 'aprovado' || $item->status === 'em_estabelecimento')
-                // Controla a exibição dos campos com base na opção selecionada
-                $('input[name="tipo_devolucao"]').change(function() {
-                    const itemId = $(this).attr('id').split('-')[1];
-                    const tipoSelecionado = $(this).val();
-                    
-                    // Esconde todos os containers específicos
-                    $('.usuario-devolucao-container-' + itemId).hide();
-                    $('.parceiro-devolucao-container-' + itemId).hide();
-                    
-                    // Remove o atributo required de todos os campos
-                    $('#usuario_devolucao-' + itemId).prop('required', false);
-                    $('#parceiro_devolucao-' + itemId).prop('required', false);
-                    
-                    // Mostra o container específico com base na opção selecionada
-                    if (tipoSelecionado === 'usuario') {
-                        $('.usuario-devolucao-container-' + itemId).show();
-                        $('#usuario_devolucao-' + itemId).prop('required', true);
-                    } else if (tipoSelecionado === 'parceiro') {
-                        $('.parceiro-devolucao-container-' + itemId).show();
-                        $('#parceiro_devolucao-' + itemId).prop('required', true);
-                    }
-                });
-                
-                // Trigger change event para configurar o estado inicial
-                $('#tipo_usuario-{{ $item->id }}').trigger('change');
-            @endif
-        @endforeach
-    }
     
     // Função para filtrar itens por status
     function initStatusFilter() {

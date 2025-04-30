@@ -170,6 +170,8 @@ Route::middleware(['auth', 'parceiro'])->prefix('parceiro')->name('parceiro.')->
     Route::get('/itens/{item}', [ItemController::class, 'showParceiro'])->name('itens.show');
     Route::get('/vincular-item', [ParceiroController::class, 'vincularItemForm'])->name('vincular-item.form');
     Route::get('/transferencias-pendentes', [ParceiroController::class, 'transferenciasPendentes'])->name('transferencias-pendentes');
+    Route::get('/perfil', [ParceiroController::class, 'editProfile'])->name('perfil');
+    Route::put('/perfil', [ParceiroController::class, 'updateProfile'])->name('update-profile');
     
     // Rotas de transferência de itens
     Route::post('/itens/{item}/confirmar-recebimento', [ParceiroController::class, 'confirmarRecebimento'])

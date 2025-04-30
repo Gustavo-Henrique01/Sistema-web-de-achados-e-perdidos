@@ -4,14 +4,29 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="mb-0">Detalhes do Item</h2>
-                <span class="badge bg-{{ $item->tipo === 'achado' ? 'success' : 'warning' }} fs-6">
-                    {{ $item->tipo === 'achado' ? 'Achado' : 'Perdido' }}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{{ route('parceiro.itens') }}" class="btn btn-sm btn-outline-secondary mb-2">
+                <i class="fas fa-arrow-left me-1"></i> Voltar para itens
+            </a>
+            <h2 class="mb-0">Detalhes do Item</h2>
+        </div>
+        <span class="badge bg-{{ $item->tipo === 'achado' ? 'success' : 'warning' }} fs-6 py-2 px-3">
+            <i class="fas fa-{{ $item->tipo === 'achado' ? 'hand-holding-heart' : 'search' }} me-2"></i>
+            {{ $item->tipo === 'achado' ? 'Achado' : 'Perdido' }}
+        </span>
+    </div>
+    
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Informações do Item</h4>
+                <span class="badge bg-{{ $item->status === 'em_transferencia' ? 'warning' : ($item->status === 'em_estabelecimento' ? 'primary' : 'info') }} py-2 px-3">
+                    <i class="fas fa-info-circle me-1"></i> {{ ucfirst(str_replace('_', ' ', $item->status)) }}
                 </span>
             </div>
+        </div>
+        <div class="card-body">
             
             <div class="row">
                 <!-- Galeria de Fotos -->

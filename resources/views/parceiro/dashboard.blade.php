@@ -4,11 +4,14 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3">Dashboard</h1>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Dashboard</h1>
+            <p class="text-muted mb-0">Bem-vindo ao seu painel de controle</p>
+        </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('parceiro.vincular-item.form') }}" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>Vincular Novo Item
+            <a href="{{ route('parceiro.vincular-item.form') }}" class="btn btn-primary d-flex align-items-center">
+                <i class="fas fa-plus me-2"></i><span>Vincular Novo Item</span>
             </a>
         </div>
     </div>

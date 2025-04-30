@@ -676,8 +676,8 @@
                   <div class="d-flex">
                     <div class="timeline-marker bg-primary text-white">3</div>
                     <div class="ms-4">
-                      <h5 class="fw-bold">Receba notificações</h5>
-                      <p class="mb-0 text-muted">Seja alertado quando itens similares forem encontrados.</p>
+                      <h5 class="fw-bold">Busque por itens semelhantes</h5>
+                      <p class="mb-0 text-muted">Encontre itens semelhante na lista de itens cadastrados.</p>
                     </div>
                   </div>
                 </div>

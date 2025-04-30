@@ -31,6 +31,86 @@ class ParceiroController extends Controller
         
         return view('parceiro.dashboard', compact('parceiro', 'itens'));
     }
+    
+    /**
+     * Exibe o formulário para edição do perfil do parceiro.
+     */
+    public function editProfile()
+    {
+        $user = Auth::user();
+        $parceiro = $user->parceiro;
+        
+        if (!$parceiro) {
+            abort(404, 'Perfil de parceiro não encontrado');
+        }
+        
+        return view('parceiro.edit-profile', compact('user', 'parceiro'));
+    }
+    
+    /**
+     * Atualiza o perfil do parceiro.
+     */
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+        $parceiro = $user->parceiro;
+        
+        if (!$parceiro) {
+            abort(404, 'Perfil de parceiro não encontrado');
+        }
+        
+        // Validar os dados do formulário
+        $validator = Validator::make($request->all(), [
+            'nome_estabelecimento' => 'required|string|max:255',
+            'descricao' => 'nullable|string',
+            'horario_funcionamento' => 'nullable|string|max:255',
+            'telefone_comercial' => 'required|string|max:15',
+            'tipo_parceiro' => 'required|in:ponto_coleta,evento,ambos',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'logo' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
+            'password' => 'nullable|min:5|confirmed',
+        ]);
+        
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+        
+        // Atualizar dados do parceiro
+        $parceiro->nome_estabelecimento = $request->nome_estabelecimento;
+        $parceiro->descricao = $request->descricao;
+        $parceiro->horario_funcionamento = $request->horario_funcionamento;
+        $parceiro->telefone_comercial = $request->telefone_comercial;
+        $parceiro->tipo_parceiro = $request->tipo_parceiro;
+        
+        // Processar o upload da logo, se fornecida
+        if ($request->hasFile('logo')) {
+            // Excluir a logo antiga, se existir
+            if ($parceiro->logo && Storage::exists('public/' . $parceiro->logo)) {
+                Storage::delete('public/' . $parceiro->logo);
+            }
+            
+            // Salvar a nova logo
+            $logoPath = $request->file('logo')->store('logos', 'public');
+            $parceiro->logo = $logoPath;
+        }
+        
+        $parceiro->save();
+        
+        // Atualizar dados do usuário
+        $user->email = $request->email;
+        
+        // Atualizar senha, se fornecida
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+        
+        $user->save();
+        
+        return redirect()->route('parceiro.home')
+            ->with('success', 'Perfil atualizado com sucesso!');
+    }
 
     /**
      * Exibe listagem de parceiros.
