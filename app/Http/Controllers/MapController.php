@@ -3,26 +3,34 @@
 namespace App\Http\Controllers;
 use App\Models\Item;
 use App\Models\Localizacao;
+use App\Models\Categoria;
+use App\Models\ItemFoto;
+use Illuminate\Support\Carbon;
+use App\Models\Parceiro;
 
 use Illuminate\Http\Request;
 
 class MapController extends Controller
 {
     public function mostrarMapa()
-    {
-        if (auth()->check()) {
-            $itens = Item::whereHas('localizacao', function ($query) {
-                $query->whereNotNull('latitude')
-                      ->whereNotNull('longitude');
-            })
+    {   
+        $parceiros = Parceiro::all();
+        $itens = Item::with(['categoria', 'localizacao', 'fotos'])
             ->where('status', 'aprovado')
-            ->with('localizacao') // Carrega os dados da localização
-            ->get(); 
+            ->whereHas('usuario', function($query) {
+                $query->where('ativo', true);
+            })
+            ->get();
             
-        return view('Map.mapa', compact('itens'));
-        } 
-     else {
-            return redirect()->route('form.login');
-        }
+        $categorias = Categoria::all();
+        $googleMapsApiKey = env('GOOGLE_MAPS_API_KEY');
+        
+        return view('Map.mapa', [
+            'itens' => $itens,
+            'categorias' => $categorias,
+            'parceiros' => $parceiros,
+            'googleMapsApiKey' => $googleMapsApiKey
+        ]);
     }
+
 }

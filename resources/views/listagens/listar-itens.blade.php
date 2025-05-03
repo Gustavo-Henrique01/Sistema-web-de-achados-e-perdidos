@@ -144,6 +144,15 @@
                             </small>
                         </div>
                         
+                        @if($item->status === 'em_estabelecimento' && $item->parceiro)
+                        <div class="mb-3">
+                            <small class="text-primary">
+                                <i class="fas fa-store me-1"></i>
+                                <strong>Em estabelecimento parceiro:</strong> {{ $item->parceiro->nome }}
+                            </small>
+                        </div>
+                        @endif
+                        
                         <div class="d-flex justify-content-between align-items-center">
                             <span class="badge bg-{{ $item->status === 'aprovado' ? 'success' : ($item->status === 'em_estabelecimento' ? 'info' : 'secondary') }}">
                                 {{ ucfirst(str_replace('_', ' ', $item->status)) }}

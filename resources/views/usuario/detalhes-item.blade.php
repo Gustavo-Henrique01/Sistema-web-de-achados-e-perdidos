@@ -42,13 +42,39 @@
                     </p>
 
                     @if($item->parceiro)
-                    <div class="alert alert-info mb-0">
-                        <h6 class="alert-heading mb-2">
-                            <i class="fas fa-store me-2"></i>
-                            Item em Ponto de Coleta
-                        </h6>
-                        <p class="mb-1"><strong>{{ $item->parceiro->nome_estabelecimento }}</strong></p>
-                        <p class="mb-0 small">{{ $item->parceiro->localizacao->endereco }}</p>
+                    <div class="card border-info mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-store me-2"></i>
+                                Item em Estabelecimento Parceiro
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h5>{{ $item->parceiro->nome }}</h5>
+                                    <p class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i>{{ $item->parceiro->endereco }}</p>
+                                    <p class="mb-2"><i class="fas fa-phone me-2 text-primary"></i>{{ $item->parceiro->telefone }}</p>
+                                    <p class="mb-2"><i class="fas fa-clock me-2 text-primary"></i>{{ $item->parceiro->horario_funcionamento }}</p>
+                                    
+                                    <div class="mt-3">
+                                        <a href="/chatify/{{ $item->parceiro->user_id }}" 
+                                           class="btn btn-primary">
+                                            <i class="fas fa-comments me-2"></i>Conversar com o Parceiro
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 120px;">
+                                        @if($item->parceiro->logo)
+                                            <img src="{{ asset('storage/'.$item->parceiro->logo) }}" alt="Logo do parceiro" class="img-fluid" style="max-height: 110px;">
+                                        @else
+                                            <i class="fas fa-store fa-3x text-primary opacity-50"></i>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     @endif
 
@@ -258,4 +284,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 @endif
+
+
 @endsection 

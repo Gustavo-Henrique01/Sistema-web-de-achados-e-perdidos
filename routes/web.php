@@ -28,26 +28,18 @@ Route::post('/reset-password', [LoginController::class, 'resetPassword'])->name(
 
 Route::get('/', [IndexController::class, 'paginaInicial'])->name('paginaInicial');
 
+// Rota para busca de usuários por email (autocomplete)
+Route::get('/api/usuarios/buscar', [UsuarioController::class, 'searchByEmail'])->name('usuarios.search');
+
 // Rotas para transferência de itens
 Route::middleware(['auth'])->group(function () {
     Route::post('/item/{item}/enviar-para-parceiro', [ItemController::class, 'enviarParaParceiro'])->name('item.enviar-para-parceiro');
     Route::get('/item/{item}/enviar-para-parceiro', [ItemController::class, 'enviarParaParceiroForm'])->name('item.enviar-para-parceiro-form');
+    Route::post('/item/{item}/marcar-como-devolvido', [ItemController::class, 'marcarComoDevolvido'])->name('item.marcar-como-devolvido');
+    Route::get('/item/{item}/confirmar-devolucao', [ItemController::class, 'confirmarDevolucao'])->name('item.confirmar-devolucao');
+    Route::get('/item/{item}/recusar-devolucao', [ItemController::class, 'recusarDevolucao'])->name('item.recusar-devolucao');
     
-    // Rota simplificada para devolução de item
-    Route::post('/item/{item}/marcar-como-devolvido', [ItemController::class, 'marcarComoDevolvido'])
-        ->name('item.marcar-como-devolvido');
-    
-    // Rota para busca de usuários por email (autocomplete)
-    Route::get('/usuarios/search', [UsuarioController::class, 'searchByEmail'])->name('usuarios.search');
-    
-    // Rotas para notificações
-    Route::prefix('notificacoes')->group(function () {
-        Route::post('/{id}/marcar-lida', [NotificationController::class, 'markAsRead'])->name('notificacoes.marcar-lida');
-        Route::post('/marcar-todas-lidas', [NotificationController::class, 'markAllAsRead'])->name('notificacoes.marcar-todas-lidas');
-        Route::get('/contagem', [NotificationController::class, 'getUnreadCount'])->name('notificacoes.contagem');
-        Route::get('/recentes', [NotificationController::class, 'getRecentNotifications'])->name('notificacoes.recentes');
-        Route::post('/{id}', [NotificationController::class, 'deleteNotification'])->name('notificacoes.excluir');
-    });
+
 });
 
 // Rota para exibir o formulário de registro do usuário
@@ -170,8 +162,6 @@ Route::middleware(['auth', 'parceiro'])->prefix('parceiro')->name('parceiro.')->
     Route::get('/itens/{item}', [ItemController::class, 'showParceiro'])->name('itens.show');
     Route::get('/vincular-item', [ParceiroController::class, 'vincularItemForm'])->name('vincular-item.form');
     Route::get('/transferencias-pendentes', [ParceiroController::class, 'transferenciasPendentes'])->name('transferencias-pendentes');
-    Route::get('/perfil', [ParceiroController::class, 'editProfile'])->name('perfil');
-    Route::put('/perfil', [ParceiroController::class, 'updateProfile'])->name('update-profile');
     
     // Rotas de transferência de itens
     Route::post('/itens/{item}/confirmar-recebimento', [ParceiroController::class, 'confirmarRecebimento'])
@@ -191,6 +181,7 @@ Route::get('/parceiro/aguardando-aprovacao', [ParceiroController::class, 'aguard
 
 // Rota para visualizar todos os parceiros no mapa (pública)
 Route::get('/parceiros/mapa', [ParceiroController::class, 'mapa'])->name('parceiros.mapa');
+Route::get('/parceiros/detalhes/{parceiro}', [ParceiroController::class, 'detalhesPublicos'])->name('parceiros.detalhes-publicos');
 
 // Rota para exibir o formulário de registro do parceiro
 Route::get('/parceiro/registro', [ParceiroController::class, 'create'])->name('parceiro.create');
@@ -214,3 +205,11 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Rotas de Parceiros
+
+
+
+
+
+
+
+

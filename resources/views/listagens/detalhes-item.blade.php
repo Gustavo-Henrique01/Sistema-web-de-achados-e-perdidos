@@ -140,6 +140,42 @@
         </div>
     </div>
     
+    <!-- Informações do Parceiro (se estiver em estabelecimento) -->
+    @if($item->status === 'em_estabelecimento' && $item->parceiro)
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0"><i class="fas fa-store me-2 text-primary"></i>Item em Estabelecimento Parceiro</h4>
+            <span class="badge bg-info">Em Estabelecimento</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>{{ $item->parceiro->nome_estabelecimento }}</h5>
+                    <p class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i>{{ $item->parceiro->localizacao->endereco }}</p>
+                    <p class="mb-2"><i class="fas fa-phone me-2 text-primary"></i>{{ $item->parceiro->telefone_comercial }}</p>
+                    <p class="mb-2"><i class="fas fa-clock me-2 text-primary"></i>{{ $item->parceiro->horario_funcionamento }}</p>
+                    
+                    <div class="mt-3">
+                        <a href="/chatify/{{ $item->parceiro->user_id }}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-comments me-2"></i>Conversar com o Parceiro
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 150px;">
+                        @if($item->parceiro->logo)
+                            <img src="{{ asset('storage/'.$item->parceiro->logo) }}" alt="Logo do parceiro" class="img-fluid" style="max-height: 140px;">
+                        @else
+                            <i class="fas fa-store fa-4x text-primary opacity-50"></i>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+    
     <!-- Informações do Usuário -->
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-white">

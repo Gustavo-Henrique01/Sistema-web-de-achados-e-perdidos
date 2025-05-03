@@ -252,6 +252,54 @@
         font-size: 3rem;
         color: #adb5bd;
     }
+    
+    /* Estilos para o avatar no modal */
+    .avatar-upload {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto;
+    }
+    .avatar-preview {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid #fff;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .avatar-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .avatar-edit {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 34px;
+        height: 34px;
+    }
+    .avatar-edit input {
+        display: none;
+    }
+    .avatar-edit label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #4e73df;
+        border: 1px solid #fff;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    .avatar-edit label:hover {
+        background: #375bce;
+    }
     .stat-card {
         display: flex;
         align-items: center;

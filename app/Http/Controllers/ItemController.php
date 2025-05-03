@@ -78,14 +78,23 @@ class ItemController extends Controller
         // Cria a localização
         $localizacao = Localizacao::create($validatedLocalizacao);
     
+        // Definir limites de data (hoje e 2 anos atrás)
+        $hoje = Carbon::today();
+        $doisAnosAtras = Carbon::today()->subYears(2);
+        
         // Validação do item
         $validatedItem = $request->validate([
             'id_categoria' => 'required|exists:categorias,id',
             'fotos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'descricao' => 'required|string|max:1000',
             'tipo' => 'required|in:achado,perdido',
-            'data_perdido' => $request->tipo === 'perdido' ? 'required|date' : 'nullable|date',
-            'data_encontrado' => $request->tipo === 'achado' ? 'required|date' : 'nullable|date',
+            'data_perdido' => $request->tipo === 'perdido' ? 'required|date|before_or_equal:today|after_or_equal:'.$doisAnosAtras->format('Y-m-d') : 'nullable|date',
+            'data_encontrado' => $request->tipo === 'achado' ? 'required|date|before_or_equal:today|after_or_equal:'.$doisAnosAtras->format('Y-m-d') : 'nullable|date',
+        ], [
+            'data_perdido.before_or_equal' => 'A data em que o item foi perdido não pode ser uma data futura.',
+            'data_perdido.after_or_equal' => 'A data em que o item foi perdido não pode ser anterior a '.$doisAnosAtras->format('d/m/Y').'.',
+            'data_encontrado.before_or_equal' => 'A data em que o item foi encontrado não pode ser uma data futura.',
+            'data_encontrado.after_or_equal' => 'A data em que o item foi encontrado não pode ser anterior a '.$doisAnosAtras->format('d/m/Y').'.',
         ]);
     
         // Define a data de perdido ou encontrado com base no tipo
@@ -155,8 +164,8 @@ class ItemController extends Controller
 
     public function listarItens()
     {
-        $itens = Item::with(['categoria', 'localizacao', 'fotos', 'usuario'])
-            ->where('status', 'aprovado')
+        $itens = Item::with(['categoria', 'localizacao', 'fotos', 'usuario', 'parceiro'])
+            ->whereIn('status', ['aprovado', 'em_estabelecimento'])
             ->whereHas('usuario', function($query) {
                 $query->where('ativo', true);
             })
@@ -170,9 +179,15 @@ class ItemController extends Controller
 
     public function mapaItens()
     {   
-        $parceiros = Parceiro::all();
-        $itens = Item::with(['categoria', 'localizacao', 'fotos'])
+        // Buscar parceiros com todos os dados necessários para o mapa
+        $parceiros = Parceiro::with(['localizacao', 'usuario'])
             ->where('status', 'aprovado')
+            ->where('ativo', true)
+            ->get();
+        
+        // Buscar itens aprovados e em estabelecimento
+        $itens = Item::with(['categoria', 'localizacao', 'fotos', 'parceiro.localizacao'])
+            ->whereIn('status', ['aprovado', 'em_estabelecimento'])
             ->whereHas('usuario', function($query) {
                 $query->where('ativo', true);
             })
@@ -198,23 +213,6 @@ class ItemController extends Controller
         return view('usuario.perfil-usuario', compact('user','itens'));
     }
      
-   
-
-
-
-
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
     /**
      * Display the specified resource.
@@ -239,31 +237,6 @@ class ItemController extends Controller
         }
         
         return view('parceiro.detalhes-item', compact('item'));
-    }
-
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Item $item)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Item $item)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Item $item)
-    {
-        //
     }
 
     public function enviarParaParceiro(Request $request, Item $item)
@@ -372,28 +345,64 @@ class ItemController extends Controller
     }
 
     /**
-     * Marca um item como devolvido
+     * Marca um item como devolvido ou recuperado
      */
     public function marcarComoDevolvido(Request $request, Item $item)
     {
+        // Log para depuração
+        \Log::info('Tentativa de marcar item como devolvido', [
+            'item_id' => $item->id,
+            'item_tipo' => $item->tipo,
+            'item_status' => $item->status,
+            'request_data' => $request->all()
+        ]);
+        
         // Verifica se o usuário é o dono do item
         if ($item->user_id !== auth()->id()) {
+            \Log::warning('Permissão negada: usuário não é o dono do item', [
+                'item_user_id' => $item->user_id,
+                'auth_user_id' => auth()->id()
+            ]);
             return redirect()->back()->with('error', 'Você não tem permissão para marcar este item como devolvido.');
         }
-
+        
         // Verifica se o item está em um status que permite devolução
         if (!in_array($item->status, ['aprovado', 'em_estabelecimento'])) {
+            \Log::warning('Status do item não permite devolução', [
+                'item_status' => $item->status
+            ]);
             return redirect()->back()->with('error', 'Este item não pode ser marcado como devolvido no momento.');
         }
 
-        // Valida os dados do formulário
-        $validated = $request->validate([
-            'tipo_devolucao' => 'required|in:usuario,proprio,parceiro',
-            'usuario_email' => 'required_if:tipo_devolucao,usuario|nullable|email',
-            'usuario_devolucao_id' => 'required_if:tipo_devolucao,usuario|nullable|exists:users,id',
-            'parceiro_devolucao_id' => 'required_if:tipo_devolucao,parceiro|nullable|exists:parceiros,id',
-            'observacoes' => 'nullable|string|max:500'
-        ]);
+        // Regras de validação comuns
+        $rules = [
+            'metodo_devolucao' => 'required|in:usuario,proprio,parceiro',
+            'detalhes' => 'required|string|max:1000'
+        ];
+        
+        // Regras específicas para cada tipo de item
+        if ($item->tipo === 'achado') {
+            // Para itens achados, o usuário é recomendado mas não obrigatório
+            $rules['usuario_id'] = 'nullable|exists:users,id';
+        } else {
+            // Para itens perdidos, o usuário é opcional (quem devolveu o item)
+            $rules['usuario_id'] = 'nullable|exists:users,id';
+            $rules['parceiro_id'] = 'nullable|exists:parceiros,id';
+        }
+        
+        // Valida os dados do formulário com tratamento de erro detalhado
+        try {
+            $validated = $request->validate($rules);
+            
+            \Log::info('Validação bem-sucedida', [
+                'validated_data' => $validated
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Erro de validação', [
+                'errors' => $e->errors()
+            ]);
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        }
 
         // Inicia a transação
         DB::beginTransaction();
@@ -401,49 +410,46 @@ class ItemController extends Controller
             // Atualiza o item com as informações de devolução
             $item->status = 'devolvido';
             $item->data_devolucao = now();
-            $item->observacoes_devolucao = $validated['observacoes'];
-            $item->metodo_devolucao = $validated['tipo_devolucao'];
+            $item->observacoes_devolucao = $validated['detalhes'];
+            $item->metodo_devolucao = $validated['metodo_devolucao'];
+            $item->devolucao_confirmada = true; // Sempre confirmado automaticamente
+            $item->data_confirmacao_devolucao = now();
             
-            // Processa de acordo com o tipo de devolução
-            switch ($validated['tipo_devolucao']) {
-                case 'usuario':
-                    // Devolução por outro usuário - requer confirmação
-                    $item->usuario_devolucao_id = $validated['usuario_devolucao_id'];
-                    $item->email_usuario_devolucao = $validated['usuario_email'];
-                    $item->devolucao_confirmada = false;
-                    break;
-                    
-                case 'parceiro':
-                    // Devolução via parceiro - confirmação automática
-                    $item->parceiro_devolucao_id = $validated['parceiro_devolucao_id'];
-                    $item->devolucao_confirmada = true;
-                    $item->data_confirmacao_devolucao = now();
-                    break;
-                    
-                case 'proprio':
-                    // Devolução pelo próprio usuário - confirmação automática
-                    $item->devolucao_confirmada = true;
-                    $item->data_confirmacao_devolucao = now();
-                    break;
+            // Registra informações adicionais dependendo do método e tipo do item
+            if ($validated['metodo_devolucao'] === 'usuario' && isset($validated['usuario_id'])) {
+                $item->usuario_devolucao_id = $validated['usuario_id'];
+            } else if ($validated['metodo_devolucao'] === 'parceiro' && isset($validated['parceiro_id'])) {
+                $item->parceiro_devolucao_id = $validated['parceiro_id'];
             }
             
             $item->save();
             
-            // Se for devolução por outro usuário, envia notificação para confirmação
-            if ($validated['tipo_devolucao'] === 'usuario') {
-                $usuarioDevolucao = User::find($validated['usuario_devolucao_id']);
-                $usuarioDevolucao->notify(new ItemConfirmacaoDevolucaoNotification($item));
-            } else {
-                // Para os outros tipos, dispara o evento de devolução
-                event(new ItemDevolvido($item, auth()->user()));
-            }
+            \Log::info('Item marcado como devolvido com sucesso', [
+                'item_id' => $item->id,
+                'novo_status' => $item->status,
+                'metodo_devolucao' => $item->metodo_devolucao
+            ]);
+            
+            // Notifica o dono do item (apenas para registro)
+            $user = auth()->user();
+            event(new ItemDevolvido($item, $user));
             
             DB::commit();
             
-            return redirect()->back()->with('success', 'Item marcado como devolvido com sucesso!');
+            // Mensagem de sucesso diferente dependendo do tipo de item
+            $mensagem = $item->tipo === 'achado' 
+                ? 'Item marcado como devolvido com sucesso!' 
+                : 'Item marcado como recuperado com sucesso!';
+                
+            return redirect()->back()->with('success', $mensagem);
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Ocorreu um erro ao marcar o item como devolvido: ' . $e->getMessage());
+            \Log::error('Erro ao processar devolução', [
+                'item_id' => $item->id,
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with('error', 'Ocorreu um erro ao processar a operação: ' . $e->getMessage());
         }
     }
     

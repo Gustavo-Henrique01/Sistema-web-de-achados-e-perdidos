@@ -421,7 +421,7 @@
             <a href="{{ route('parceiro.perfil') }}" class="{{ request()->routeIs('parceiro.perfil') ? 'active' : '' }}">
                 <i class="fas fa-user-edit"></i> Editar Perfil
             </a>
-            <a href="{{ route('mapa') }}" class="{{ request()->routeIs('mapa') ? 'active' : '' }}">
+            <a href="{{ route('parceiro.mapa') }}" class="{{ request()->routeIs('parceiro.mapa') ? 'active' : '' }}">
                 <i class="fas fa-map-marker-alt"></i> Ver Mapa
             </a>
             <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

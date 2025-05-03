@@ -124,21 +124,36 @@ class UsuarioController extends Controller
             return redirect()->route('usuario.home')->with('error', 'Item não encontrado.');
         }
 
-        // Verifica se o item pertence ao usuário autenticado (opcional, mas recomendado)
+        // Verifica se o item pertence ao usuário autenticado
         if ($item->user_id !== auth()->id()) {
             return redirect()->route('usuario.home')->with('error', 'Você não tem permissão para editar este item.');
         }
 
+        // Verifica se o item está com status pendente ou reprovado
+        if ($item->status !== 'pendente' && $item->status !== 'reprovado') {
+            return redirect()->route('usuario.home')->with('error', 'Apenas itens pendentes ou reprovados podem ser editados.');
+        }
+
         // Busca o endereço associado ao item
-        $localizacao= $item->localizacao;
+        $localizacao = $item->localizacao;
 
         // Retorna a view com os dados do item e do endereço
-        return view('forms.form-registroitem', compact('item', 'localizacao','categorias'));
+        return view('forms.form-registroitem', compact('item', 'localizacao', 'categorias'));
     }
 
     public function atualizarItem(Request $request, $id)
     {
         $item = Item::findOrFail($id);
+        
+        // Verifica se o item pertence ao usuu00e1rio autenticado
+        if ($item->user_id !== auth()->id()) {
+            return redirect()->route('usuario.home')->with('error', 'Vocu00ea nu00e3o tem permissu00e3o para editar este item.');
+        }
+        
+        // Verifica se o item estu00e1 com status pendente ou reprovado
+        if ($item->status !== 'pendente' && $item->status !== 'reprovado') {
+            return redirect()->route('usuario.home')->with('error', 'Apenas itens pendentes ou reprovados podem ser editados.');
+        }
         
         // Validação da localização
         $validatedLocalizacao = $request->validate([
@@ -201,6 +216,17 @@ class UsuarioController extends Controller
         if (!$item) {
             return redirect()->back()->with('error', 'Item não encontrado.');
         }
+        
+        // Verifica se o usuário é o dono do item
+        if ($item->user_id !== auth()->id()) {
+            return redirect()->back()->with('error', 'Você não tem permissão para excluir este item.');
+        }
+        
+        // Verifica se o item está com status pendente
+        if ($item->status !== 'pendente') {
+            return redirect()->back()->with('error', 'Apenas itens pendentes podem ser excluídos.');
+        }
+        
         $item->delete();
         return redirect()->route('usuario.home')->with('success', 'Item excluído com sucesso.');
     }
@@ -304,9 +330,9 @@ class UsuarioController extends Controller
     public function searchByEmail(Request $request)
     {
         try {
-            $query = $request->get('query');
+            $query = $request->get('q');
             
-            if (empty($query)) {
+            if (empty($query) || strlen($query) < 3) {
                 return response()->json([]);
             }
             

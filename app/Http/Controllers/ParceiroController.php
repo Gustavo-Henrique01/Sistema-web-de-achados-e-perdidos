@@ -442,9 +442,33 @@ class ParceiroController extends Controller
     }
 
     /**
-     * Mostra todos os parceiros em um mapa.
+     * Exibe detalhes públicos de um parceiro específico
      */
-    public function mapa()
+    public function detalhesPublicos(Parceiro $parceiro)
+    {
+        // Verificar se o parceiro está ativo e aprovado
+        if (!$parceiro->ativo || $parceiro->status !== 'aprovado') {
+            abort(404, 'Parceiro não encontrado');
+        }
+        
+        // Carregar relacionamentos necessários
+        $parceiro->load(['localizacao', 'itens' => function($query) {
+            $query->where('status', 'em_estabelecimento')
+                  ->with(['categoria', 'fotos'])
+                  ->orderBy('updated_at', 'desc')
+                  ->limit(5);
+        }]);
+        
+        // Contar itens por status
+        $estatisticas = [
+            'total_itens' => $parceiro->itens()->where('status', 'em_estabelecimento')->count(),
+            'itens_devolvidos' => $parceiro->itens()->where('status', 'devolvido')->count(),
+        ];
+        
+        return view('parceiro.detalhes-publicos', compact('parceiro', 'estatisticas'));
+    }
+    
+    public function mapaParceiros()
     {
         $parceiros = Parceiro::with('localizacao')->ativo()->get();
         

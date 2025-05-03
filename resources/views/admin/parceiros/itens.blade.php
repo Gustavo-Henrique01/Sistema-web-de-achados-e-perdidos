@@ -119,7 +119,7 @@
                                         </div>
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ route('admin.ver-item', $item->id) }}" class="btn btn-sm btn-primary rounded-pill px-3">
+                                        <a href="{{ route('admin.ver-detalhes-item', $item->id) }}" class="btn btn-sm btn-primary rounded-pill px-3">
                                             <i class="fas fa-eye me-1"></i> Detalhes
                                         </a>
                                     </td>

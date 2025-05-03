@@ -262,7 +262,7 @@
                                 <div class="card-footer bg-white border-top-0 p-4 pt-0">
                                     <div class="d-grid gap-2">
                                         <div class="d-flex flex-wrap gap-2 mb-2">
-                                            @if($item->status != 'aprovado')
+                                            @if($item->status == 'reprovado' || $item->status == 'pendente')
                                                 <form action="{{ route('admin.itens-aprovar', $item->id) }}" method="POST" class="d-inline flex-fill">
                                                     @csrf
                                                     <button type="submit" class="btn btn-success btn-sm w-100 rounded-pill">

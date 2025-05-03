@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::table('itens', function (Blueprint $table) {
             $table->timestamp('data_devolucao')->nullable()->after('data_registro');
             $table->text('observacoes_devolucao')->nullable()->after('data_devolucao');
+            $table->string('metodo_devolucao')->nullable()->after('observacoes_devolucao');
+            $table->boolean('devolucao_confirmada')->default(true)->after('metodo_devolucao');
         });
     }
 
@@ -23,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('itens', function (Blueprint $table) {
-            $table->dropColumn(['data_devolucao', 'observacoes_devolucao']);
+            $table->dropColumn(['data_devolucao', 'observacoes_devolucao', 'metodo_devolucao', 'devolucao_confirmada']);
         });
     }
 };

@@ -163,14 +163,22 @@
                                         <a href="{{ route('admin.perfilUser', $user->id) }}" class="btn btn-primary btn-sm">
                                             <i class="fas fa-eye me-1"></i> Ver Perfil
                                         </a>
-                                        <button onclick="toggleUserStatus({{ $user->id }}, {{ $user->ativo ? 'false' : 'true' }})" 
-                                                class="btn btn-{{ $user->ativo ? 'warning' : 'success' }} btn-sm">
-                                            <i class="fas fa-{{ $user->ativo ? 'ban' : 'check' }} me-1"></i>
-                                            {{ $user->ativo ? 'Desativar' : 'Ativar' }}
-                                        </button>
-                                        <button onclick="deleteUser({{ $user->id }})" class="btn btn-danger btn-sm">
-                                            <i class="fas fa-trash-alt me-1"></i> Excluir
-                                        </button>
+                                        
+                                        <form action="/admin/usuario/{{ $user->id }}/toggle-status" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-{{ $user->ativo ? 'warning' : 'success' }} btn-sm">
+                                                <i class="fas fa-{{ $user->ativo ? 'ban' : 'check' }} me-1"></i>
+                                                {{ $user->ativo ? 'Desativar' : 'Ativar' }}
+                                            </button>
+                                        </form>
+                                        
+                                        <form action="/admin/usuario/{{ $user->id }}" method="POST" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este usuu00e1rio?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-trash-alt me-1"></i> Excluir
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
@@ -316,22 +324,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function toggleUserStatus(userId, newStatus) {
     if (confirm(`Tem certeza que deseja ${newStatus ? 'ativar' : 'desativar'} este usuário?`)) {
-        fetch(`/admin/usuario/${userId}/toggle-status`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Erro ao atualizar status do usuário');
-            }
-            window.location.reload();
-        })
-        .catch(error => {
-            alert('Erro ao atualizar status do usuário');
-        });
+        // Criar um formulário para enviar a requisição POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/usuario/${userId}/toggle-status`;
+        
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = document.querySelector('meta[name="csrf-token"]').content;
+        
+        form.appendChild(csrfToken);
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 

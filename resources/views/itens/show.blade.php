@@ -72,6 +72,27 @@
                         <p>{{ $item->localizacao->endereco }}</p>
                     </div>
                     
+                    @if($item->status === 'em_estabelecimento' && $item->parceiro)
+                    <div class="mb-3 border-start border-primary ps-3">
+                        <strong class="text-primary">
+                            <i class="fas fa-store me-1"></i>
+                            Item em Estabelecimento Parceiro
+                        </strong>
+                        <div class="mt-2">
+                            <p class="mb-1"><strong>Nome:</strong> {{ $item->parceiro->nome }}</p>
+                            <p class="mb-1"><strong>Endereço:</strong> {{ $item->parceiro->endereco }}</p>
+                            <p class="mb-1"><strong>Telefone:</strong> {{ $item->parceiro->telefone }}</p>
+                            <p class="mb-1"><strong>Horário de Funcionamento:</strong> {{ $item->parceiro->horario_funcionamento }}</p>
+                        </div>
+                        <div class="mt-2">
+                            <a href="/chatify/{{ $item->parceiro->user_id }}" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-comments me-1"></i> Conversar com o Parceiro
+                            </a>
+                        </div>
+                    </div>
+                    @endif
+                    
                     <div class="mb-3">
                         @if($item->data_perdido)
                             <strong>Data em que foi perdido:</strong>

@@ -295,7 +295,7 @@ class AdministradorController extends Controller
 
         // Cria a categoria
         $categoria = Categoria::create($validatedData);
-        return redirect()->route('listar-categoria')->with('success', 'Categoria cadastrada com sucesso!');
+        return redirect()->route('listar-categorias')->with('success', 'Categoria cadastrada com sucesso!');
     }
 
     /**
@@ -485,7 +485,7 @@ class AdministradorController extends Controller
         $item = Item::with(['aprovadoPor', 'reprovadoPor', 'excluidoPor'])
             ->findOrFail($id);
 
-        return view('admin.partials.detalhes-item', compact('item'));
+        return view('admin.itens.detalhes', compact('item'));
     }
 
     // Novo método para visualizar o log de ações

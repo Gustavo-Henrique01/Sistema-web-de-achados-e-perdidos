@@ -614,7 +614,7 @@
             <div class="icon-circle mb-3">
               <i class="fas fa-users fa-2x"></i>
             </div>
-            <div class="stats-number">500+</div>
+            <div class="stats-number">500+</</div>
             <div class="stats-label">Usuários Ativos</div>
             <p class="mt-3 mb-0 text-center">Campo-grandenses conectados</p>
           </div>
