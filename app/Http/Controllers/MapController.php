@@ -14,9 +14,15 @@ class MapController extends Controller
 {
     public function mostrarMapa()
     {   
-        $parceiros = Parceiro::all();
-        $itens = Item::with(['categoria', 'localizacao', 'fotos'])
+        // Buscar parceiros com todos os dados necessários para o mapa
+        $parceiros = Parceiro::with(['localizacao', 'usuario'])
             ->where('status', 'aprovado')
+            ->where('ativo', true)
+            ->get();
+        
+        // Buscar itens aprovados e em estabelecimento
+        $itens = Item::with(['categoria', 'localizacao', 'fotos', 'parceiro.localizacao'])
+            ->whereIn('status', ['aprovado', 'em_estabelecimento'])
             ->whereHas('usuario', function($query) {
                 $query->where('ativo', true);
             })

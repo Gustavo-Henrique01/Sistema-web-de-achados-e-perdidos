@@ -415,13 +415,13 @@
             <a href="{{ route('parceiro.transferencias-pendentes') }}" class="{{ request()->routeIs('parceiro.transferencias-pendentes') ? 'active' : '' }}">
                 <i class="fas fa-exchange-alt"></i> Transferências Pendentes
             </a>
-            <a href="{{ route('parceiro.vincular-item.form') }}" class="{{ request()->routeIs('parceiro.vincular-item.form') ? 'active' : '' }}">
-                <i class="fas fa-link"></i> Vincular Item
+            <a href="{{ route('parceiro.cadastrar-item.form') }}" class="{{ request()->routeIs('parceiro.cadastrar-item.form') ? 'active' : '' }}">
+                <i class="fas fa-plus-circle"></i> Cadastrar Item
             </a>
             <a href="{{ route('parceiro.perfil') }}" class="{{ request()->routeIs('parceiro.perfil') ? 'active' : '' }}">
                 <i class="fas fa-user-edit"></i> Editar Perfil
             </a>
-            <a href="{{ route('parceiro.mapa') }}" class="{{ request()->routeIs('parceiro.mapa') ? 'active' : '' }}">
+            <a href="{{ route('mapa') }}" class="{{ request()->routeIs('parceiro.mapa') ? 'active' : '' }}">
                 <i class="fas fa-map-marker-alt"></i> Ver Mapa
             </a>
             <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

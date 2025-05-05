@@ -103,7 +103,6 @@
         
         <a href="{{ route('parceiro.home') }}"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</a>
         <a href="{{ route('parceiro.itens') }}"><i class="fas fa-box-open me-2"></i> Itens no Estabelecimento</a>
-        <a href="{{ route('parceiro.vincular-item.form') }}"><i class="fas fa-link me-2"></i> Vincular Item</a>
         <a href="{{ route('mapa') }}"><i class="fas fa-map-marker-alt me-2"></i> Ver Mapa</a>
         <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <i class="fas fa-sign-out-alt me-2"></i> Sair
@@ -207,4 +206,4 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html> 
+</html>

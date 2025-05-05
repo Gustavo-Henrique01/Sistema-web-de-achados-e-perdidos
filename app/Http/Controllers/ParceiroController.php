@@ -7,11 +7,14 @@ use App\Models\User;
 use App\Models\Localizacao;
 use App\Models\UserRole;
 use App\Models\Item;
+use App\Models\ItemFoto;
 use App\Models\ItemTransferencia;
+use App\Models\Categoria;
 use App\Notifications\ItemRecebidoNotification;
 use App\Notifications\ItemRejeitadoNotification;
 use App\Notifications\ItemDevolvidoNotification;
 use App\Notifications\ItemConfirmadoNotification;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +33,143 @@ class ParceiroController extends Controller
         $itens = $parceiro->itens;
         
         return view('parceiro.dashboard', compact('parceiro', 'itens'));
+    }
+    
+    /**
+     * Exibe o formulário para cadastro de item pelo parceiro.
+     */
+    public function cadastrarItemForm()
+    {
+        $parceiro = Auth::user()->parceiro;
+        
+        // Verificar se o parceiro está ativo
+        if (!Auth::user()->ativo) {
+            return redirect()->route('parceiro.home')
+                ->with('error', 'Sua conta está inativa. Entre em contato com a administração.');
+        }
+        
+        // Buscar categorias para o formulário
+        $categorias = Categoria::orderBy('nome_categoria')->get();
+        
+        return view('parceiro.cadastrar-item', compact('parceiro', 'categorias'));
+    }
+    
+    /**
+     * Processa o cadastro de item pelo parceiro.
+     */
+    public function cadastrarItem(Request $request)
+    {
+        // Validar os dados do formulário
+        $validator = Validator::make($request->all(), [
+            'id_categoria' => 'required|exists:categorias,id',
+            'data_encontrado' => 'required|date|before_or_equal:today',
+            'descricao' => 'required|string|min:10|max:500',
+            'fotos.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'endereco' => 'required',
+            'latitude' => 'required',
+            'longitude' => 'required',
+            'nome_local' => 'required',
+            'referencia' => 'required',
+        ], [
+            'id_categoria.required' => 'Por favor, selecione uma categoria para o item.',
+            'id_categoria.exists' => 'A categoria selecionada não é válida.',
+            'data_encontrado.required' => 'Por favor, informe a data em que o item foi encontrado.',
+            'data_encontrado.date' => 'A data informada não é válida.',
+            'data_encontrado.before_or_equal' => 'A data não pode ser futura.',
+            'descricao.required' => 'Por favor, forneça uma descrição para o item.',
+            'descricao.min' => 'A descrição deve ter pelo menos 10 caracteres.',
+            'descricao.max' => 'A descrição não pode exceder 500 caracteres.',
+            'fotos.*.image' => 'O arquivo deve ser uma imagem.',
+            'fotos.*.mimes' => 'A imagem deve ser do tipo: jpeg, png, jpg ou webp.',
+            'fotos.*.max' => 'A imagem não pode ter mais de 2MB.',
+            'endereco.required' => 'Por favor, informe o endereço onde o item foi encontrado.',
+            'latitude.required' => 'Por favor, selecione uma localização válida no mapa.',
+            'longitude.required' => 'Por favor, selecione uma localização válida no mapa.',
+            'nome_local.required' => 'Por favor, informe o nome do local onde o item foi encontrado.',
+            'referencia.required' => 'Por favor, informe um ponto de referência para o local onde o item foi encontrado.',
+        ]);
+        
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+        
+        try {
+            // Obter o parceiro autenticado
+            $parceiro = Auth::user()->parceiro;
+            
+            // Log para debug
+            \Log::info('Iniciando cadastro de item por parceiro', [
+                'parceiro_id' => $parceiro->id,
+                'user_id' => Auth::id()
+            ]);
+            
+            // Criar uma nova localização para onde o item foi encontrado
+            $localizacao = Localizacao::create([
+                'endereco' => $request->endereco,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'nome_local' => $request->nome_local,
+                'referencia' => $request->referencia
+            ]);
+            
+            // Criar o item usando o método create
+            $item = Item::create([
+                'id_categoria' => $request->id_categoria,
+                'tipo' => 'achado', // Parceiros só podem cadastrar itens achados
+                'data_encontrado' => $request->data_encontrado,
+                'descricao' => $request->descricao,
+                'status' => 'em_estabelecimento',
+                'parceiro_id' => $parceiro->id,
+                'user_id' => Auth::id(),
+                'id_localizacao' => $localizacao->id
+            ]);
+            
+            // Log para debug após criar o item
+            \Log::info('Item criado', [
+                'item_id' => $item->id,
+                'status' => $item->status
+            ]);
+            
+            // Processar as fotos, se houver
+            if ($request->hasFile('fotos')) {
+                $fotos = $request->file('fotos');
+                $fotoPrincipal = $request->input('foto_principal_index', 0);
+                
+                // Verificar se não excede o limite de 3 fotos
+                if (count($fotos) > 3) {
+                    return redirect()->back()
+                        ->with('error', 'Você pode enviar no máximo 3 fotos.')
+                        ->withInput();
+                }
+                
+                foreach ($fotos as $index => $foto) {
+                    $path = $foto->store('itens', 'public');
+                    
+                    ItemFoto::create([
+                        'item_id' => $item->id,
+                        'caminho' => $path,
+                        'is_principal' => ($index == $fotoPrincipal)
+                    ]);
+                }
+            }
+            
+            return redirect()->route('parceiro.itens')
+                ->with('success', 'Item cadastrado com sucesso! O item foi vinculado ao seu estabelecimento.');
+                
+        } catch (\Exception $e) {
+            // Registrar erro no log
+            \Log::error('Erro ao cadastrar item por parceiro', [
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'parceiro_id' => Auth::user()->parceiro->id ?? 'N/A'
+            ]);
+            
+            return redirect()->back()
+                ->with('error', 'Ocorreu um erro ao cadastrar o item: ' . $e->getMessage())
+                ->withInput();
+        }
     }
     
     /**
@@ -468,7 +608,7 @@ class ParceiroController extends Controller
         return view('parceiro.detalhes-publicos', compact('parceiro', 'estatisticas'));
     }
     
-    public function mapaParceiros()
+    public function mapa()
     {
         $parceiros = Parceiro::with('localizacao')->ativo()->get();
         
@@ -503,46 +643,6 @@ class ParceiroController extends Controller
         $itens = $query->latest()->paginate(10);
         
         return view('parceiro.itens', compact('parceiro', 'itens'));
-    }
-
-    /**
-     * Exibe formulário para um parceiro vincular um item existente.
-     */
-    public function vincularItemForm()
-    {
-        $parceiro = Auth::user()->parceiro;
-        
-        // Buscar itens disponíveis para vinculação
-        $itens = Item::where('status', 'pendente')
-                     ->whereNull('parceiro_id')
-                     ->latest()
-                     ->paginate(10);
-        
-        return view('parceiro.vincular-item', compact('parceiro', 'itens'));
-    }
-
-    /**
-     * Vincula um item existente a um parceiro.
-     */
-    public function vincularItem(Request $request)
-    {
-        $validated = $request->validate([
-            'item_id' => 'required|exists:itens,id',
-        ]);
-        
-        $parceiro = Auth::user()->parceiro;
-        $item = Item::findOrFail($validated['item_id']);
-        
-        // Verificar se o item já está vinculado a outro parceiro
-        if ($item->parceiro_id !== null && $item->parceiro_id !== $parceiro->id) {
-            return redirect()->back()->withErrors(['error' => 'Este item já está vinculado a outro parceiro.']);
-        }
-        
-        // Vincular item ao parceiro
-        $item->update(['parceiro_id' => $parceiro->id]);
-        
-        return redirect()->route('parceiro.itens')
-            ->with('success', 'Item vinculado ao seu estabelecimento com sucesso!');
     }
 
     /**
@@ -706,6 +806,15 @@ class ParceiroController extends Controller
 
         return view('parceiro.transferencias-pendentes', compact('transferencias'));
     }
+
+    /**
+     * Exibe a página de aguardando aprovação.
+     */
+   
+    /**
+     * Exibe a mensagem de parceiro inativo.
+     */
+   
 
     /**
      * Exibe a página de aguardando aprovação.

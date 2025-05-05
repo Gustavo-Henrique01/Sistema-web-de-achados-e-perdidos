@@ -597,6 +597,7 @@
     
     // Função para aplicar os filtros
     function aplicarFiltros(isMobile = false) {
+        console.log('Aplicando filtros...');
         const mapDiv = document.getElementById('map');
         mapDiv.classList.add('fade-out');
         
@@ -617,6 +618,8 @@
             document.getElementById('data_mobile').value : 
             document.getElementById('data').value;
         
+        console.log('Filtros selecionados:', { tipo, status, categoria, data });
+        
         // Fechar todas as janelas de info
         infoWindows.forEach(iw => iw.close());
         
@@ -626,6 +629,8 @@
         markers.forEach(marker => {
             let visible = true;
             const itemData = marker.itemData;
+            
+            console.log('Verificando marcador:', itemData);
             
             // Filtro de tipo
             if (tipo && tipo !== '') {
@@ -657,14 +662,21 @@
                 }
             }
             
+            console.log('Visibilidade do marcador:', visible);
+            
             // Atualizar visibilidade do marcador
-            marker.map = visible ? map : null;
+            marker.setMap(visible ? map : null);
             
             if (visible) visibleCount++;
         });
         
+        console.log('Total de marcadores visíveis:', visibleCount);
+        
         // Atualizar contador
-        document.getElementById('item-count').textContent = visibleCount;
+        const itemCountElement = document.getElementById('item-count');
+        if (itemCountElement) {
+            itemCountElement.textContent = visibleCount;
+        }
         
         setTimeout(() => {
             mapDiv.classList.remove('fade-out');
@@ -675,6 +687,7 @@
     
     // Resetar filtros
     function resetarFiltros(isMobile = false) {
+        console.log('Resetando filtros...');
         // Resetar inputs
         if (isMobile) {
             document.getElementById('tipo_todos_mobile').checked = true;
@@ -690,11 +703,14 @@
         
         // Mostrar todos os marcadores
         markers.forEach(marker => {
-            marker.map = map;
+            marker.setMap(map);
         });
         
         // Atualizar contador
-        document.getElementById('item-count').textContent = markers.length;
+        const itemCountElement = document.getElementById('item-count');
+        if (itemCountElement) {
+            itemCountElement.textContent = markers.length;
+        }
         
         // Fechar todas as janelas de info
         infoWindows.forEach(iw => iw.close());

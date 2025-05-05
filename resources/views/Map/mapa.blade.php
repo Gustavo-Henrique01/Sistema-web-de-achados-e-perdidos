@@ -9,6 +9,12 @@
             <h1 class="h3 mb-1">Mapa de Itens</h1>
             <p class="text-muted mb-0">Visualize a localização de itens e estabelecimentos parceiros</p>
         </div>
+        <div class="d-flex align-items-center">
+            <span class="badge bg-primary rounded-pill fs-6 d-flex align-items-center">
+                <i class="fas fa-map-marker-alt me-2"></i>
+                <span id="item-count">0</span> itens visíveis
+            </span>
+        </div>
     </div>
     
     <div class="card border-0 shadow-sm mb-4">
@@ -16,6 +22,11 @@
             <div class="position-relative">
                 <!-- Mapa -->
                 <div id="map" style="height: 80vh; width: 100%;"></div>
+                
+                <!-- Botão de localização -->
+                <button id="locate-btn" class="btn btn-light rounded-circle shadow position-absolute bottom-0 end-0 m-3" style="width: 45px; height: 45px;">
+                    <i class="fas fa-location-arrow text-primary"></i>
+                </button>
                 
                 <!-- Painel de Controles -->
                 <div class="position-absolute top-0 end-0 m-3 d-none d-md-block">
@@ -133,6 +144,12 @@
                                         <i class="fas fa-map-marker-alt text-info"></i>
                                     </div>
                                     <span class="small">Estabelecimentos Parceiros</span>
+                                </div>
+                                <div class="d-flex align-items-center p-1 border-start border-purple border-3 ps-2 rounded-start">
+                                    <div class="d-flex align-items-center justify-content-center bg-purple bg-opacity-10 p-1 rounded-circle me-2" style="width: 28px; height: 28px;">
+                                        <i class="fas fa-map-marker-alt" style="color: purple !important;"></i>
+                                    </div>
+                                    <span class="small">Itens em Estabelecimentos</span>
                                 </div>
                             </div>
                         </div>
@@ -449,25 +466,26 @@
                 return;
             }
             
-            // Definir ícone baseado no tipo do item
+            // Definir ícone baseado no tipo do item e status
             let icon = '';
-            if (item.tipo === 'achado') {
+            if (item.status === 'em_estabelecimento') {
+                icon = 'https://maps.google.com/mapfiles/ms/icons/purple-dot.png'; // Cor roxa para itens em estabelecimento
+            } else if (item.tipo === 'achado') {
                 icon = 'https://maps.google.com/mapfiles/ms/icons/green-dot.png';
             } else if (item.tipo === 'perdido') {
                 icon = 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png';
             }
             
-            // Criar marcador usando AdvancedMarkerElement
-            const marker = new google.maps.marker.AdvancedMarkerElement({
+            // Criar marcador usando Marker padrão para garantir que as cores sejam exibidas corretamente
+            const marker = new google.maps.Marker({
                 position: { 
                     lat: parseFloat(item.localizacao.latitude), 
                     lng: parseFloat(item.localizacao.longitude) 
                 },
                 map: map,
                 title: item.descricao,
-                gmpDraggable: false,
-                gmpClickable: true,
-                content: createMarkerContent(icon)
+                draggable: false,
+                icon: icon
             });
 
             // Adicionar atributos personalizados ao marcador para os filtros
@@ -479,6 +497,32 @@
             };
             
             // Conteúdo do infoWindow
+            let estabelecimentoInfo = '';
+            
+            // Adicionar informações do estabelecimento se o item estiver em um parceiro
+            if (item.status === 'em_estabelecimento' && item.parceiro) {
+                const nomeEstabelecimento = item.parceiro.nome_estabelecimento || 'Não informado';
+                const endereco = item.parceiro.localizacao && item.parceiro.localizacao.endereco ? item.parceiro.localizacao.endereco : 'Não informado';
+                const telefone = item.parceiro.telefone_comercial || 'Não informado';
+                
+                const horario = item.parceiro.horario_funcionamento || 'Não informado';
+                const logoHtml = item.parceiro.logo ? `<div class="text-center mb-2"><img src="/storage/${item.parceiro.logo}" alt="Logo ${nomeEstabelecimento}" class="img-fluid" style="max-height: 60px; max-width: 100%;"></div>` : '';
+                
+                estabelecimentoInfo = `
+                    <div class="mt-2 mb-2 p-2 bg-light rounded">
+                        <h6 class="mb-2 border-bottom pb-2"><i class="fas fa-store me-1 text-primary"></i> Item em Estabelecimento Parceiro</h6>
+                        ${logoHtml}
+                        <p class="mb-1"><strong>Estabelecimento:</strong> ${nomeEstabelecimento}</p>
+                        <p class="mb-1"><i class="fas fa-map-marker-alt me-1 text-primary"></i> <strong>Endereço:</strong> ${endereco}</p>
+                        <p class="mb-1"><i class="fas fa-phone me-1 text-primary"></i> <strong>Telefone:</strong> ${telefone}</p>
+                        <p class="mb-0"><i class="fas fa-clock me-1 text-primary"></i> <strong>Horário:</strong> ${horario}</p>
+                        <div class="mt-2">
+                            <a href="/parceiros/detalhes/${item.parceiro.id}" class="btn btn-sm btn-outline-primary w-100"><i class="fas fa-info-circle me-1"></i> Ver Parceiro</a>
+                        </div>
+                    </div>
+                `;
+            }
+            
             const contentString = `
                 <div class="info-window">
                     ${item.fotos && item.fotos.length > 0 ? `<img src="/storage/${item.fotos[0].caminho}" alt="${item.descricao}" class="img-fluid mb-2" style="max-height: 150px; width: 100%; object-fit: cover;">` : ''}
@@ -487,6 +531,7 @@
                     <p class="mb-1"><strong>Categoria:</strong> ${item.categoria ? item.categoria.nome_categoria : 'Não informada'}</p>
                     <p class="mb-1"><strong>Local:</strong> ${item.localizacao.endereco}</p>
                     <p class="mb-2"><strong>Data:</strong> ${item.tipo === 'achado' ? new Date(item.data_encontrado).toLocaleDateString('pt-BR') : new Date(item.data_perdido).toLocaleDateString('pt-BR')}</p>
+                    ${estabelecimentoInfo}
                     <a href="/user/itens/${item.id}" class="btn btn-sm btn-primary w-100">Ver Detalhes</a>
                 </div>
             `;
@@ -498,7 +543,7 @@
             });
             
             // Evento de clique no marcador
-            marker.addListener("gmp-click", () => {
+            marker.addListener("click", () => {
                 // Fechar todas as outras janelas de info
                 infoWindows.forEach(iw => iw.close());
                 infoWindow.open(map, marker);
@@ -508,7 +553,31 @@
             markers.push(marker);
             infoWindows.push(infoWindow);
         });
-
+        
+        // Atualizar contador de itens visíveis
+        document.getElementById('item-count').textContent = markers.length;
+        
+        // Adicionar funcionalidade ao botão de localização
+        document.getElementById('locate-btn').addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                        };
+                        map.setCenter(pos);
+                        map.setZoom(15);
+                    },
+                    () => {
+                        alert("Não foi possível obter sua localização.");
+                    }
+                );
+            } else {
+                alert("Seu navegador não suporta geolocalização.");
+            }
+        });
+        
         // Adicionar marcadores para estabelecimentos parceiros
         const parceiros = @json($parceiros);
         parceiros.forEach(parceiro => {
@@ -516,16 +585,15 @@
                 return;
             }
 
-            const marker = new google.maps.marker.AdvancedMarkerElement({
+            const marker = new google.maps.Marker({
                 position: {
                     lat: parseFloat(parceiro.localizacao.latitude),
                     lng: parseFloat(parceiro.localizacao.longitude)
                 },
                 map: map,
-                title: parceiro.nome,
-                gmpDraggable: false,
-                gmpClickable: true,
-                content: createMarkerContent('https://maps.google.com/mapfiles/ms/icons/blue-dot.png')
+                title: parceiro.nome_estabelecimento || 'Parceiro',
+                draggable: false,
+                icon: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png'
             });
 
             // Adicionar atributos para filtro
@@ -538,9 +606,12 @@
 
             const contentString = `
                 <div class="info-window">
-                    <h6 class="mb-2">${parceiro.nome}</h6>
-                    <p class="mb-1"><strong>Endereço:</strong> ${parceiro.localizacao.endereco}</p>
-                    <p class="mb-2"><strong>Telefone:</strong> ${parceiro.telefone || 'Não informado'}</p>
+                    ${parceiro.logo ? `<div class="text-center mb-2"><img src="/storage/${parceiro.logo}" alt="Logo ${parceiro.nome_estabelecimento}" class="img-fluid" style="max-height: 80px; max-width: 100%;"></div>` : ''}
+                    <h6 class="mb-2">${parceiro.nome_estabelecimento}</h6>
+                    <p class="mb-1"><i class="fas fa-map-marker-alt me-1 text-primary"></i> <strong>Endereço:</strong> ${parceiro.localizacao ? parceiro.localizacao.endereco : 'Não informado'}</p>
+                    <p class="mb-1"><i class="fas fa-phone me-1 text-primary"></i> <strong>Telefone:</strong> ${parceiro.telefone_comercial || 'Não informado'}</p>
+                    <p class="mb-2"><i class="fas fa-clock me-1 text-primary"></i> <strong>Horário:</strong> ${parceiro.horario_funcionamento || 'Não informado'}</p>
+                    <a href="/parceiros/detalhes/${parceiro.id}" class="btn btn-sm btn-primary w-100"><i class="fas fa-info-circle me-1"></i> Ver Detalhes</a>
                 </div>
             `;
 
@@ -549,7 +620,7 @@
                 maxWidth: 300
             });
 
-            marker.addListener("gmp-click", () => {
+            marker.addListener("click", () => {
                 infoWindows.forEach(iw => iw.close());
                 infoWindow.open(map, marker);
             });
@@ -580,7 +651,7 @@
         });
     }
     
-    // Função para criar o conteúdo do marcador
+    // Função para criar o conteúdo do marcador (não mais utilizada, mantida para compatibilidade)
     function createMarkerContent(iconUrl) {
         const div = document.createElement('div');
         div.style.width = '32px';
@@ -593,6 +664,7 @@
     
     // Função para aplicar os filtros
     function aplicarFiltros(isMobile = false) {
+        console.log('Aplicando filtros no mapa do parceiro...');
         const mapDiv = document.getElementById('map');
         mapDiv.classList.add('fade-out');
         
@@ -613,6 +685,8 @@
             document.getElementById('data_mobile').value : 
             document.getElementById('data').value;
         
+        console.log('Filtros selecionados:', { tipo, status, categoria, data });
+        
         // Fechar todas as janelas de info
         infoWindows.forEach(iw => iw.close());
         
@@ -623,6 +697,8 @@
             let visible = true;
             const itemData = marker.itemData;
             
+            console.log('Verificando marcador:', itemData);
+            
             // Filtro de tipo
             if (tipo && tipo !== '') {
                 if (tipo === 'achado' && itemData.tipo !== 'achado') visible = false;
@@ -632,7 +708,12 @@
             // Filtro de status
             if (status && status !== '') {
                 if (status === 'aprovado' && itemData.status !== 'aprovado') visible = false;
-                if (status === 'em_estabelecimento' && itemData.tipo !== 'parceiro') visible = false;
+                if (status === 'em_estabelecimento') {
+                    // Mostrar apenas estabelecimentos parceiros e itens em estabelecimento
+                    if (!(itemData.tipo === 'parceiro' || itemData.status === 'em_estabelecimento')) {
+                        visible = false;
+                    }
+                }
             }
             
             // Filtro de categoria
@@ -648,14 +729,21 @@
                 }
             }
             
+            console.log('Visibilidade do marcador:', visible);
+            
             // Atualizar visibilidade do marcador
-            marker.map = visible ? map : null;
+            marker.setMap(visible ? map : null);
             
             if (visible) visibleCount++;
         });
         
+        console.log('Total de marcadores visíveis:', visibleCount);
+        
         // Atualizar contador
-        document.getElementById('item-count').textContent = visibleCount;
+        const itemCountElement = document.getElementById('item-count');
+        if (itemCountElement) {
+            itemCountElement.textContent = visibleCount;
+        }
         
         setTimeout(() => {
             mapDiv.classList.remove('fade-out');
@@ -666,6 +754,7 @@
     
     // Resetar filtros
     function resetarFiltros(isMobile = false) {
+        console.log('Resetando filtros no mapa do parceiro...');
         // Resetar inputs
         if (isMobile) {
             document.getElementById('tipo_todos_mobile').checked = true;
@@ -681,11 +770,14 @@
         
         // Mostrar todos os marcadores
         markers.forEach(marker => {
-            marker.map = map;
+            marker.setMap(map);
         });
         
         // Atualizar contador
-        document.getElementById('item-count').textContent = markers.length;
+        const itemCountElement = document.getElementById('item-count');
+        if (itemCountElement) {
+            itemCountElement.textContent = markers.length;
+        }
         
         // Fechar todas as janelas de info
         infoWindows.forEach(iw => iw.close());
@@ -723,7 +815,7 @@
     // Função para carregar a API do Google Maps
     function loadGoogleMaps() {
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap&v=beta&libraries=marker`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap`;
         script.async = true;
         script.defer = true;
         document.head.appendChild(script);

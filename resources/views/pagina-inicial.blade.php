@@ -569,10 +569,10 @@
         <div class="col-md-4">
           <div class="feature-card p-4 text-center">
             <div class="feature-icon mb-4">
-              <i class="fas fa-bell"></i>
+              <i class="fas fa-tags"></i>
             </div>
-            <h4 class="fw-bold mb-3">Notificações</h4>
-            <p>Receba alertas quando itens similares aos que você perdeu forem encontrados na cidade.</p>
+            <h4 class="fw-bold mb-3">Categorias Organizadas</h4>
+            <p>Busque itens por categorias específicas como documentos, eletrônicos, acessórios e muito mais.</p>
           </div>
         </div>
         
@@ -614,7 +614,7 @@
             <div class="icon-circle mb-3">
               <i class="fas fa-users fa-2x"></i>
             </div>
-            <div class="stats-number">500+</</div>
+            <div class="stats-number">500+</div>
             <div class="stats-label">Usuários Ativos</div>
             <p class="mt-3 mb-0 text-center">Campo-grandenses conectados</p>
           </div>

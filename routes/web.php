@@ -158,9 +158,12 @@ Route::get('/editar/{parceiro}', [ParceiroController::class, 'editarCadastro'])
 // Rotas que precisam do middleware 'parceiro'
 Route::middleware(['auth', 'parceiro'])->prefix('parceiro')->name('parceiro.')->group(function () {
     Route::get('/home', [ParceiroController::class, 'home'])->name('home');
+    Route::get('/perfil', [ParceiroController::class, 'editProfile'])->name('perfil');
+    Route::put('/update-profile', [ParceiroController::class, 'updateProfile'])->name('update-profile');
     Route::get('/itens', [ParceiroController::class, 'listarItens'])->name('itens');
     Route::get('/itens/{item}', [ItemController::class, 'showParceiro'])->name('itens.show');
-    Route::get('/vincular-item', [ParceiroController::class, 'vincularItemForm'])->name('vincular-item.form');
+    Route::get('/cadastrar-item', [ParceiroController::class, 'cadastrarItemForm'])->name('cadastrar-item.form');
+    Route::post('/cadastrar-item', [ParceiroController::class, 'cadastrarItem'])->name('cadastrar-item');
     Route::get('/transferencias-pendentes', [ParceiroController::class, 'transferenciasPendentes'])->name('transferencias-pendentes');
     
     // Rotas de transferência de itens
@@ -205,11 +208,3 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Rotas de Parceiros
-
-
-
-
-
-
-
-

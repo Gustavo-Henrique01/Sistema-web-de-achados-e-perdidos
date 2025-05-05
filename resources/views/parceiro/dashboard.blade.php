@@ -10,8 +10,8 @@
             <p class="text-muted mb-0">Bem-vindo ao seu painel de controle</p>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ route('parceiro.vincular-item.form') }}" class="btn btn-primary d-flex align-items-center">
-                <i class="fas fa-plus me-2"></i><span>Vincular Novo Item</span>
+            <a href="{{ route('parceiro.cadastrar-item.form') }}" class="btn btn-primary d-flex align-items-center">
+                <i class="fas fa-plus me-2"></i><span>Cadastrar Novo Item</span>
             </a>
         </div>
     </div>
