@@ -16,27 +16,27 @@
     
     <!-- Informações do Usuário -->
     <div class="profile-info">
-        <h4 class="text-center mb-4">{{ $user->name }}</h4>
+        <h4 class="text-center mb-4 text-truncate" title="{{ $user->name }}">{{ $user->name }}</h4>
         
         <div class="profile-stats">
             <div class="stat-item">
                 <div class="row">
                     <div class="col-5"><strong>Email:</strong></div>
-                    <div class="col-7 text-end">{{ $user->email }}</div>
+                    <div class="col-7 text-end text-truncate" title="{{ $user->email }}">{{ $user->email }}</div>
                 </div>
             </div>
             
             <div class="stat-item">
                 <div class="row">
                     <div class="col-5"><strong>Telefone:</strong></div>
-                    <div class="col-7 text-end">{{ $user->telefone ?: 'Não informado' }}</div>
+                    <div class="col-7 text-end text-truncate" title="{{ $user->telefone ?: 'Não informado' }}">{{ $user->telefone ?: 'Não informado' }}</div>
                 </div>
             </div>
             
             <div class="stat-item">
                 <div class="row">
                     <div class="col-5"><strong>CPF:</strong></div>
-                    <div class="col-7 text-end">{{ $user->cpf ?: 'Não informado' }}</div>
+                    <div class="col-7 text-end text-truncate" title="{{ $user->cpf ?: 'Não informado' }}">{{ $user->cpf ?: 'Não informado' }}</div>
                 </div>
             </div>
             
@@ -54,7 +54,7 @@
             <div class="stat-item">
                 <div class="row">
                     <div class="col-5"><strong>Função:</strong></div>
-                    <div class="col-7 text-end">{{ $user->role->value }}</div>
+                    <div class="col-7 text-end text-truncate" title="{{ $user->role->value }}">{{ $user->role->value }}</div>
                 </div>
             </div>
         </div>

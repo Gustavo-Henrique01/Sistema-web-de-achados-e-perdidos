@@ -109,9 +109,7 @@
                 <div class="card mb-4">
                     <div class="card-header bg-light d-flex justify-content-between align-items-center">
                         <h6 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Localização</h6>
-                        <button class="btn btn-sm btn-outline-primary" title="Ver no mapa">
-                            <i class="fas fa-map"></i>
-                        </button>
+                       
                     </div>
                     <div class="card-body">
                         @if($item->localizacao)

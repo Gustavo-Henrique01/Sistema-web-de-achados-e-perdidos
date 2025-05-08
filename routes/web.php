@@ -103,8 +103,9 @@ Route::get('/admin/cadastrar', [AdministradorController::class, 'formAdmin'])->n
 Route::post('/admin/cadastrar', [AdministradorController::class, 'cadastrarAdmin'])->name('admin.criar-admin');
 
 // Rotas para listagem e detalhes de itens
-Route::get('/itens', [AdministradorController::class, 'listarItens'])->name('admin.listar-itens');
-Route::get('/itens/{id}/detalhes', [AdministradorController::class, 'verDetalhesItem'])->name('admin.ver-detalhes-item');
+Route::get('/admin/itens', [AdministradorController::class, 'listarItens'])->name('admin.listar-itens');
+Route::get('/itens/detalhes/{id}', [AdministradorController::class, 'verDetalhesItem'])->name('admin.ver-detalhes-item');
+Route::get('/itens/{id}/detalhes', [AdministradorController::class, 'verDetalhesItem'])->name('admin.itens.detalhes');
 
 // Rotas para ações em itens
 Route::post('/admin/itens/{id}/aprovar', [AdministradorController::class, 'aprovarItem'])->name('admin.itens-aprovar');
@@ -136,6 +137,10 @@ Route::post('/parceiros/{parceiro}/reprovar', [AdministradorController::class, '
 Route::post('/parceiros/{parceiro}/desativar', [AdministradorController::class, 'desativarParceiro'])->name('admin.parceiros.desativar');
 Route::get('/parceiros/{parceiro}/itens', [AdministradorController::class, 'listarItensParceiro'])->name('admin.parceiros.itens');
 
+// Rota para o mapa geral
+Route::get('/mapa-geral', [AdministradorController::class, 'mapaGeral'])->name('admin.mapa-geral');
+Route::get('/mapa-geral-novo', [AdministradorController::class, 'mapaGeralNovo'])->name('admin.mapa-geral-novo');
+
 Route::post('{parceiro}/desativar', [AdministradorController::class, 'desativar'])->name('parceiros.desativar');
 Route::delete('{parceiro}', [AdministradorController::class, 'destroy'])->name('admin.parceiros.destroy');
 
@@ -166,6 +171,11 @@ Route::middleware(['auth', 'parceiro'])->prefix('parceiro')->name('parceiro.')->
     Route::post('/cadastrar-item', [ParceiroController::class, 'cadastrarItem'])->name('cadastrar-item');
     Route::get('/transferencias-pendentes', [ParceiroController::class, 'transferenciasPendentes'])->name('transferencias-pendentes');
     
+    // Rotas de edição e exclusão de itens
+    Route::get('/itens/{item}/editar', [ParceiroController::class, 'editarItem'])->name('itens.editar');
+    Route::put('/itens/{item}/atualizar', [ParceiroController::class, 'atualizarItem'])->name('itens.atualizar');
+    Route::delete('/itens/{item}/excluir', [ParceiroController::class, 'excluirItem'])->name('itens.excluir');
+    
     // Rotas de transferência de itens
     Route::post('/itens/{item}/confirmar-recebimento', [ParceiroController::class, 'confirmarRecebimento'])
         ->name('itens.confirmar-recebimento');
@@ -185,6 +195,11 @@ Route::get('/parceiro/aguardando-aprovacao', [ParceiroController::class, 'aguard
 // Rota para visualizar todos os parceiros no mapa (pública)
 Route::get('/parceiros/mapa', [ParceiroController::class, 'mapa'])->name('parceiros.mapa');
 Route::get('/parceiros/detalhes/{parceiro}', [ParceiroController::class, 'detalhesPublicos'])->name('parceiros.detalhes-publicos');
+
+// Rotas para o mapa de itens e parceiros (acessíveis sem autenticação)
+Route::get('/mapa', [MapController::class, 'mostrarMapa'])->name('mapa.mostrar');
+Route::get('/mapa/item/{id}', [MapController::class, 'mostrarItem'])->name('mapa.item');
+Route::get('/mapa/parceiro/{id}', [MapController::class, 'mostrarParceiro'])->name('mapa.parceiro');
 
 // Rota para exibir o formulário de registro do parceiro
 Route::get('/parceiro/registro', [ParceiroController::class, 'create'])->name('parceiro.create');

@@ -94,10 +94,34 @@
     .stat-item {
         padding: 8px 0;
         border-bottom: 1px dashed #e3e6f0;
+        overflow: hidden;
     }
     
     .stat-item:last-child {
         border-bottom: none;
+    }
+    
+    /* Garantir que os textos longos fiquem contidos */
+    .text-truncate {
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+    }
+    
+    /* Melhorar a exibição em dispositivos móveis */
+    @media (max-width: 576px) {
+        .profile-stats .row .col-5,
+        .profile-stats .row .col-7 {
+            width: 100%;
+            text-align: left !important;
+        }
+        
+        .profile-stats .row {
+            display: block;
+            margin-bottom: 5px;
+        }
     }
     
     /* Estilos para os itens cadastrados */

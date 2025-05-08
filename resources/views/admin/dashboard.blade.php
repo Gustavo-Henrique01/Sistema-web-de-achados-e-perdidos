@@ -169,6 +169,10 @@
             <i class="fas fa-store"></i> Gerenciar Parceiros
             <span class="badge rounded-pill bg-warning ms-auto">{{ App\Models\Parceiro::where('status', 'pendente')->count() }}</span>
         </a>
+      
+        <a href="{{ route('admin.mapa-geral-novo') }}" class="{{ request()->routeIs('admin.mapa-geral-novo') ? 'active' : '' }}">
+            <i class="fas fa-map"></i> Mapa Geral 
+        </a>
         <a href="{{ route('admin.listar-usuarios') }}" class="{{ request()->routeIs('admin.listar-usuarios') ? 'active' : '' }}">
             <i class="fas fa-users"></i> Usuários Cadastrados
         </a>
@@ -245,5 +249,7 @@
             }
         });
     </script>
+    
+    @stack('scripts')
 </body>
 </html>

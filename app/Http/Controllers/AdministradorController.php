@@ -3,13 +3,20 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User; 
 use App\Models\Item;
+use App\Models\User;
 use App\Models\Categoria;
+use App\Models\Parceiro;
+use App\Models\Localizacao;
+use App\Models\LogAcao;
+use App\Models\Foto;
+use App\Models\Administrador;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use App\Models\AdminActionLog;
-use App\Models\Parceiro;
 use App\Notifications\ItemAprovadoNotification;
 use App\Notifications\ItemRejeitadoNotification;
 use App\Models\ChMessage;
@@ -482,13 +489,24 @@ class AdministradorController extends Controller
      */
     public function verDetalhesItem($id)
     {
-        $item = Item::with(['aprovadoPor', 'reprovadoPor', 'excluidoPor'])
+        $item = Item::with(['aprovadoPor', 'reprovadoPor', 'excluidoPor', 'usuario', 'categoria', 'fotos', 'localizacao'])
             ->findOrFail($id);
 
+        // Verificar se a requisição veio do mapa
+        $fromMap = request()->has('from_map');
+        
+        // Se a requisição veio do mapa, usar o layout do administrador
+        if ($fromMap) {
+            return view('admin.itens.detalhes-admin', compact('item'));
+        }
+        
+        // Caso contrário, usar a view modal padrão
         return view('admin.itens.detalhes', compact('item'));
     }
 
-    // Novo método para visualizar o log de ações
+    /**
+     * Novo método para visualizar o log de ações
+     */
     public function logAcoes(Request $request)
     {
         $query = AdminActionLog::with(['admin', 'item']);
@@ -553,6 +571,14 @@ class AdministradorController extends Controller
     public function verParceiro(Parceiro $parceiro)
     {
         $parceiro->load(['usuario', 'localizacao', 'aprovadoPor']);
+        
+        // Verificar se a requisição veio do mapa
+        $fromMap = request()->has('from_map');
+        
+        if ($fromMap) {
+            return view('admin.parceiros.show-admin', compact('parceiro'));
+        }
+        
         return view('admin.parceiros.show', compact('parceiro'));
     }
 
@@ -682,26 +708,74 @@ class AdministradorController extends Controller
         $parceiro->save();
 
         $message = $parceiro->ativo ? 'Parceiro ativado com sucesso!' : 'Parceiro desativado com sucesso!';
+        
         return redirect()->back()->with('success', $message);
     }
-
-    public function destroy(Parceiro $parceiro)
+    
+    /**
+     * Exibe o mapa geral com itens e parceiros.
+     */
+    public function mapaGeral()
     {
-        // Primeiro excluir todos os itens relacionados
-        $parceiro->itens()->delete();
+        // Buscar parceiros com todos os dados necessários para o mapa
+        $parceiros = Parceiro::with(['localizacao', 'usuario'])
+            ->where('status', 'aprovado')
+            ->where('ativo', true)
+            ->get();
         
-        // Excluir todas as mensagens do chat
-        ChMessage::where('from_id', $parceiro->usuario->id)
-                ->orWhere('to_id', $parceiro->usuario->id)
-                ->delete();
+        // Buscar itens aprovados e em estabelecimento
+        $itens = Item::with(['categoria', 'localizacao', 'fotos', 'parceiro.localizacao'])
+            ->whereIn('status', ['aprovado', 'em_estabelecimento'])
+            ->whereHas('usuario', function($query) {
+                $query->where('ativo', true);
+            })
+            ->get();
+            
+        $categorias = Categoria::all();
+        $googleMapsApiKey = env('GOOGLE_MAPS_API_KEY');
         
-        // Excluir o usuário associado
-        $parceiro->usuario->delete();
+        return view('admin.mapa-geral', [
+            'itens' => $itens,
+            'categorias' => $categorias,
+            'parceiros' => $parceiros,
+            'googleMapsApiKey' => $googleMapsApiKey
+        ]);
+    }
+    
+    /**
+     * Exibe o mapa geral novo com itens e parceiros.
+     */
+    public function mapaGeralNovo()
+    {
+        // Buscar parceiros com todos os dados necessários para o mapa
+        $parceiros = Parceiro::with(['localizacao', 'usuario'])
+            ->where('status', 'aprovado')
+            ->where('ativo', true)
+            ->get();
         
-        // Por fim, excluir o parceiro
-        $parceiro->delete();
-
-        return redirect()->route('admin.parceiros.index')->with('success', 'Parceiro excluído com sucesso!');
+        // Buscar itens aprovados e em estabelecimento
+        $itens = Item::with(['categoria', 'localizacao', 'fotos', 'parceiro.localizacao'])
+            ->whereIn('status', ['aprovado', 'em_estabelecimento'])
+            ->whereHas('usuario', function($query) {
+                $query->where('ativo', true);
+            })
+            ->get();
+            
+        $categorias = Categoria::all();
+        $googleMapsApiKey = env('GOOGLE_MAPS_API_KEY');
+        
+        // Log para depuração
+        \Log::info('Dados para mapa-geral-novo:', [
+            'itens_count' => $itens->count(),
+            'parceiros_count' => $parceiros->count()
+        ]);
+        
+        return view('admin.mapa-geral-novo', [
+            'itens' => $itens,
+            'categorias' => $categorias,
+            'parceiros' => $parceiros,
+            'googleMapsApiKey' => $googleMapsApiKey
+        ]);
     }
 
 }

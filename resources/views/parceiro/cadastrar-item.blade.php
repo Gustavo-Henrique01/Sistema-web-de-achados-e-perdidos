@@ -1,197 +1,124 @@
 @extends('layouts.parceiro')
 
-@section('title', 'Cadastrar Item')
+@section('title', isset($isEdit) ? 'Editar Item' : 'Cadastrar Item')
 
 @section('content')
 
 <style>
-    /* Estilo para o mapa */
-    #map {
-        height: 400px;
-        margin-bottom: 20px;
-        border-radius: 6px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    /* Ajustes para a barra de pesquisa */
-    .leaflet-control-geosearch {
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Estilos modernos para o formulário */
+    .form-section {
         background-color: #fff;
-    }
-
-    .leaflet-control-geosearch input {
-        width: 100%;
-        padding: 8px;
-        font-size: 14px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-
-    .leaflet-control-geosearch ul {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
-        background-color: #fff;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        max-height: 200px;
-        overflow-y: auto;
-    }
-
-    .leaflet-control-geosearch ul li {
-        padding: 8px;
-        font-size: 14px;
-        border-bottom: 1px solid #eee;
-        cursor: pointer;
-    }
-
-    .leaflet-control-geosearch ul li:hover {
-        background-color: #f0f0f0;
-    }
-
-    /* Estilo para o container de sugestões do Google Maps */
-    .pac-container {
-        background-color: #fff;
-        z-index: 1000;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .pac-item {
-        padding: 8px;
-        font-size: 14px;
-        cursor: pointer;
-    }
-
-    .pac-item:hover {
-        background-color: #f1f1f1;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid var(--primary-color);
+        transition: transform 0.2s, box-shadow 0.2s;
     }
     
-    /* Melhorias visuais do formulário */
-    .form-control, .form-select {
-        border-radius: 5px;
-        border: 1px solid #ddd;
-        padding: 8px 12px;
-        transition: all 0.3s;
+    .form-section:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     }
     
-    .form-control:focus, .form-select:focus {
-        border-color: #4e73df;
-        box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+    .section-title {
+        color: var(--primary-color);
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     }
     
     .form-label {
         font-weight: 500;
-        color: #505050;
-        margin-bottom: 6px;
+        margin-bottom: 0.5rem;
+        color: #495057;
     }
     
-    .section-container {
-        background-color: #f8f9fc;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 25px;
-        border-left: 4px solid #4e73df;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    .form-control, .form-select {
+        border-radius: 0.375rem;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #ced4da;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
     }
     
-    .section-title {
-        color: #4e73df;
-        font-size: 1.1rem;
-        margin-bottom: 15px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #e3e6f0;
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     }
     
-    .img-thumbnail {
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        transition: transform 0.2s;
+    /* Estilos para o mapa */
+    #map {
+        height: 350px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 1rem;
     }
     
-    .img-thumbnail:hover {
-        transform: scale(1.03);
+    /* Estilos para preview de fotos */
+    .photo-preview-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1rem;
     }
     
-    .btn-primary {
-        background-color: #4e73df;
-        border-color: #4e73df;
+    .photo-preview-item {
+        position: relative;
+        width: calc(33.333% - 0.67rem);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--box-shadow);
     }
     
-    .btn-primary:hover {
-        background-color: #2e59d9;
-        border-color: #2653d4;
+    .photo-preview-item img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
     }
     
-    .btn-secondary {
-        background-color: #858796;
-        border-color: #858796;
+    .photo-preview-actions {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0,0,0,0.7);
+        padding: 0.5rem;
+        display: flex;
+        justify-content: space-between;
     }
     
-    .btn-danger {
-        background-color: #e74a3b;
-        border-color: #e74a3b;
-    }
-    
-    .alert-success {
-        background-color: #E8F4FF;
-        border-color: #BFDFFF;
-        color: #1a75ff;
-    }
-    
-    /* Melhorias de responsividade */
-    @media (max-width: 768px) {
-        .section-container {
-            padding: 15px;
-        }
-        
-        .col-md-4 {
-            width: 100%;
-        }
-        
-        h1 {
-            font-size: 1.8rem;
-        }
-        
-        .btn-lg {
-            font-size: 1rem;
-            padding: 0.5rem 1rem;
-        }
-        
-        .img-thumbnail {
-            max-width: 100% !important;
-            height: auto;
+    /* Responsividade */
+    @media (max-width: 992px) {
+        .photo-preview-item {
+            width: calc(50% - 0.5rem);
         }
     }
     
     @media (max-width: 576px) {
-        .section-container {
-            padding: 12px;
-            margin-bottom: 15px;
+        .photo-preview-item {
+            width: 100%;
         }
         
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+        .form-section {
+            padding: 1rem;
         }
         
-        .section-title {
-            font-size: 1rem;
+        #map {
+            height: 250px;
         }
-        
-        .form-label {
-            margin-bottom: 4px;
-        }
-        
-        .mb-3 {
-            margin-bottom: 0.75rem !important;
-        }
+    }
+    
+    /* Estilos para o container de sugestões do Google Maps */
+    .pac-container {
+        z-index: 1051;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     }
 </style>
 
 @if(!auth()->user()->ativo)
-    <div class="container mt-5">
+    <div class="container-fluid">
         <div class="alert alert-danger" role="alert">
             <h4 class="alert-heading">Conta Inativa</h4>
             <p>Sua conta está atualmente inativa. Você não pode cadastrar novos itens até que sua conta seja reativada.</p>
@@ -200,155 +127,192 @@
         </div>
     </div>
 @else
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Cadastrar Item no Estabelecimento</h1>
-        <a href="{{ route('parceiro.itens') }}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Voltar
+<div class="container-fluid">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h1 class="h3 mb-1">{{ isset($isEdit) ? 'Editar Item' : 'Cadastrar Item no Estabelecimento' }}</h1>
+            <p class="text-muted mb-0">{{ isset($isEdit) ? 'Altere as informações do item conforme necessário' : 'Preencha os dados para cadastrar um novo item encontrado' }}</p>
+        </div>
+        <a href="{{ route('parceiro.itens') }}" class="btn btn-outline-secondary d-flex align-items-center">
+            <i class="fas fa-arrow-left me-2"></i>Voltar para Itens
         </a>
     </div>
-
+    
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <h5 class="alert-heading"><i class="fas fa-check-circle me-2"></i>Item cadastrado com sucesso!</h5>
-            <p>Seu item foi registrado e está aguardando aprovação. O processo de avaliação pode levar até <strong>5 dias</strong> úteis.</p>
-            <p class="mb-0">Você receberá uma notificação assim que seu item for aprovado.</p>
+            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i><strong>Atenção!</strong> Corrija os erros abaixo:
+            <ul class="mb-0 mt-2">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
-    @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    <form action="{{ route('parceiro.cadastrar-item') }}" method="POST" enctype="multipart/form-data" class="needs-validation" id="item-form" novalidate>
+    <form action="{{ isset($isEdit) ? route('parceiro.itens.atualizar', $item) : route('parceiro.cadastrar-item') }}" method="POST" enctype="multipart/form-data" class="needs-validation" id="item-form" novalidate>
         @csrf
+        @if(isset($isEdit))
+            @method('PUT')
+        @endif
 
         <!-- Informações básicas -->
-        <div class="section-container">
-            <h4 class="section-title">Informações básicas</h4>
+        <div class="form-section">
+            <h4 class="section-title"><i class="fas fa-info-circle me-2"></i>Informações Básicas</h4>
             
-            <!-- Categoria -->
-            <div class="mb-3">
-                <label for="id_categoria" class="form-label">Categoria</label>
-                <select name="id_categoria" id="id_categoria" class="form-select @error('id_categoria') is-invalid @enderror" required>
-                    <option value="" disabled selected>Selecione uma categoria</option>
-                    @foreach ($categorias as $categoria)
-                        <option value="{{ $categoria->id }}" {{ old('id_categoria', $item->id_categoria ?? '') == $categoria->id ? 'selected' : '' }}>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="id_categoria" class="form-label">Categoria <span class="text-danger">*</span></label>
+                    <select name="id_categoria" id="id_categoria" class="form-select @error('id_categoria') is-invalid @enderror" required>
+                        <option value="" disabled selected>Selecione uma categoria</option>
+                        @foreach ($categorias as $categoria)
+                        <option value="{{ $categoria->id }}" {{ isset($item) && $item->id_categoria == $categoria->id ? 'selected' : '' }}>
                             {{ $categoria->nome_categoria }}
                         </option>
-                    @endforeach
-                </select>
-                <div class="invalid-feedback" id="categoria-feedback">
-                    Por favor, selecione uma categoria.
+                        @endforeach
+                    </select>
+                    <div class="invalid-feedback" id="categoria-feedback">
+                        Por favor, selecione uma categoria.
+                    </div>
+                    @error('id_categoria')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
-                @error('id_categoria')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <!-- Tipo - Apenas achado para parceiros -->
-            <input type="hidden" name="tipo" value="achado">
-            <!-- Data em que o item foi encontrado -->
-            <div class="mb-3">
-                <label for="data_encontrado" class="form-label">Data em que o item foi encontrado</label>
-                <input type="date" name="data_encontrado" id="data_encontrado" class="form-control @error('data_encontrado') is-invalid @enderror" max="{{ date('Y-m-d') }}" value="{{ old('data_encontrado', date('Y-m-d')) }}" required>
-                <div class="invalid-feedback" id="data-encontrado-feedback">
-                    Por favor, selecione uma data válida (não pode ser futura).
+                
+                <!-- Data em que o item foi encontrado -->
+                <div class="col-md-6">
+                    <label for="data_encontrado" class="form-label">Data em que o item foi encontrado <span class="text-danger">*</span></label>
+                    <input type="date" name="data_encontrado" id="data_encontrado" class="form-control @error('data_encontrado') is-invalid @enderror" 
+                           max="{{ date('Y-m-d') }}" value="{{ isset($item) && $item->data_encontrado ? (is_string($item->data_encontrado) ? $item->data_encontrado : $item->data_encontrado->format('Y-m-d')) : '' }}" required>
+                    <div class="invalid-feedback" id="data-encontrado-feedback">
+                        Por favor, selecione uma data válida (não pode ser futura).
+                    </div>
+                    @error('data_encontrado')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
-                @error('data_encontrado')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <!-- Descrição -->
-            <div class="mb-3">
-                <label for="descricao" class="form-label">Descrição</label>
-                <textarea name="descricao" id="descricao" class="form-control @error('descricao') is-invalid @enderror" 
-                    rows="4" placeholder="Ex: descreva as informações sobre o item, como cor, marca, modelo, estado, e como encontrou ou perdeu o item etc .." 
-                    required minlength="10" maxlength="500">{{ old('descricao', $item->descricao ?? '') }}</textarea>
-                <div class="invalid-feedback" id="descricao-feedback">
-                    A descrição deve ter entre 10 e 500 caracteres.
+                
+                <!-- Descrição do item -->
+                <div class="col-12">
+                    <label for="descricao" class="form-label">Descrição <span class="text-danger">*</span></label>
+                    <textarea name="descricao" id="descricao" class="form-control @error('descricao') is-invalid @enderror" 
+                        rows="4" placeholder="Ex: descreva as informações sobre o item, como cor, marca, modelo, estado, e como encontrou ou perdeu o item etc .." 
+                        required minlength="10" maxlength="500">{{ isset($item) ? $item->descricao : '' }}</textarea>
+                    <div class="invalid-feedback" id="descricao-feedback">
+                        A descrição deve ter entre 10 e 500 caracteres.
+                    </div>
+                    <div class="form-text">
+                        <i class="fas fa-lightbulb text-warning me-1"></i> Dica: Quanto mais detalhada a descrição, mais fácil será para o dono identificar o item.
+                    </div>
+                    @error('descricao')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                 </div>
-                <small class="text-muted">
-                    Mínimo de 10 caracteres, máximo de 500. <span id="contador-caracteres">0</span>/500
-                </small>
-                @error('descricao')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                
+                <!-- Campos ocultos para tipo e status -->
+                @if(isset($isEdit))
+                <input type="hidden" name="tipo" value="{{ $item->tipo }}">
+                <input type="hidden" name="status" value="{{ $item->status }}">
+                @else
+                <input type="hidden" name="tipo" value="achado">
+                <input type="hidden" name="status" value="em_estabelecimento">
+                @endif
             </div>
         </div>
-
-        <!-- Fotos -->
-        <div class="section-container">
-            <h4 class="section-title">Fotos do item</h4>
+        
+        <!-- Fotos do item -->
+        <div class="form-section">
+            <h4 class="section-title"><i class="fas fa-camera me-2"></i>Fotos do Item</h4>
             
-            <label for="fotos" class="form-label">Fotos (Recomendado: ajuda na identificação, máximo 3)</label>
-            
-            @if(session('error'))
-                <div class="alert alert-danger">
-                    {{ session('error') }}
-                </div>
-            @endif
-            
-            <!-- Exibir fotos atuais, se existirem (para edição) -->
-            @if (isset($item) && $item->fotos->count() > 0)
-                <div class="row mb-3">
-                    @foreach ($item->fotos as $foto)
-                        <div class="col-md-4 col-sm-6 mb-3">
-                            <img src="{{ asset('storage/' . $foto->caminho) }}" alt="Foto do item" class="img-thumbnail" style="max-width: 200px; height: auto;">
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="radio" name="foto_principal" value="{{ $foto->id }}" {{ $foto->is_principal ? 'checked' : '' }}>
-                                <label class="form-check-label">Principal</label>
+            <!-- Fotos existentes (apenas para edição) -->
+            @if(isset($isEdit) && isset($item->fotos) && $item->fotos->count() > 0)
+                <div class="mb-4">
+                    <h5 class="h6 mb-3">Fotos Atuais</h5>
+                    <div class="row g-3">
+                        @foreach($item->fotos as $foto)
+                            <div class="col-lg-4 col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <img src="{{ asset('storage/' . $foto->caminho) }}" 
+                                         class="card-img-top" 
+                                         alt="Foto do item"
+                                         style="height: 200px; object-fit: cover;">
+                                    <div class="card-body text-center">
+                                        @if($foto->is_principal)
+                                            <span class="badge bg-primary mb-2">Foto Principal</span>
+                                        @endif
+                                    </div>
+                                </div>
                             </div>
-                            <button type="button" class="btn btn-sm btn-danger mt-1 w-100" onclick="removerFoto(this, {{ $foto->id }})">Remover</button>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>Você já tem {{ $item->fotos->count() }} foto(s). 
+                        O limite é de 3 fotos por item.
+                    </div>
                 </div>
             @endif
             
-            <!-- Campos para upload de novas fotos -->
-            <div class="mb-3 p-3 bg-light rounded border border-1 border-secondary-subtle">
-                <input type="file" name="foto_temporaria" id="foto_temporaria" 
-                       class="form-control @error('fotos') is-invalid @enderror" 
-                       accept="image/jpeg, image/png, image/webp">
-                <button type="button" id="adicionar_foto" class="btn btn-secondary mt-2">
-                    Adicionar Foto
-                </button>
-                <div id="foto-status" class="mt-2"></div>
-                <small class="text-muted d-block mt-2">Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo por foto: 2MB.</small>
-                <small class="text-primary d-block mt-1"><i class="fas fa-info-circle"></i> Incluir fotos facilita muito a identificação do item!</small>
+            <div class="mb-3">
+                <label for="fotos" class="form-label">
+                    {{ isset($isEdit) ? 'Adicionar novas fotos' : 'Fotos do item (máximo 3)' }}
+                    {{ isset($isEdit) && isset($item->fotos) && $item->fotos->count() >= 3 ? '(limite atingido)' : '' }}
+                </label>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <input type="file" name="fotos[]" id="fotos" class="form-control d-none @error('fotos') is-invalid @enderror" 
+                           accept="image/jpeg,image/png,image/jpg,image/webp" multiple
+                           {{ isset($isEdit) && isset($item->fotos) && $item->fotos->count() >= 3 ? 'disabled' : '' }}>
+                    <button type="button" id="btn-add-foto" class="btn btn-primary" {{ isset($isEdit) && isset($item->fotos) && $item->fotos->count() >= 3 ? 'disabled' : '' }}>
+                        <i class="fas fa-plus me-2"></i>Adicionar Foto
+                    </button>
+                    <span class="text-muted small">Clique para adicionar uma foto por vez (máximo 3)</span>
+                </div>
+                <div class="form-text">
+                    <i class="fas fa-info-circle text-primary me-1"></i> Formatos aceitos: JPG, PNG, WEBP. Tamanho máximo: 2MB por foto.
+                </div>
                 @error('fotos')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                    <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
-            <div id="fotos_selecionadas" class="row"></div>
-
+            
             <!-- Preview das novas fotos selecionadas -->
             <div id="preview-container" class="row mt-3"></div>
+            
+            <!-- Campo oculto para armazenar as fotos selecionadas -->
+            <div id="selected-photos-container"></div>
         </div>
-
+        
         <!-- Localização -->
-        <div class="section-container">
-            <h4 class="section-title">Localização</h4>
-            <p class="mb-3">Informe o local onde o item foi encontrado</p>
+        <div class="form-section">
+            <h4 class="section-title"><i class="fas fa-map-marker-alt me-2"></i>Localização</h4>
+            <p class="text-muted mb-3">Informe o local onde o item foi encontrado</p>
             
             <input type="hidden" name="usar_localizacao_parceiro" value="0">
             
             <div id="campos_localizacao">
                 <!-- Campo de endereço com autocomplete do Google Maps -->
                 <div class="mb-3">
-                    <label for="endereco" class="form-label">Endereço onde o item foi encontrado</label>
-                    <input type="text" id="endereco" class="form-control @error('endereco') is-invalid @enderror" 
-                           placeholder="Digite o endereço completo (Rua, Número, Bairro)" 
-                           value="{{ old('endereco') }}" required>
-                    <input type="hidden" name="endereco" id="endereco_input" value="{{ old('endereco') }}">
+                    <label for="endereco" class="form-label">Endereço onde o item foi encontrado <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                        <input type="text" id="endereco" class="form-control @error('endereco') is-invalid @enderror" 
+                               placeholder="Digite o endereço completo (Rua, Número, Bairro)" 
+                               value="{{ isset($item) && isset($item->localizacao) ? $item->localizacao->endereco : old('endereco') }}" required>
+                    </div>
+                    <input type="hidden" name="endereco" id="endereco_input" value="{{ isset($item) && isset($item->localizacao) ? $item->localizacao->endereco : old('endereco') }}">
                     <div class="invalid-feedback" id="endereco-feedback">
                         Por favor, informe um endereço válido.
                     </div>
@@ -360,15 +324,18 @@
                     @enderror
                 </div>
                 
-                <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
-                <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
+                <input type="hidden" name="latitude" id="latitude" value="{{ isset($item) && isset($item->localizacao) ? $item->localizacao->latitude : old('latitude') }}">
+                <input type="hidden" name="longitude" id="longitude" value="{{ isset($item) && isset($item->localizacao) ? $item->localizacao->longitude : old('longitude') }}">
 
                 <!-- Campo para nome do local -->
                 <div class="mb-3">
-                    <label for="nome_local" class="form-label">Nome do Local</label>
-                    <input type="text" name="nome_local" id="nome_local" class="form-control @error('nome_local') is-invalid @enderror" 
-                           placeholder="Ex: Shopping Campo Grande, Terminal Rodoviário, etc." 
-                           value="{{ old('nome_local') }}" required>
+                    <label for="nome_local" class="form-label">Nome do Local <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-building"></i></span>
+                        <input type="text" name="nome_local" id="nome_local" class="form-control @error('nome_local') is-invalid @enderror" 
+                               placeholder="Ex: Shopping Campo Grande, Terminal Rodoviário, etc." 
+                               value="{{ isset($item) && isset($item->localizacao) ? $item->localizacao->nome_local : old('nome_local') }}" required>
+                    </div>
                     <div class="invalid-feedback" id="nome-local-feedback">
                         Por favor, informe o nome do local.
                     </div>
@@ -379,10 +346,13 @@
 
                 <!-- Campo para referência -->
                 <div class="mb-3">
-                    <label for="referencia" class="form-label">Ponto de Referência</label>
-                    <input type="text" name="referencia" id="referencia" class="form-control @error('referencia') is-invalid @enderror" 
-                           placeholder="Ex: Próximo ao Banco do Brasil, Na praça de alimentação, etc." 
-                           value="{{ old('referencia') }}" required>
+                    <label for="referencia" class="form-label">Ponto de Referência <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-map-pin"></i></span>
+                        <input type="text" name="referencia" id="referencia" class="form-control @error('referencia') is-invalid @enderror" 
+                               placeholder="Ex: Próximo ao Banco do Brasil, Na praça de alimentação, etc." 
+                               value="{{ isset($item) && isset($item->localizacao) ? $item->localizacao->referencia : old('referencia') }}" required>
+                    </div>
                     <div class="invalid-feedback" id="referencia-feedback">
                         Por favor, informe um ponto de referência.
                     </div>
@@ -390,18 +360,17 @@
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
-                
-                <!-- Mapa -->
-                <div id="map" style="height: 250px; margin-bottom: 20px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></div>
             </div>
         </div>
 
-        <!-- Botão de envio -->
-        <div class="mt-4 mb-5 text-center">
-            <button type="submit" class="btn btn-primary btn-lg px-4">
-                <i class="fas fa-save me-2"></i>Cadastrar Item
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 mb-5">
+            <a href="{{ route('parceiro.itens') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-times me-2"></i>Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-{{ isset($isEdit) ? 'save' : 'plus-circle' }} me-2"></i>
+                {{ isset($isEdit) ? 'Salvar Alterações' : 'Cadastrar Item' }}
             </button>
-            <p class="text-muted mt-2 mb-0">O item será automaticamente vinculado ao seu estabelecimento</p>
         </div>
     </form>
 </div>
@@ -411,7 +380,7 @@
 
 <!-- Google Maps API -->
 <script src="https://maps.googleapis.com/maps/api/js?key={{ env('GOOGLE_MAPS_API_KEY') }}&libraries=places"></script>
-<!-- Script para o autocompletar de endereços do Google Maps e validações -->
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Inicializa o autocomplete do Google Maps
@@ -419,224 +388,256 @@
         if (!enderecoInput) return; // Sair se o elemento não existir
         
         const autocomplete = new google.maps.places.Autocomplete(enderecoInput, {
-            types: ['geocode'] // Restringe a busca a endereços
+            types: ['address'],
+            componentRestrictions: { country: 'br' }
         });
-
-        // Evento de seleção de um endereço
+        
+        // Quando o usuário seleciona um endereço no autocomplete
         autocomplete.addListener('place_changed', function() {
             const place = autocomplete.getPlace();
-            if (place.geometry) {
-                // Preenche os campos de latitude e longitude
-                document.getElementById('latitude').value = place.geometry.location.lat();
-                document.getElementById('longitude').value = place.geometry.location.lng();
-
-                // Preenche o campo de endereço visível e oculto
-                document.getElementById('endereco').value = place.formatted_address || '';
-                document.getElementById('endereco_input').value = place.formatted_address || '';
-
-                // Verifica se o endereço está em Campo Grande, MS (apenas informativo, não bloqueia)
-                const cidade = place.address_components.find(component => 
-                    component.types.includes('locality') || 
-                    component.types.includes('administrative_area_level_2'))?.long_name || '';
+            
+            if (!place.geometry) {
+                document.getElementById('enderecoError').style.display = 'block';
+                document.getElementById('enderecoError').textContent = 'Por favor, selecione um endereço válido.';
+                return;
+            }
+            
+            // Verificar se o endereço está em Campo Grande, MS
+            let isCampoGrande = false;
+            
+            // Coordenadas aproximadas de Campo Grande, MS
+            const campoGrandeLat = -20.4697;
+            const campoGrandeLng = -54.6201;
+            const maxDistanceKm = 30; // Distância máxima em km do centro de Campo Grande
+            
+            // Calcular distância entre dois pontos (fórmula de Haversine)
+            function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+                const R = 6371; // Raio da Terra em km
+                const dLat = deg2rad(lat2 - lat1);
+                const dLon = deg2rad(lon2 - lon1);
+                const a = 
+                    Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+                    Math.sin(dLon/2) * Math.sin(dLon/2); 
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+                const d = R * c; // Distância em km
+                return d;
+            }
+            
+            function deg2rad(deg) {
+                return deg * (Math.PI/180);
+            }
+            
+            // Verificar se está dentro da área de Campo Grande
+            const distance = getDistanceFromLatLonInKm(
+                place.geometry.location.lat(), 
+                place.geometry.location.lng(),
+                campoGrandeLat,
+                campoGrandeLng
+            );
+            
+            if (distance <= maxDistanceKm) {
+                isCampoGrande = true;
                 
-                const estado = place.address_components.find(component => 
-                    component.types.includes('administrative_area_level_1'))?.short_name || '';
-                
-                // Se o endereço contém Campo Grande ou está no MS, consideramos válido
-                const enderecoCampoGrande = cidade.includes('Campo Grande') || 
-                                            place.formatted_address.includes('Campo Grande') || 
-                                            (estado === 'MS' && place.formatted_address.includes('MS'));
-                
-                if (enderecoCampoGrande) {
-                    document.getElementById('enderecoError').style.display = 'none';
-                } else {
-                    // Apenas avisa, mas não impede o envio
-                    document.getElementById('enderecoError').style.display = 'block';
-                    document.getElementById('enderecoError').innerHTML = 
-                        '<i class="fas fa-info-circle"></i> O endereço parece não estar em Campo Grande, MS. Se estiver correto, pode continuar.';
-                    document.getElementById('enderecoError').classList.remove('invalid-feedback');
-                    document.getElementById('enderecoError').classList.add('text-warning');
+                // Verificação adicional pelos componentes do endereço
+                if (place.address_components) {
+                    let foundCampoGrande = false;
+                    let foundMS = false;
+                    
+                    for (let i = 0; i < place.address_components.length; i++) {
+                        const component = place.address_components[i];
+                        
+                        // Verificar se é Campo Grande (cidade)
+                        if ((component.types.includes('locality') || 
+                             component.types.includes('administrative_area_level_2')) && 
+                            component.long_name.toLowerCase().includes('campo grande')) {
+                            foundCampoGrande = true;
+                        }
+                        
+                        // Verificar se é MS (estado)
+                        if (component.types.includes('administrative_area_level_1') && 
+                            (component.short_name === 'MS' || 
+                             component.long_name.toLowerCase().includes('mato grosso do sul'))) {
+                            foundMS = true;
+                        }
+                    }
+                    
+                    // Se encontrou explicitamente outro estado que não seja MS, invalidar
+                    let foundOtherState = false;
+                    for (let i = 0; i < place.address_components.length; i++) {
+                        const component = place.address_components[i];
+                        if (component.types.includes('administrative_area_level_1') && 
+                            component.short_name !== 'MS' && 
+                            !component.long_name.toLowerCase().includes('mato grosso do sul')) {
+                            foundOtherState = true;
+                        }
+                    }
+                    
+                    // Se encontrou outro estado explicitamente, não é Campo Grande, MS
+                    if (foundOtherState) {
+                        isCampoGrande = false;
+                    }
+                    
+                    // Se encontrou explicitamente Campo Grande e MS, é válido
+                    if (foundCampoGrande && foundMS) {
+                        isCampoGrande = true;
+                    }
                 }
             }
-        });
-
-        // Evento de mudança no campo de endereço
-        enderecoInput.addEventListener('change', function() {
-            if (!enderecoInput.value) {
-                // Limpa os campos se o endereço for apagado
-                document.getElementById('latitude').value = '';
-                document.getElementById('longitude').value = '';
-                document.getElementById('endereco_input').value = '';
+            
+            if (!isCampoGrande) {
+                document.getElementById('enderecoError').style.display = 'block';
+                document.getElementById('enderecoError').textContent = 'O endereço deve estar localizado em Campo Grande, MS.';
+                return;
             }
+            
+            document.getElementById('enderecoError').style.display = 'none';
+            document.getElementById('endereco_input').value = place.formatted_address;
+            
+            // Atualiza os inputs de latitude e longitude
+            document.getElementById('latitude').value = place.geometry.location.lat();
+            document.getElementById('longitude').value = place.geometry.location.lng();
         });
-
-        // Validação de data não futura
-        const dataHoje = new Date().toISOString().split('T')[0];
-        const dataEncontradoInput = document.getElementById('data_encontrado');
-        if (dataEncontradoInput) {
-            dataEncontradoInput.setAttribute('max', dataHoje);
-        }
-
-        // Contador de caracteres para descrição
-        const descricaoTextarea = document.getElementById('descricao');
-        const contadorCaracteres = document.getElementById('contador-caracteres');
         
-        if (descricaoTextarea && contadorCaracteres) {
-            descricaoTextarea.addEventListener('input', function() {
-                const count = this.value.length;
-                contadorCaracteres.textContent = count;
-                
-                if (count < 10 || count > 500) {
-                    this.classList.add('is-invalid');
-                    document.getElementById('descricao-feedback').style.display = 'block';
-                } else {
-                    this.classList.remove('is-invalid');
-                    document.getElementById('descricao-feedback').style.display = 'none';
-                }
-            });
-
-            // Executar contagem inicial
-            contadorCaracteres.textContent = descricaoTextarea.value.length;
-        }
-
-        // Lógica para adicionar fotos uma por vez
-        const fotoTemporaria = document.getElementById('foto_temporaria');
-        const adicionarFoto = document.getElementById('adicionar_foto');
-        const fotosContainer = document.getElementById('preview-container');
-        const fotosHiddenContainer = document.getElementById('fotos_selecionadas');
-        const fotosStatus = document.getElementById('foto-status');
-
-        // Array para armazenar os arquivos selecionados
-        let fotosArray = [];
-
-        function mostrarStatus(mensagem, tipo = 'info') {
-            if (fotosStatus) {
-                fotosStatus.className = `alert alert-${tipo} mt-2`;
-                fotosStatus.textContent = mensagem;
-            }
-        }
-
-        // Evento para adicionar uma foto
-        if (adicionarFoto && fotoTemporaria && fotosContainer && fotosHiddenContainer) {
-            adicionarFoto.addEventListener('click', function() {
-                const file = fotoTemporaria.files[0];
-                if (!file) {
-                    mostrarStatus('Por favor, selecione uma foto primeiro.', 'warning');
-                    return;
-                }
-                
-                // Verificar se já atingiu o limite de 3 fotos
-                if (fotosArray.length >= 3) {
-                    mostrarStatus('Você já selecionou o máximo de 3 fotos.', 'warning');
-                    return;
-                }
-                
-                // Verificar se é uma imagem
-                if (!file.type.match('image/(jpeg|jpg|png|webp)')) {
-                    mostrarStatus('Por favor, selecione apenas arquivos nos formatos: JPG, PNG ou WEBP.', 'danger');
-                    return;
-                }
-                
-                // Verificar tamanho máximo (2MB)
-                if (file.size > 2 * 1024 * 1024) {
-                    mostrarStatus('O tamanho máximo permitido por imagem é 2MB.', 'danger');
-                    return;
-                }
-                
-                // Adicionar o arquivo ao array
-                fotosArray.push(file);
-                mostrarStatus(`Foto "${file.name}" adicionada com sucesso! (${(file.size/1024/1024).toFixed(2)}MB)`, 'success');
-                
-                // Atualizar o preview
-                atualizarPreview();
-                
-                // Limpar o campo de seleção para a próxima foto
-                fotoTemporaria.value = '';
+        // Manipulação de upload de fotos
+        const fotosInput = document.getElementById('fotos');
+        const previewContainer = document.getElementById('preview-container');
+        const selectedPhotosContainer = document.getElementById('selected-photos-container');
+        const btnAddFoto = document.getElementById('btn-add-foto');
+        
+        // Array para armazenar os arquivos de fotos selecionados
+        let selectedPhotos = [];
+        
+        if (btnAddFoto) {
+            btnAddFoto.addEventListener('click', function() {
+                fotosInput.click();
             });
         }
-
-        // Função para atualizar o preview das fotos
-        function atualizarPreview() {
-            if (!fotosContainer || !fotosHiddenContainer) return;
-            
-            // Limpar os containers
-            fotosContainer.innerHTML = '';
-            fotosHiddenContainer.innerHTML = '';
-            
-            // Adicionar contador de fotos
-            if (fotosArray.length > 0) {
-                const counterDiv = document.createElement('div');
-                counterDiv.className = 'col-12 mb-3';
-                counterDiv.innerHTML = `
-                    <div class="alert alert-info">
-                        <i class="fas fa-camera"></i> <strong>${fotosArray.length}</strong> foto(s) selecionada(s) de 3 permitidas
-                    </div>
-                `;
-                fotosContainer.appendChild(counterDiv);
-            }
-            
-            // Para cada arquivo no array, criar um preview
-            fotosArray.forEach((file, index) => {
-                const imgURL = URL.createObjectURL(file);
+        
+        if (fotosInput) {
+            fotosInput.addEventListener('change', function() {
+                if (!this.files || this.files.length === 0) return;
                 
-                const colDiv = document.createElement('div');
-                colDiv.className = 'col-md-4 col-sm-6 mb-3';
+                const currentPhotos = selectedPhotos.length;
+                const newPhotos = this.files.length;
                 
-                colDiv.innerHTML = `
-                    <div class="card">
-                        <img src="${imgURL}" class="card-img-top" alt="Preview" style="object-fit: cover; height: 200px;">
-                        <div class="card-body">
-                            <div class="form-check mb-2">
-                                <input type="radio" name="foto_principal_index" value="${index}" 
-                                       class="form-check-input" ${index === 0 ? 'checked' : ''}>
-                                <label class="form-check-label">Foto Principal</label>
+                if (currentPhotos + newPhotos > 3) {
+                    alert('Você pode enviar no máximo 3 fotos.');
+                    return;
+                }
+                
+                // Adicionar os novos arquivos ao array de fotos selecionadas
+                for (let i = 0; i < this.files.length; i++) {
+                    const file = this.files[i];
+                    selectedPhotos.push(file);
+                    
+                    const reader = new FileReader();
+                    const photoIndex = currentPhotos + i;
+                    
+                    reader.onload = function(e) {
+                        const imgURL = e.target.result;
+                        
+                        const colDiv = document.createElement('div');
+                        colDiv.className = 'col-lg-4 col-md-6 mb-3 photo-preview-item';
+                        colDiv.dataset.index = photoIndex;
+                        
+                        colDiv.innerHTML = `
+                            <div class="card">
+                                <img src="${imgURL}" class="card-img-top" 
+                                     alt="Preview" style="object-fit: cover; height: 200px;">
+                                <div class="card-body">
+                                    <div class="form-check mb-2">
+                                        <input type="radio" name="foto_principal_index" value="${photoIndex}" 
+                                               id="foto_principal_${photoIndex}" class="form-check-input" 
+                                               ${photoIndex === 0 && currentPhotos === 0 ? 'checked' : ''}>
+                                        <label for="foto_principal_${photoIndex}" class="form-check-label">
+                                            Foto principal
+                                        </label>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-danger remove-preview" data-index="${photoIndex}">
+                                        <i class="fas fa-trash me-1"></i>Remover
+                                    </button>
+                                </div>
                             </div>
-                            <button type="button" class="btn btn-danger btn-sm w-100" 
-                                    onclick="removerFotoTemp(${index})">
-                                <i class="fas fa-trash"></i> Remover
-                            </button>
-                        </div>
-                    </div>
-                `;
+                        `;
+                        
+                        previewContainer.appendChild(colDiv);
+                        
+                        // Adicionar evento para remover a prévia
+                        const removeBtn = colDiv.querySelector('.remove-preview');
+                        if (removeBtn) {
+                            removeBtn.addEventListener('click', function() {
+                                const index = parseInt(this.dataset.index);
+                                // Remover o arquivo do array
+                                selectedPhotos.splice(index, 1);
+                                // Remover a prévia
+                                colDiv.remove();
+                                // Atualizar os índices dos elementos restantes
+                                updatePhotoIndices();
+                            });
+                        }
+                    };
+                    
+                    reader.readAsDataURL(file);
+                }
                 
-                fotosContainer.appendChild(colDiv);
-                
-                // Criar input hidden para o arquivo
-                const dt = new DataTransfer();
-                dt.items.add(file);
-                
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'file';
-                hiddenInput.name = `fotos[${index}]`;
-                hiddenInput.style.display = 'none';
-                hiddenInput.files = dt.files;
-                
-                fotosHiddenContainer.appendChild(hiddenInput);
+                // Atualizar o formulário com os arquivos selecionados
+                updateFormFiles();
             });
         }
-
-        // Função para remover foto temporária
-        window.removerFotoTemp = function(index) {
-            fotosArray.splice(index, 1);
-            mostrarStatus('Foto removida com sucesso.', 'info');
-            atualizarPreview();
-        };
-
-        // Função para remover foto (em caso de edição)
-        window.removerFoto = function(button, fotoId) {
-            if (confirm('Tem certeza que deseja remover esta foto?')) {
-                // Adiciona o ID da foto a ser removida em um input hidden
-                let input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'fotos_removidas[]';
-                input.value = fotoId;
-                button.parentNode.appendChild(input);
+        
+        // Função para atualizar os índices das fotos após remover uma
+        function updatePhotoIndices() {
+            const previewItems = document.querySelectorAll('.photo-preview-item');
+            previewItems.forEach((item, index) => {
+                item.dataset.index = index;
+                const radioInput = item.querySelector('input[type="radio"]');
+                const removeBtn = item.querySelector('.remove-preview');
                 
-                // Oculta a foto na interface
-                button.parentNode.style.display = 'none';
-            }
-        };
-
+                if (radioInput) {
+                    radioInput.id = `foto_principal_${index}`;
+                    radioInput.value = index;
+                    const label = item.querySelector('label');
+                    if (label) {
+                        label.setAttribute('for', `foto_principal_${index}`);
+                    }
+                }
+                
+                if (removeBtn) {
+                    removeBtn.dataset.index = index;
+                }
+            });
+            
+            // Atualizar o formulário
+            updateFormFiles();
+        }
+        
+        // Função para atualizar os arquivos no formulário
+        function updateFormFiles() {
+            // Limpar o container de fotos selecionadas
+            selectedPhotosContainer.innerHTML = '';
+            
+            // Criar um novo FormData
+            const formData = new FormData();
+            
+            // Adicionar cada arquivo ao FormData
+            selectedPhotos.forEach((file, index) => {
+                // Criar um input de arquivo para cada foto
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.name = `fotos[${index}]`;
+                input.style.display = 'none';
+                
+                // Criar um objeto DataTransfer para adicionar o arquivo ao input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                input.files = dataTransfer.files;
+                
+                // Adicionar o input ao container
+                selectedPhotosContainer.appendChild(input);
+            });
+        }
+        
         // Validação do formulário
         const form = document.getElementById('item-form');
         
@@ -644,85 +645,44 @@
             form.addEventListener('submit', function(event) {
                 let isValid = true;
                 
-                // Validar categoria
-                const categoria = document.getElementById('id_categoria');
-                if (categoria && categoria.value === '') {
-                    document.getElementById('categoria-feedback').style.display = 'block';
-                    isValid = false;
-                }
+                // Validar campos obrigatórios
+                const requiredFields = form.querySelectorAll('[required]');
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        field.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        field.classList.remove('is-invalid');
+                    }
+                });
                 
-                // Validar data encontrado
-                const dataEncontrado = document.getElementById('data_encontrado');
-                if (dataEncontrado && (!dataEncontrado.value || new Date(dataEncontrado.value) > new Date())) {
-                    document.getElementById('data-encontrado-feedback').style.display = 'block';
-                    isValid = false;
-                }
-                
-                // Validar descrição
+                // Validar descrição (mínimo 10 caracteres)
                 const descricao = document.getElementById('descricao');
-                if (descricao && (descricao.value.length < 10 || descricao.value.length > 500)) {
+                if (descricao && descricao.value.trim().length < 10) {
                     descricao.classList.add('is-invalid');
-                    document.getElementById('descricao-feedback').style.display = 'block';
                     isValid = false;
-                } else if (descricao) {
-                    descricao.classList.remove('is-invalid');
-                    document.getElementById('descricao-feedback').style.display = 'none';
                 }
                 
-                // Validar fotos (não obrigatório, apenas verifica se há fotos selecionadas para feedback)
-                const temFotosExistentes = document.querySelectorAll('input[name="foto_principal"]').length > 0;
-                if (fotosArray.length === 0 && !temFotosExistentes) {
-                    // Não marca como inválido, apenas mostra um aviso
-                    if (document.getElementById('foto_temporaria')) {
-                        document.getElementById('foto_temporaria').classList.remove('is-invalid');
-                    }
-                    
-                    // Se não existir feedback de foto, não precisa fazer nada
-                    if (document.getElementById('foto-feedback')) {
-                        document.getElementById('foto-feedback').style.display = 'none';
-                    }
-                }
-                
-                // Validar campos de localização
-                const endereco = document.getElementById('endereco');
-                if (endereco && !endereco.value) {
-                    endereco.classList.add('is-invalid');
-                    document.getElementById('endereco-feedback').style.display = 'block';
+                // Validar coordenadas
+                const latitudeInput = document.getElementById('latitude');
+                const longitudeInput = document.getElementById('longitude');
+                if (!latitudeInput.value || !longitudeInput.value) {
+                    document.getElementById('endereco').classList.add('is-invalid');
                     isValid = false;
-                } else if (endereco) {
-                    endereco.classList.remove('is-invalid');
-                    document.getElementById('endereco-feedback').style.display = 'none';
                 }
                 
-                const nomeLocal = document.getElementById('nome_local');
-                if (nomeLocal && !nomeLocal.value) {
-                    nomeLocal.classList.add('is-invalid');
-                    document.getElementById('nome-local-feedback').style.display = 'block';
-                    isValid = false;
-                } else if (nomeLocal) {
-                    nomeLocal.classList.remove('is-invalid');
-                    document.getElementById('nome-local-feedback').style.display = 'none';
-                }
-                
-                const referencia = document.getElementById('referencia');
-                if (referencia && !referencia.value) {
-                    referencia.classList.add('is-invalid');
-                    document.getElementById('referencia-feedback').style.display = 'block';
-                    isValid = false;
-                } else if (referencia) {
-                    referencia.classList.remove('is-invalid');
-                    document.getElementById('referencia-feedback').style.display = 'none';
-                }
-                
-                // Se o formulário não for válido, impede o envio
                 if (!isValid) {
                     event.preventDefault();
                     event.stopPropagation();
-                    // Rola para o primeiro elemento com erro
+                    
+                    // Rolar para o primeiro campo com erro
                     const firstError = form.querySelector('.is-invalid');
                     if (firstError) {
                         firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
+                    
+                    // Mostrar alerta
+                    alert('Por favor, corrija os erros no formulário antes de enviar.');
                 }
             });
         }

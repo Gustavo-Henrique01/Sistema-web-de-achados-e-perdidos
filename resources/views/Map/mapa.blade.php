@@ -319,8 +319,8 @@
     </div>
     
     <div class="d-flex justify-content-center mt-4 mb-2">
-        <a href="{{ route('parceiro.home') }}" class="btn btn-outline-secondary d-flex align-items-center">
-            <i class="fas fa-arrow-left me-2"></i>Voltar para o Dashboard
+        <a href="{{ route('paginaInicial') }}" class="btn btn-outline-secondary d-flex align-items-center">
+            <i class="fas fa-arrow-left me-2"></i>Voltar para a Página Inicial
         </a>
     </div>
 </div>
@@ -517,7 +517,7 @@
                         <p class="mb-1"><i class="fas fa-phone me-1 text-primary"></i> <strong>Telefone:</strong> ${telefone}</p>
                         <p class="mb-0"><i class="fas fa-clock me-1 text-primary"></i> <strong>Horário:</strong> ${horario}</p>
                         <div class="mt-2">
-                            <a href="/parceiros/detalhes/${item.parceiro.id}" class="btn btn-sm btn-outline-primary w-100"><i class="fas fa-info-circle me-1"></i> Ver Parceiro</a>
+                            <a href="/mapa/parceiro/${item.parceiro.id}" class="btn btn-sm btn-outline-primary w-100"><i class="fas fa-info-circle me-1"></i> Ver Parceiro</a>
                         </div>
                     </div>
                 `;
@@ -532,7 +532,7 @@
                     <p class="mb-1"><strong>Local:</strong> ${item.localizacao.endereco}</p>
                     <p class="mb-2"><strong>Data:</strong> ${item.tipo === 'achado' ? new Date(item.data_encontrado).toLocaleDateString('pt-BR') : new Date(item.data_perdido).toLocaleDateString('pt-BR')}</p>
                     ${estabelecimentoInfo}
-                    <a href="/user/itens/${item.id}" class="btn btn-sm btn-primary w-100">Ver Detalhes</a>
+                    <a href="/mapa/item/${item.id}" class="btn btn-sm btn-primary w-100">Ver Detalhes</a>
                 </div>
             `;
             
@@ -611,7 +611,7 @@
                     <p class="mb-1"><i class="fas fa-map-marker-alt me-1 text-primary"></i> <strong>Endereço:</strong> ${parceiro.localizacao ? parceiro.localizacao.endereco : 'Não informado'}</p>
                     <p class="mb-1"><i class="fas fa-phone me-1 text-primary"></i> <strong>Telefone:</strong> ${parceiro.telefone_comercial || 'Não informado'}</p>
                     <p class="mb-2"><i class="fas fa-clock me-1 text-primary"></i> <strong>Horário:</strong> ${parceiro.horario_funcionamento || 'Não informado'}</p>
-                    <a href="/parceiros/detalhes/${parceiro.id}" class="btn btn-sm btn-primary w-100"><i class="fas fa-info-circle me-1"></i> Ver Detalhes</a>
+                    <a href="/mapa/parceiro/${parceiro.id}" class="btn btn-sm btn-primary w-100"><i class="fas fa-info-circle me-1"></i> Ver Detalhes</a>
                 </div>
             `;
 

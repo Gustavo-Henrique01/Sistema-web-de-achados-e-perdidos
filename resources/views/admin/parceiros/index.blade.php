@@ -260,8 +260,8 @@
                                                         <span>Ao reprovar este parceiro, ele não poderá receber itens para devolução e não terá acesso ao sistema.</span>
                                                     </div>
                                                     <div class="form-floating mb-3">
-                                                        <textarea class="form-control" id="motivo" name="motivo" style="height: 120px" required placeholder="Informe o motivo"></textarea>
-                                                        <label for="motivo">Motivo da reprovação</label>
+                                                        <textarea class="form-control" id="motivo_reprovacao" name="motivo_reprovacao" style="height: 120px" required placeholder="Informe o motivo"></textarea>
+                                                        <label for="motivo_reprovacao">Motivo da reprovação</label>
                                                         <div class="form-text">Este motivo será enviado ao parceiro por e-mail.</div>
                                                     </div>
                                                 </div>

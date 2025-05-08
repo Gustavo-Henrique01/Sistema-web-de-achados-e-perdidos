@@ -59,6 +59,12 @@ class ParceiroController extends Controller
      */
     public function cadastrarItem(Request $request)
     {
+        // Verificar se o parceiro está ativo
+        $parceiro = Auth::user()->parceiro;
+        if (!$parceiro->ativo) {
+            return redirect()->route('parceiro.inativo');
+        }
+        
         // Validar os dados do formulário
         $validator = Validator::make($request->all(), [
             'id_categoria' => 'required|exists:categorias,id',
@@ -96,14 +102,7 @@ class ParceiroController extends Controller
         }
         
         try {
-            // Obter o parceiro autenticado
-            $parceiro = Auth::user()->parceiro;
-            
-            // Log para debug
-            \Log::info('Iniciando cadastro de item por parceiro', [
-                'parceiro_id' => $parceiro->id,
-                'user_id' => Auth::id()
-            ]);
+            DB::beginTransaction();
             
             // Criar uma nova localização para onde o item foi encontrado
             $localizacao = Localizacao::create([
@@ -120,16 +119,10 @@ class ParceiroController extends Controller
                 'tipo' => 'achado', // Parceiros só podem cadastrar itens achados
                 'data_encontrado' => $request->data_encontrado,
                 'descricao' => $request->descricao,
-                'status' => 'em_estabelecimento',
+                'status' => 'em_estabelecimento', // Status padrão para itens cadastrados por parceiros
                 'parceiro_id' => $parceiro->id,
                 'user_id' => Auth::id(),
                 'id_localizacao' => $localizacao->id
-            ]);
-            
-            // Log para debug após criar o item
-            \Log::info('Item criado', [
-                'item_id' => $item->id,
-                'status' => $item->status
             ]);
             
             // Processar as fotos, se houver
@@ -144,27 +137,37 @@ class ParceiroController extends Controller
                         ->withInput();
                 }
                 
+                // Processar cada foto
                 foreach ($fotos as $index => $foto) {
-                    $path = $foto->store('itens', 'public');
-                    
-                    ItemFoto::create([
-                        'item_id' => $item->id,
-                        'caminho' => $path,
-                        'is_principal' => ($index == $fotoPrincipal)
-                    ]);
+                    // Verificar se o arquivo é válido
+                    if ($foto->isValid()) {
+                        $path = $foto->store('itens', 'public');
+                        
+                        // Determinar se é a foto principal
+                        $isPrincipal = false;
+                        if (is_numeric($fotoPrincipal) && $index == $fotoPrincipal) {
+                            $isPrincipal = true;
+                        } elseif ($index == 0 && !is_numeric($fotoPrincipal)) {
+                            // Se não houver índice de foto principal, a primeira é a principal
+                            $isPrincipal = true;
+                        }
+                        
+                        ItemFoto::create([
+                            'item_id' => $item->id,
+                            'caminho' => $path,
+                            'is_principal' => $isPrincipal
+                        ]);
+                    }
                 }
             }
+            
+            DB::commit();
             
             return redirect()->route('parceiro.itens')
                 ->with('success', 'Item cadastrado com sucesso! O item foi vinculado ao seu estabelecimento.');
                 
         } catch (\Exception $e) {
-            // Registrar erro no log
-            \Log::error('Erro ao cadastrar item por parceiro', [
-                'erro' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'parceiro_id' => Auth::user()->parceiro->id ?? 'N/A'
-            ]);
+            DB::rollBack();
             
             return redirect()->back()
                 ->with('error', 'Ocorreu um erro ao cadastrar o item: ' . $e->getMessage())
@@ -302,6 +305,7 @@ class ParceiroController extends Controller
         // Verificar se é uma edição ou criação de parceiro
         $isEdit = $request->has('parceiro_id');
         $parceiroId = $request->parceiro_id;
+        $parceiro = null; // Inicializar a variável $parceiro para evitar erro de variável indefinida
         
         // Regras de validação diferentes para edição e criação
         $validationRules = [
@@ -352,6 +356,7 @@ class ParceiroController extends Controller
         try {
             // Log dos dados recebidos
             \Log::info('Dados recebidos no cadastro/edição de parceiro:', $request->all());
+            \Log::info('Tipo de operação: ' . ($isEdit ? 'Edição' : 'Criação'));
 
             // Validação dos dados do usuário - ajustada para edição/criação
             $userValidationRules = [
@@ -439,15 +444,20 @@ class ParceiroController extends Controller
                     // Criar usuário com papel de parceiro
                     \Log::info('Iniciando criação do usuário com os dados:', $validatedUserData);
                     
-                    $user = User::create([
-                        'name' => $validatedUserData['name'],
-                        'email' => $validatedUserData['email'],
-                        'telefone' => $validatedUserData['telefone'],
-                        'senha' => Hash::make($validatedUserData['senha']), // Hash explícito da senha
-                        'cpf' => $validatedUserData['cpf'],
-                        'role' => UserRole::PARCEIRO->value,
-                        'ativo' => true, // O usuário está ativo, mas o parceiro não estará até ser aprovado
-                    ]);
+                    try {
+                        $user = User::create([
+                            'name' => $validatedUserData['name'],
+                            'email' => $validatedUserData['email'],
+                            'telefone' => $validatedUserData['telefone'],
+                            'senha' => Hash::make($validatedUserData['senha']), // Hash explícito da senha
+                            'cpf' => $validatedUserData['cpf'],
+                            'role' => UserRole::PARCEIRO->value,
+                            'ativo' => false, 
+                        ]);
+                    } catch (\Exception $e) {
+                        \Log::error('Erro ao criar usuário: ' . $e->getMessage());
+                        throw new \Exception('Erro ao criar usuário: ' . $e->getMessage());
+                    }
                 }
 
                 \Log::info('Usuário criado com sucesso:', ['user_id' => $user->id]);
@@ -465,13 +475,18 @@ class ParceiroController extends Controller
                     $localizacao->save();
                 } else {
                     // Criar localização para o parceiro
-                    $localizacao = Localizacao::create([
-                        'nome_local' => $validatedLocalizacaoData['nome_local'],
-                        'endereco' => $validatedLocalizacaoData['endereco'],
-                        'latitude' => $validatedLocalizacaoData['latitude'],
-                        'longitude' => $validatedLocalizacaoData['longitude'],
-                        'referencia' => $validatedLocalizacaoData['referencia'] ?? null,
-                    ]);
+                    try {
+                        $localizacao = Localizacao::create([
+                            'nome_local' => $validatedLocalizacaoData['nome_local'],
+                            'endereco' => $validatedLocalizacaoData['endereco'],
+                            'latitude' => $validatedLocalizacaoData['latitude'],
+                            'longitude' => $validatedLocalizacaoData['longitude'],
+                            'referencia' => $validatedLocalizacaoData['referencia'] ?? null,
+                        ]);
+                    } catch (\Exception $e) {
+                        \Log::error('Erro ao criar localização: ' . $e->getMessage());
+                        throw new \Exception('Erro ao criar localização: ' . $e->getMessage());
+                    }
                 }
 
                 \Log::info('Localização criada com sucesso:', ['localizacao_id' => $localizacao->id]);
@@ -499,18 +514,33 @@ class ParceiroController extends Controller
                     $parceiro->save();
                 } else {
                     // Criar parceiro
-                    $parceiro = Parceiro::create([
-                        'nome_estabelecimento' => $validatedParceiroData['nome_estabelecimento'],
-                        'cnpj' => $request->cnpj,
-                        'descricao' => $validatedParceiroData['descricao'] ?? null,
-                        'horario_funcionamento' => $validatedParceiroData['horario_funcionamento'] ?? null,
-                        'telefone_comercial' => $validatedParceiroData['telefone_comercial'] ?? null,
-                        'tipo_parceiro' => $validatedParceiroData['tipo_parceiro'],
-                        'status' => 'pendente',
-                        'logo' => $validatedParceiroData['logo'] ?? null,
-                        'usuario_id' => $user->id,
-                        'localizacao_id' => $localizacao->id,
-                    ]);
+                    try {
+                        \Log::info('Tentando criar parceiro com os dados:', [
+                            'nome_estabelecimento' => $validatedParceiroData['nome_estabelecimento'],
+                            'cnpj' => $request->cnpj,
+                            'user_id' => $user->id,
+                            'id_localizacao' => $localizacao->id,
+                            'data_inicio_parceria' => now()->toDateString()
+                        ]);
+                        
+                        $parceiro = Parceiro::create([
+                            'nome_estabelecimento' => $validatedParceiroData['nome_estabelecimento'],
+                            'cnpj' => $request->cnpj,
+                            'descricao' => $validatedParceiroData['descricao'] ?? null,
+                            'horario_funcionamento' => $validatedParceiroData['horario_funcionamento'] ?? null,
+                            'telefone_comercial' => $validatedParceiroData['telefone_comercial'] ?? null,
+                            'tipo_parceiro' => $validatedParceiroData['tipo_parceiro'],
+                            'status' => 'pendente',
+                            'logo' => $validatedParceiroData['logo'] ?? null,
+                            'user_id' => $user->id,
+                            'id_localizacao' => $localizacao->id,
+                            'data_inicio_parceria' => now()->toDateString(),
+                            'ativo' => true,
+                        ]);
+                    } catch (\Exception $e) {
+                        \Log::error('Erro ao criar parceiro: ' . $e->getMessage());
+                        throw new \Exception('Erro ao criar parceiro: ' . $e->getMessage());
+                    }
                 }
 
                 \Log::info('Parceiro criado com sucesso:', ['parceiro_id' => $parceiro->id]);
@@ -529,27 +559,37 @@ class ParceiroController extends Controller
                 }
             } catch (\Exception $e) {
                 DB::rollBack();
+                \Log::error('Erro no bloco try interno: ' . $e->getMessage());
+                \Log::error('Stack trace: ' . $e->getTraceAsString());
                 
                 // Remover imagem se houve upload
-                if (isset($validatedParceiroData['logo']) && $validatedParceiroData['logo'] != $parceiro->getOriginal('logo')) {
+                if (isset($validatedParceiroData['logo']) && $parceiro !== null && $validatedParceiroData['logo'] != $parceiro->getOriginal('logo')) {
+                    Storage::disk('public')->delete($validatedParceiroData['logo']);
+                } elseif (isset($validatedParceiroData['logo'])) {
+                    // Se $parceiro não existe, apenas remova a imagem
                     Storage::disk('public')->delete($validatedParceiroData['logo']);
                 }
 
                 return redirect()->back()
                     ->withInput()
-                    ->withErrors(['error' => 'Erro ao atualizar cadastro: ' . $e->getMessage()]);
+                    ->withErrors(['error' => 'Erro ao processar cadastro: ' . $e->getMessage()]);
             }
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Erro no bloco try externo: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             
             // Remover imagem se houve upload
-            if (isset($validatedParceiroData['logo']) && $validatedParceiroData['logo'] != $parceiro->getOriginal('logo')) {
+            if (isset($validatedParceiroData['logo']) && $parceiro !== null && $validatedParceiroData['logo'] != $parceiro->getOriginal('logo')) {
+                Storage::disk('public')->delete($validatedParceiroData['logo']);
+            } elseif (isset($validatedParceiroData['logo'])) {
+                // Se $parceiro não existe, apenas remova a imagem
                 Storage::disk('public')->delete($validatedParceiroData['logo']);
             }
 
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['error' => 'Erro ao atualizar cadastro: ' . $e->getMessage()]);
+                ->withErrors(['error' => 'Erro ao processar cadastro: ' . $e->getMessage()]);
         }
     }
 
@@ -850,5 +890,222 @@ class ParceiroController extends Controller
         }
         
         return view('parceiro.mensagem-parceiro-inativo');
+    }
+
+    /**
+     * Exibe formulário para edição de item cadastrado pelo parceiro.
+     */
+    public function editarItem(Item $item)
+    {
+        // Verificar se o item pertence ao parceiro
+        if ($item->parceiro_id !== auth()->user()->parceiro->id) {
+            return redirect()->route('parceiro.itens')
+                ->withErrors(['error' => 'Este item não pertence ao seu estabelecimento.']);
+        }
+        
+        // Verificar se o item pode ser editado (apenas itens em estabelecimento)
+        if ($item->status !== Item::STATUS_EM_ESTABELECIMENTO) {
+            return redirect()->route('parceiro.itens')
+                ->withErrors(['error' => 'Apenas itens em estabelecimento podem ser editados.']);
+        }
+        
+        // Buscar categorias para o formulário
+        $categorias = Categoria::orderBy('nome_categoria')->get();
+        
+        // Definir flag de edição
+        $isEdit = true;
+        
+        // Usar a mesma view de cadastro, mas com flag de edição
+        return view('parceiro.cadastrar-item', compact('item', 'categorias', 'isEdit'));
+    }
+    
+    /**
+     * Atualiza um item cadastrado pelo parceiro.
+     */
+    public function atualizarItem(Request $request, Item $item)
+    {
+        // Verificar se o item pertence ao parceiro
+        if ($item->parceiro_id !== auth()->user()->parceiro->id) {
+            return redirect()->route('parceiro.itens')
+                ->withErrors(['error' => 'Este item não pertence ao seu estabelecimento.']);
+        }
+        
+        // Verificar se o item pode ser editado (apenas itens em estabelecimento)
+        if ($item->status !== Item::STATUS_EM_ESTABELECIMENTO) {
+            return redirect()->route('parceiro.itens')
+                ->withErrors(['error' => 'Apenas itens em estabelecimento podem ser editados.']);
+        }
+        
+        // Validar os dados do formulário
+        $validator = Validator::make($request->all(), [
+            'id_categoria' => 'required|exists:categorias,id',
+            'data_encontrado' => 'required|date|before_or_equal:today',
+            'descricao' => 'required|string|min:10|max:500',
+            'fotos.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'endereco' => 'required',
+            'latitude' => 'required',
+            'longitude' => 'required',
+            'nome_local' => 'required',
+            'referencia' => 'required',
+        ], [
+            'id_categoria.required' => 'Por favor, selecione uma categoria para o item.',
+            'id_categoria.exists' => 'A categoria selecionada não é válida.',
+            'data_encontrado.required' => 'Por favor, informe a data em que o item foi encontrado.',
+            'data_encontrado.date' => 'A data informada não é válida.',
+            'data_encontrado.before_or_equal' => 'A data não pode ser futura.',
+            'descricao.required' => 'Por favor, forneça uma descrição para o item.',
+            'descricao.min' => 'A descrição deve ter pelo menos 10 caracteres.',
+            'descricao.max' => 'A descrição não pode exceder 500 caracteres.',
+            'fotos.*.image' => 'O arquivo deve ser uma imagem.',
+            'fotos.*.mimes' => 'A imagem deve ser do tipo: jpeg, png, jpg ou webp.',
+            'fotos.*.max' => 'A imagem não pode ter mais de 2MB.',
+            'endereco.required' => 'Por favor, informe o endereço onde o item foi encontrado.',
+            'latitude.required' => 'Por favor, selecione uma localização válida no mapa.',
+            'longitude.required' => 'Por favor, selecione uma localização válida no mapa.',
+            'nome_local.required' => 'Por favor, informe o nome do local onde o item foi encontrado.',
+            'referencia.required' => 'Por favor, informe um ponto de referência para o local onde o item foi encontrado.',
+        ]);
+        
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+        
+        try {
+            DB::beginTransaction();
+            
+            // Atualizar dados do item
+            $item->update([
+                'id_categoria' => $request->id_categoria,
+                'data_encontrado' => $request->data_encontrado,
+                'descricao' => $request->descricao,
+                // Mantém o tipo e status originais
+            ]);
+            
+            // Atualizar localização
+            if ($item->localizacao) {
+                $item->localizacao->update([
+                    'endereco' => $request->endereco,
+                    'latitude' => $request->latitude,
+                    'longitude' => $request->longitude,
+                    'nome_local' => $request->nome_local,
+                    'referencia' => $request->referencia,
+                ]);
+            } else {
+                Localizacao::create([
+                    'item_id' => $item->id,
+                    'endereco' => $request->endereco,
+                    'latitude' => $request->latitude,
+                    'longitude' => $request->longitude,
+                    'nome_local' => $request->nome_local,
+                    'referencia' => $request->referencia,
+                ]);
+            }
+            
+            // Processar as fotos, se houver
+            if ($request->hasFile('fotos')) {
+                $fotos = $request->file('fotos');
+                $fotoPrincipal = $request->input('foto_principal_index', 0);
+                
+                // Verificar se não excede o limite de 3 fotos (considerando as já existentes)
+                $totalFotos = $item->fotos->count() + count($fotos);
+                if ($totalFotos > 3) {
+                    return redirect()->back()
+                        ->with('error', 'Você pode ter no máximo 3 fotos por item.')
+                        ->withInput();
+                }
+                
+                // Processar cada foto
+                foreach ($fotos as $index => $foto) {
+                    // Verificar se o arquivo é válido
+                    if ($foto->isValid()) {
+                        $path = $foto->store('itens', 'public');
+                        
+                        // Determinar se é a foto principal
+                        $isPrincipal = false;
+                        if (is_numeric($fotoPrincipal) && $index == $fotoPrincipal) {
+                            // Se esta foto for marcada como principal, atualizar todas as outras para não-principal
+                            if ($item->fotos->count() > 0) {
+                                foreach ($item->fotos as $existingFoto) {
+                                    $existingFoto->update(['is_principal' => false]);
+                                }
+                            }
+                            $isPrincipal = true;
+                        }
+                        
+                        ItemFoto::create([
+                            'item_id' => $item->id,
+                            'caminho' => $path,
+                            'is_principal' => $isPrincipal
+                        ]);
+                    }
+                }
+            }
+            
+            DB::commit();
+            
+            return redirect()->route('parceiro.itens')
+                ->with('success', 'Item atualizado com sucesso!');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return redirect()->back()
+                ->with('error', 'Ocorreu um erro ao atualizar o item: ' . $e->getMessage())
+                ->withInput();
+        }
+    }
+    
+    /**
+     * Exclui um item cadastrado pelo parceiro.
+     */
+    public function excluirItem(Item $item)
+    {
+        // Verificar se o item pertence ao parceiro
+        if ($item->parceiro_id !== auth()->user()->parceiro->id) {
+            return redirect()->route('parceiro.itens')
+                ->withErrors(['error' => 'Este item não pertence ao seu estabelecimento.']);
+        }
+        
+        // Verificar se o item pode ser excluído (apenas itens em estabelecimento)
+        if ($item->status !== Item::STATUS_EM_ESTABELECIMENTO) {
+            return redirect()->route('parceiro.itens')
+                ->withErrors(['error' => 'Apenas itens em estabelecimento podem ser excluídos.']);
+        }
+        
+        try {
+            DB::beginTransaction();
+            
+            // Excluir as fotos do item
+            foreach ($item->fotos as $foto) {
+                if (Storage::disk('public')->exists($foto->caminho)) {
+                    Storage::disk('public')->delete($foto->caminho);
+                }
+                $foto->delete();
+            }
+            
+            // Excluir o item
+            $item->delete();
+            
+            DB::commit();
+            
+            return redirect()->route('parceiro.itens')
+                ->with('success', 'Item excluído com sucesso!');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            // Registrar erro no log
+            \Log::error('Erro ao excluir item por parceiro', [
+                'erro' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'parceiro_id' => Auth::user()->parceiro->id ?? 'N/A',
+                'item_id' => $item->id
+            ]);
+            
+            return redirect()->back()
+                ->with('error', 'Ocorreu um erro ao excluir o item: ' . $e->getMessage());
+        }
     }
 }

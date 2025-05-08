@@ -213,9 +213,9 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('paginaInicial') }}">
+            <a class="navbar-brand" href="{{ route('usuario.home') }}">
                 <i class="fas fa-search-location text-primary me-2"></i>
-                Achados e Perdidos
+                Ache Aqui CG
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>

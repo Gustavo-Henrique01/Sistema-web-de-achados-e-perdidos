@@ -103,7 +103,7 @@
         
         <a href="{{ route('parceiro.home') }}"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</a>
         <a href="{{ route('parceiro.itens') }}"><i class="fas fa-box-open me-2"></i> Itens no Estabelecimento</a>
-        <a href="{{ route('mapa') }}"><i class="fas fa-map-marker-alt me-2"></i> Ver Mapa</a>
+        <a href="{{ route('mapa.mostrar') }}"><i class="fas fa-map-marker-alt me-2"></i> Ver Mapa</a>
         <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
             <i class="fas fa-sign-out-alt me-2"></i> Sair
         </a>

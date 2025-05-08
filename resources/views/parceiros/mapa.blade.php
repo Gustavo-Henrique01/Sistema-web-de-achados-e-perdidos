@@ -229,7 +229,7 @@
                         <a class="nav-link" href="{{ route('paginaInicial') }}">Início</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('mapa') }}">Mapa de Itens</a>
+                        <a class="nav-link" href="{{ route('mapa.mostrar') }}">Mapa de Itens</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link active" href="{{ route('parceiros.mapa') }}">Pontos de Coleta</a>

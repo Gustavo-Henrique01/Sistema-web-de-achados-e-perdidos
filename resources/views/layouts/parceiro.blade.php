@@ -12,6 +12,7 @@
     <style>
         :root {
             --sidebar-width: 280px;
+            --sidebar-width-collapsed: 70px;
             --primary-color: #0d6efd;
             --secondary-color: #6c757d;
             --success-color: #198754;
@@ -42,28 +43,17 @@
             background-color: var(--dark-color);
             color: white;
             padding: 1rem;
-            transition: transform var(--transition-speed) ease;
+            transition: all var(--transition-speed) ease;
             z-index: 1050;
-            transform: translateX(-100%);
             overflow-y: auto;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         }
         
-        .sidebar.active {
-            transform: translateX(0);
-        }
-        
         .main-content {
-            margin-left: 0;
             padding: 2rem 1.5rem;
             min-height: 100vh;
-            transition: margin-left var(--transition-speed) ease, width var(--transition-speed) ease;
+            transition: all var(--transition-speed) ease;
             width: 100%;
-        }
-        
-        .main-content.sidebar-active {
-            margin-left: var(--sidebar-width);
-            width: calc(100% - var(--sidebar-width));
         }
         
         /* Card Styles */
@@ -205,6 +195,20 @@
             margin-top: 0.5rem;
             font-weight: 500;
         }
+        
+        /* Notification Badge */
+        .notification-badge {
+            position: relative;
+        }
+        
+        .notification-badge .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 50%;
+        }
 
         /* Toggle Button & Overlay */
         .sidebar-toggle {
@@ -276,6 +280,47 @@
             bottom: 10px;
             right: 10px;
         }
+        
+        /* Chat Button */
+        .chat-button {
+            position: relative;
+        }
+        
+        .chat-button .badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            transform: translate(25%, -25%);
+        }
+        
+        /* Floating Action Button */
+        .floating-action-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.2);
+            z-index: 1030;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        
+        .floating-action-btn:hover {
+            transform: scale(1.1);
+            background-color: #0b5ed7;
+            color: white;
+        }
+        
+        .floating-action-btn i {
+            font-size: 1.5rem;
+        }
 
         /* Responsive Styles */
         @media (min-width: 992px) {
@@ -302,6 +347,14 @@
                 --sidebar-width: 260px;
             }
             
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
             .main-content {
                 margin-left: 0;
                 width: 100%;
@@ -311,6 +364,7 @@
             .sidebar-toggle {
                 top: 0.75rem;
                 left: 0.75rem;
+                display: block;
             }
         }
         
@@ -329,6 +383,17 @@
             
             .d-flex.gap-2 {
                 flex-wrap: wrap;
+            }
+            
+            .btn-group-responsive {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn-group-responsive .btn {
+                margin-bottom: 0.5rem;
+                width: 100%;
             }
         }
         
@@ -359,16 +424,12 @@
             .item-image-container {
                 height: 180px;
             }
-        }
-        
-        /* Ajustes para telas muito pequenas */
-        @media (max-width: 575.98px) {
-            :root {
-                --sidebar-width: 100%;
-            }
             
-            .sidebar {
-                width: 100%;
+            .floating-action-btn {
+                bottom: 1.5rem;
+                right: 1.5rem;
+                width: 3rem;
+                height: 3rem;
             }
         }
     </style>
@@ -418,10 +479,16 @@
             <a href="{{ route('parceiro.cadastrar-item.form') }}" class="{{ request()->routeIs('parceiro.cadastrar-item.form') ? 'active' : '' }}">
                 <i class="fas fa-plus-circle"></i> Cadastrar Item
             </a>
+            <a href="{{ route('chatify') }}" class="{{ request()->routeIs('chatify') ? 'active' : '' }} chat-button">
+                <i class="fas fa-comments"></i> Chat
+                <span class="badge bg-danger ms-auto">
+                    {{ \App\Models\ChMessage::where('to_id', auth()->id())->where('seen', 0)->count() }}
+                </span>
+            </a>
             <a href="{{ route('parceiro.perfil') }}" class="{{ request()->routeIs('parceiro.perfil') ? 'active' : '' }}">
                 <i class="fas fa-user-edit"></i> Editar Perfil
             </a>
-            <a href="{{ route('mapa') }}" class="{{ request()->routeIs('parceiro.mapa') ? 'active' : '' }}">
+            <a href="{{ route('mapa.mostrar') }}" class="{{ request()->routeIs('mapa.mostrar') ? 'active' : '' }}">
                 <i class="fas fa-map-marker-alt"></i> Ver Mapa
             </a>
             <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -451,6 +518,8 @@
 
         @yield('content')
     </div>
+    
+   
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -462,21 +531,34 @@
 
             function toggleSidebar() {
                 sidebar.classList.toggle('active');
-                mainContent.classList.toggle('sidebar-active');
                 sidebarOverlay.classList.toggle('active');
             }
 
             sidebarToggle.addEventListener('click', toggleSidebar);
             sidebarOverlay.addEventListener('click', toggleSidebar);
 
-            // Fechar a sidebar quando clicar em um link
+            // Fechar a sidebar quando clicar em um link em dispositivos móveis
             document.querySelectorAll('.sidebar-menu a').forEach(link => {
                 link.addEventListener('click', function() {
-                    if (window.innerWidth < 768) {
+                    if (window.innerWidth < 992) {
                         toggleSidebar();
                     }
                 });
             });
+            
+            // Ajustar layout para telas pequenas
+            function handleResponsiveLayout() {
+                if (window.innerWidth < 992) {
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                }
+            }
+            
+            // Verificar tamanho da tela ao redimensionar
+            window.addEventListener('resize', handleResponsiveLayout);
+            
+            // Verificar tamanho da tela ao carregar
+            handleResponsiveLayout();
         });
     </script>
     @stack('scripts')
