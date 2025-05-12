@@ -114,10 +114,8 @@ class AdministradorController extends Controller
 
         $item = Item::findOrFail($id);
         
-        // Primeiro, excluir os logs relacionados ao item
         AdminActionLog::where('item_id', $item->id)->delete();
         
-        // Depois, excluir o item
         $item->delete();
 
         return redirect()->back()->with('success', 'Item excluído com sucesso!');
@@ -221,8 +219,8 @@ class AdministradorController extends Controller
      */
     public function PerfilUser($id)
     {
-        $user = User::findOrFail($id); // Alterado de Usuario para User
-        $itens = Item::where('user_id', $id)->get(); // Usando o nome correto da coluna
+        $user = User::findOrFail($id); 
+        $itens = Item::where('user_id', $id)->get(); 
 
         return view('admin.listar-itens-usuario', compact('user', 'itens'));
     }
@@ -265,7 +263,7 @@ class AdministradorController extends Controller
      */
     public function excluirUsuario($id)
     {
-        $usuario = User::findOrFail($id); // Alterado de Usuario para User
+        $usuario = User::findOrFail($id);
         $usuario->delete();
 
         return redirect()->back()->with('success', 'Usuário excluído com sucesso!');
@@ -276,7 +274,7 @@ class AdministradorController extends Controller
      */
     public function dashboard()
     {
-        $totalUsuarios = User::count(); // Alterado de Usuario para User
+        $totalUsuarios = User::count(); 
         $totalItens = Item::count();
         $itensRecentes = Item::latest()->take(5)->get();
 
@@ -492,21 +490,16 @@ class AdministradorController extends Controller
         $item = Item::with(['aprovadoPor', 'reprovadoPor', 'excluidoPor', 'usuario', 'categoria', 'fotos', 'localizacao'])
             ->findOrFail($id);
 
-        // Verificar se a requisição veio do mapa
         $fromMap = request()->has('from_map');
         
-        // Se a requisição veio do mapa, usar o layout do administrador
         if ($fromMap) {
             return view('admin.itens.detalhes-admin', compact('item'));
         }
         
-        // Caso contrário, usar a view modal padrão
         return view('admin.itens.detalhes', compact('item'));
     }
 
-    /**
-     * Novo método para visualizar o log de ações
-     */
+    
     public function logAcoes(Request $request)
     {
         $query = AdminActionLog::with(['admin', 'item']);

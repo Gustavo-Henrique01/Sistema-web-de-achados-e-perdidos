@@ -348,6 +348,17 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Funções de utilidade no escopo global
+        function showError(input, errorDiv) {
+            errorDiv.style.display = 'block';
+            input.classList.add('is-invalid');
+        }
+
+        function hideError(input, errorDiv) {
+            errorDiv.style.display = 'none';
+            input.classList.remove('is-invalid');
+        }
+
         function initGoogleMaps() {
             const googleMapsScript = document.createElement('script');
             googleMapsScript.src = `https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_key') }}&libraries=places&callback=initAutocomplete`;
@@ -487,16 +498,7 @@
                 e.target.value = formatPhone(e.target.value);
             });
 
-            // Funções de validação
-            function showError(input, errorDiv) {
-                errorDiv.style.display = 'block';
-                input.classList.add('is-invalid');
-            }
-
-            function hideError(input, errorDiv) {
-                errorDiv.style.display = 'none';
-                input.classList.remove('is-invalid');
-            }
+            // Funções de validação já definidas no escopo global
 
             // Adiciona divs de erro para cada campo
             const fields = [
@@ -742,6 +744,7 @@
             if (input.files && input.files[0]) {
                 const file = input.files[0];
                 const logoError = document.getElementById('logo-error');
+                const preview = document.getElementById('logo-preview');
                 
                 // Verifica o tipo do arquivo
                 const fileType = file.type;
@@ -763,9 +766,13 @@
                 
                 hideError(input, logoError);
                 
+                // Criar um objeto URL para a prévia imediata
+                preview.src = URL.createObjectURL(file);
+                
+                // Também usar FileReader como backup
                 var reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById('logo-preview').src = e.target.result;
+                    preview.src = e.target.result;
                 }
                 reader.readAsDataURL(file);
             }

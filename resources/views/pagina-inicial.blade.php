@@ -942,7 +942,7 @@
           <ul class="list-unstyled">
             <li class="mb-2">
               <i class="fas fa-envelope me-2"></i>
-              contato@achadosperdidoscg.com.br
+             acheaqui.cg.ms@gmail.com
             </li>
             <li class="mb-2">
               <i class="fas fa-phone me-2"></i>

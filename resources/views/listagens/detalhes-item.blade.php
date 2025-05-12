@@ -202,7 +202,7 @@
                         <i class="fas fa-envelope me-1"></i>
                         {{ $item->usuario->email }}
                     </p>
-                    <a href="{{ route('chatify') }}" class="btn btn-success btn-sm">
+                    <a href="/chatify/{{ $item->usuario->id }}" class="btn btn-success btn-sm">
                         <i class="fas fa-comments me-1"></i>
                         Iniciar Conversa
                     </a>
