@@ -42,14 +42,26 @@
       
       .navbar-collapse {
         background: white;
-        padding: 1rem;
-        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border-radius: 0.75rem;
         margin-top: 0.5rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       }
       
       .nav-link {
-        padding: 0.5rem 1rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .navbar-nav .nav-item:last-child {
+        margin-top: 0.5rem;
+      }
+      
+      .navbar-nav .btn-primary {
+        display: block;
+        width: 100%;
+        text-align: center;
+        margin-top: 0.5rem;
       }
     }
 
@@ -75,6 +87,7 @@
       position: relative;
       transition: all 0.3s ease;
       padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
     }
 
     .nav-link::after {
@@ -90,11 +103,13 @@
     }
 
     .nav-link:hover::after {
-      width: 100%;
+      width: 80%;
     }
 
     .nav-link:hover {
       color: var(--primary-color) !important;
+      background-color: rgba(37, 99, 235, 0.05);
+      transform: translateY(-2px);
     }
     
     .hero-section {
@@ -199,6 +214,93 @@
       border-color: #1d4ed8;
       transform: translateY(-2px);
       box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+    }
+    
+    /* Estilos para melhorar o efeito de hover nos botões */
+    .btn-light:hover, .btn-outline-light:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(255, 255, 255, 0.4);
+      cursor: pointer !important;
+      transition: all 0.3s ease;
+      opacity: 0.9;
+    }
+    
+    .btn-light, .btn-outline-light {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      cursor: pointer !important;
+    }
+    
+    .btn-light:before, .btn-outline-light:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+    }
+    
+    .btn-light:hover:before, .btn-outline-light:hover:before {
+      transform: translateX(0);
+    }
+    
+    /* Estilos específicos para os botões principais */
+    .hero-section .btn-light, .hero-section .btn-outline-light {
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      border-width: 2px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .hero-section .btn-light:after, .hero-section .btn-outline-light:after {
+      content: "";
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 3px;
+      background-color: #fff;
+      transition: width 0.3s ease;
+    }
+    
+    .hero-section .btn-light:hover:after, .hero-section .btn-outline-light:hover:after {
+      width: 80%;
+    }
+    
+    /* Estilos para os botões de ação */
+    .action-button {
+      cursor: pointer !important;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      transform-origin: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .action-button:hover {
+      transform: translateY(-5px) scale(1.03);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .action-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: all 0.6s ease;
+    }
+    
+    .action-button:hover::before {
+      left: 100%;
     }
     
     .stats-box {
@@ -490,24 +592,23 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="#como-funciona">Como Funciona</a>
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item mx-1">
+            <a class="nav-link px-3 py-2" href="#como-funciona"><i class="fas fa-info-circle me-1"></i>Como Funciona</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#parceiros">Seja Parceiro</a>
+          <li class="nav-item mx-1">
+            <a class="nav-link px-3 py-2" href="#parceiros"><i class="fas fa-handshake me-1"></i>Seja Parceiro</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#estatisticas">Estatísticas</a>
+          <li class="nav-item mx-1">
+            <a class="nav-link px-3 py-2" href="#estatisticas"><i class="fas fa-chart-bar me-1"></i>Estatísticas</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('parceiros.mapa') }}">Pontos de Coleta</a>
+          <li class="nav-item mx-1">
+            <a class="nav-link px-3 py-2" href="{{ route('parceiros.mapa') }}"><i class="fas fa-map-marker-alt me-1"></i>Mapa de Itens</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link text-white" href="{{ route('form.login') }}">Entrar</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-primary" href="{{ route('registrar') }}">Cadastrar</a>
+          <li class="nav-item ms-3">
+            <a class="btn btn-outline-primary" href="{{ route('form.login') }}">
+           Login
+            </a>
           </li>
         </ul>
       </div>
@@ -522,20 +623,14 @@
           <h1 class="display-4 fw-bold mb-4">Encontre ou Devolva Itens Perdidos em Campo Grande</h1>
           <p class="lead mb-4">Conectamos pessoas que perderam seus pertences com aquelas que os encontraram. Uma iniciativa para tornar Campo Grande uma cidade mais solidária.</p>
           <div class="d-flex flex-wrap gap-3">
-            <a href="{{ route('form.login') }}" class="btn btn-light btn-lg">
+            <a href="{{ route('parceiros.mapa') }}" class="btn btn-light btn-lg action-button">
               <i class="fas fa-search me-2"></i>Procurar Item
             </a>
-            <a href="{{ route('form.login') }}" class="btn btn-outline-light btn-lg">
+            <a href="{{ route('form.login') }}" class="btn btn-outline-light btn-lg action-button">
               <i class="fas fa-hand-holding-heart me-2"></i>Reportar Achado
             </a>
           </div>
-          <div class="mt-4 d-flex flex-wrap align-items-center">
-            <span class="badge bg-light text-primary me-2 mb-2 p-2">Celulares</span>
-            <span class="badge bg-light text-primary me-2 mb-2 p-2">Documentos</span>
-            <span class="badge bg-light text-primary me-2 mb-2 p-2">Carteiras</span>
-            <span class="badge bg-light text-primary me-2 mb-2 p-2">Chaves</span>
-            <span class="text-light ms-2 mb-2">Categorias populares de itens</span>
-          </div>
+ 
         </div>
         <div class="col-lg-5 d-none d-lg-block">
           <img src="{{ Storage::url('img-page\araras.webp') }}" 
@@ -889,12 +984,9 @@
     <div class="container text-center">
       <h2 class="display-5 fw-bold mb-4">Pronto para Começar?</h2>
       <p class="lead mb-4">Junte-se aos campo-grandenses que já estão conectados através do nosso sistema</p>
-      <div class="d-flex justify-content-center gap-3">
-        <a href="{{ route('form.login') }}" class="btn btn-light btn-lg px-4">
-          <i class="fas fa-sign-in-alt me-2"></i>Entrar
-        </a>
-        <a href="{{ route('registrar') }}" class="btn btn-outline-light btn-lg px-4">
-          <i class="fas fa-user-plus me-2"></i>Cadastrar
+      <div class="d-flex justify-content-center">
+        <a href="{{ route('form.login') }}" class="btn btn-light btn-lg px-5 py-3 rounded-pill shadow-sm">
+          <i class="fas fa-sign-in-alt me-2"></i>Acessar o Sistema
         </a>
       </div>
     </div>

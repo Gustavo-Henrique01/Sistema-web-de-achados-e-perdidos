@@ -51,12 +51,7 @@
                 </div>
             </div>
             
-            <div class="stat-item">
-                <div class="row">
-                    <div class="col-5"><strong>Função:</strong></div>
-                    <div class="col-7 text-end text-truncate" title="{{ $user->role->value }}">{{ $user->role->value }}</div>
-                </div>
-            </div>
+         
         </div>
     </div>
     

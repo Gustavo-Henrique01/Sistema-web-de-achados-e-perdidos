@@ -185,12 +185,10 @@ class AdministradorController extends Controller
         return view('admin.listar-all-itens', compact('itens', 'status','categorias'));
     }
 
-    /**
-     * Lista todos os itens.
-     */
+ 
     public function listarItensAll()
     {
-        $itens = Item::paginate(10); // 10 itens por página
+        $itens = Item::paginate(10); 
 
         return view('admin.listar-itens-user', compact('itens'));
     }

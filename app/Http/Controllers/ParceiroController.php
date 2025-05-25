@@ -305,7 +305,7 @@ class ParceiroController extends Controller
         // Verificar se é uma edição ou criação de parceiro
         $isEdit = $request->has('parceiro_id');
         $parceiroId = $request->parceiro_id;
-        $parceiro = null; // Inicializar a variável $parceiro para evitar erro de variável indefinida
+        $parceiro = null; 
         
         // Regras de validação diferentes para edição e criação
         $validationRules = [
@@ -409,7 +409,10 @@ class ParceiroController extends Controller
 
             // Upload de logo se fornecido
             if ($request->hasFile('logo')) {
-                $validatedParceiroData['logo'] = $request->file('logo')->store('logos', 'public');
+              $path  = $request->file('logo')->store('logos', 'public');
+
+              $validatedParceiroData['logo'] = $path;
+                             
                 \Log::info('Logo enviada com sucesso: ' . $validatedParceiroData['logo']);
             }
 
@@ -427,6 +430,8 @@ class ParceiroController extends Controller
                     $user->email = $validatedUserData['email'];
                     $user->telefone = $validatedUserData['telefone'];
                     $user->cpf = $validatedUserData['cpf'];
+                    $user->avatar = $request->file('logo')->store('avatars', 'public');
+
                     
                     // Atualizar senha apenas se fornecida
                     if ($request->filled('senha')) {
@@ -453,6 +458,7 @@ class ParceiroController extends Controller
                             'cpf' => $validatedUserData['cpf'],
                             'role' => UserRole::PARCEIRO->value,
                             'ativo' => false, 
+                            'avatar' => $request->file('logo')->store('avatars', 'public'),
                         ]);
                     } catch (\Exception $e) {
                         \Log::error('Erro ao criar usuário: ' . $e->getMessage());
@@ -565,6 +571,7 @@ class ParceiroController extends Controller
                 // Remover imagem se houve upload
                 if (isset($validatedParceiroData['logo']) && $parceiro !== null && $validatedParceiroData['logo'] != $parceiro->getOriginal('logo')) {
                     Storage::disk('public')->delete($validatedParceiroData['logo']);
+
                 } elseif (isset($validatedParceiroData['logo'])) {
                     // Se $parceiro não existe, apenas remova a imagem
                     Storage::disk('public')->delete($validatedParceiroData['logo']);
@@ -650,9 +657,32 @@ class ParceiroController extends Controller
     
     public function mapa()
     {
-        $parceiros = Parceiro::with('localizacao')->ativo()->get();
+        // Buscar parceiros ativos
+        $parceiros = Parceiro::with('localizacao')
+            ->where('status', 'aprovado')
+            ->where('ativo', true)
+            ->get();
         
-        return view('parceiros.mapa', compact('parceiros'));
+        // Buscar itens aprovados e em estabelecimento
+        $itens = Item::with(['categoria', 'localizacao', 'fotos', 'parceiro.localizacao'])
+            ->whereIn('status', ['aprovado', 'em_estabelecimento'])
+            ->whereHas('usuario', function($query) {
+                $query->where('ativo', true);
+            })
+            ->get();
+            
+        // Buscar categorias para filtros
+        $categorias = Categoria::all();
+        
+        // Chave da API do Google Maps
+        $googleMapsApiKey = env('GOOGLE_MAPS_API_KEY');
+        
+        return view('parceiros.mapa', [
+            'parceiros' => $parceiros,
+            'itens' => $itens,
+            'categorias' => $categorias,
+            'googleMapsApiKey' => $googleMapsApiKey
+        ]);
     }
 
     /**
