@@ -118,6 +118,8 @@
       padding: 8rem 0 5rem;
       position: relative;
       overflow: hidden;
+      height: 100vh;
+      width: 100vw;
     }
 
     @media (max-width: 991.98px) {
@@ -616,7 +618,7 @@
   </nav>
 
   <!-- Hero Section -->
-  <section class="hero-section">
+  <section class="hero-section mt-4">
     <div class="container">
       <div class="row align-items-center mt-auto">
         <div class="col-lg-7 mb-5 mb-lg-0">

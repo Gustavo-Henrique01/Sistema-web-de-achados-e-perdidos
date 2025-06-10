@@ -338,7 +338,7 @@
                 <div class="text-center mt-3">
                     @if(!isset($isEdit) || !$isEdit)
                         <p class="mb-0">Já possui uma conta? 
-                            <a href="{{ route('login') }}" class="text-decoration-none">Faça login</a>
+                            <a href="{{ route('form.login') }}" class="text-decoration-none">Faça login</a>
                         </p>
                     @endif
                 </div>
