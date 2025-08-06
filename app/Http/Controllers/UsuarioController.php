@@ -176,11 +176,11 @@ class UsuarioController extends Controller
             'data_perdido' => $request->tipo === 'perdido' ? 'required|date' : 'nullable|date',
             'data_encontrado' => $request->tipo === 'achado' ? 'required|date' : 'nullable|date',
         ]);
-    
-        // Atualiza o item
+
+            $validatedItem['status'] = 'pendente'; 
+        
         $item->update($validatedItem);
     
-        // Remove fotos marcadas para exclusão
         if ($request->has('fotos_removidas')) {
             ItemFoto::whereIn('id', $request->fotos_removidas)->delete();
         }
