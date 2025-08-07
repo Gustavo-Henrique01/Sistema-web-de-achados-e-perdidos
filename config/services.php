@@ -14,7 +14,7 @@ return [
     |
     */
     'google' => [
-        'maps_api_key' => env('GOOGLE_MAPS_API_KEY'),
+        'maps_key' => env('GOOGLE_MAPS_API_KEY'),
     ],
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),

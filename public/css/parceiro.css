@@ -1,0 +1,212 @@
+/* Estilos para os cards de itens */
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Estilos para os badges de status */
+.badge {
+    font-size: 0.8rem;
+    padding: 0.5em 0.8em;
+}
+
+/* Estilos para os botões de ação */
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Estilos para as imagens dos itens */
+.item-image-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background-color: #f8f9fa;
+}
+
+.item-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.item-image-container:hover .item-image {
+    transform: scale(1.05);
+}
+
+.item-image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.3));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.item-image-container:hover .item-image-overlay {
+    opacity: 1;
+}
+
+/* Estilos para o avatar do usuário */
+.avatar {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 50%;
+}
+
+/* Estilos para os modais */
+.modal-content {
+    border: none;
+    border-radius: 0.5rem;
+}
+
+.modal-header {
+    border-bottom: none;
+    padding: 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    border-top: none;
+    padding: 1.5rem;
+}
+
+/* Estilos para os filtros */
+.form-select, .form-control {
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+    padding: 0.5rem 1rem;
+}
+
+/* Estilos para os cards de informação */
+.card-header {
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+}
+
+.card-body {
+    padding: 1.5rem;
+    flex: 1;
+}
+
+/* Estilos para as fotos do item */
+.img-fluid {
+    border-radius: 0.5rem;
+    object-fit: cover;
+}
+
+/* Estilos para os textos */
+.text-muted {
+    color: #6c757d !important;
+}
+
+/* Estilos para os ícones */
+.fas {
+    margin-right: 0.5rem;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .item-image-container {
+        height: 150px;
+    }
+    
+    .btn-group {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .btn {
+        flex: 1;
+        min-width: 120px;
+    }
+    
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+}
+
+/* Estilos para a galeria de fotos */
+.photo-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.photo-item {
+    position: relative;
+    padding-top: 100%;
+    overflow: hidden;
+    border-radius: 0.5rem;
+}
+
+.photo-item img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Estilos para o layout responsivo */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 1rem;
+    }
+    
+    .row {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+    }
+    
+    [class*="col-"] {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+} 

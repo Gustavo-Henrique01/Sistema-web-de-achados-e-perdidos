@@ -9,13 +9,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
-{
-    Schema::table('itens', function (Blueprint $table) {
-        $table->enum('tipo', ['achado', 'perdido'])->default('perdido'); // A coluna tipo, com valores possíveis 'achado' ou 'perdido'
-    });
-}
-
+    public function up(): void
+    {
+        Schema::table('itens', function (Blueprint $table) {
+            //
+        });
+    }
 
     /**
      * Reverse the migrations.

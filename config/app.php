@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'google_maps_api_key' => env('GOOGLE_MAPS_API_KEY'),
+
 ];

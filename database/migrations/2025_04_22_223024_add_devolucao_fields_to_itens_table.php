@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('itens', function (Blueprint $table) {
-            $table->boolean('aprovado')->default(false); // Valor padrão: não aprovado
-            $table->timestamp('aprovado_em')->nullable(); // Pode ser nulo
+            $table->timestamp('data_devolucao')->nullable()->after('data_registro');
+            $table->text('observacoes_devolucao')->nullable()->after('data_devolucao');
+            $table->string('metodo_devolucao')->nullable()->after('observacoes_devolucao');
+            $table->boolean('devolucao_confirmada')->default(true)->after('metodo_devolucao');
         });
     }
 
@@ -23,8 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('itens', function (Blueprint $table) {
-            $table->dropColumn('aprovado'); 
-            $table->dropColumn('aprovado_em'); 
+            $table->dropColumn(['data_devolucao', 'observacoes_devolucao', 'metodo_devolucao', 'devolucao_confirmada']);
         });
     }
 };

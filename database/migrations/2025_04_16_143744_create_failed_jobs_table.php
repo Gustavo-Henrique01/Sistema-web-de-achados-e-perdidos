@@ -9,13 +9,10 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('maps', function (Blueprint $table) {
+        Schema::create('failed_jobs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('endereco_id')->constrained('enderecos')->onDelete('cascade');
-            $table->decimal('latitude', 10, 7);
-            $table->decimal('longitude', 10, 7);
             $table->timestamps();
         });
     }
@@ -25,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('maps');
+        Schema::dropIfExists('failed_jobs');
     }
 };

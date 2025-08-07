@@ -63,6 +63,7 @@
                 {{-- header buttons --}}
                 <nav class="m-header-right">
                     <a href="#" class="add-to-favorite"><i class="fas fa-star"></i></a>
+                    <a href="javascript:void(0)" onclick="window.history.back();" title="Voltar para a página anterior" class="btn-back-page"><i class="fas fa-arrow-circle-left"></i></a>
                     <a href="/"><i class="fas fa-home"></i></a>
                     <a href="#" class="show-infoSide"><i class="fas fa-info-circle"></i></a>
                 </nav>
@@ -107,6 +108,21 @@
         {!! view('Chatify::layouts.info')->render() !!}
     </div>
 </div>
+
+<style>
+    .btn-back-page {
+        color: #333;
+        font-size: 1.1em;
+        transition: all 0.3s;
+    }
+    .btn-back-page:hover {
+        color: var(--primary-color);
+        transform: scale(1.1);
+    }
+    .dark-mode .btn-back-page {
+        color: #fff;
+    }
+</style>
 
 @include('Chatify::layouts.modals')
 @include('Chatify::layouts.footerLinks')
